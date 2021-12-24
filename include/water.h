@@ -23,7 +23,6 @@
 #define RED     3
 
 #define ADDRESS     "192.168.1.154:1883" //Local RaspberryPI as MQTT Server
-#define CLIENTID    "Tank Subscriber"
 #define QOS         1
 #define TIMEOUT     10000L
 

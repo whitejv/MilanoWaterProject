@@ -22,7 +22,7 @@ LFLAGS = -L../lib -L../lib -L../../../paho.mqtt.c-master/build -L../../../json-c
 # define any libraries to link into executable:
 #   if I want to link in libraries (libx.so or libx.a) I use the -llibname 
 #   option, something like (this will link in libmylib.so and libm.so:
-LIBS = -lm -lpaho-mqtt3c -lpaho-mqtt3a -ljson-c
+LIBS = -lm -lpaho-mqtt3c -lpaho-mqtt3a
 
 # define the C source files
 SRCS = monitor.c

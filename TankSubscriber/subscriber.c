@@ -7,7 +7,7 @@
 #include "MQTTClient.h"
 #include "../include/water.h"
 
-/* CLIENTID     "Tank Subscriber", #define PUB_TOPIC   "Tank ESP", tank_esp_ , len=21
+/* CLIENTID     "ESP CLient", #define PUB_TOPIC   "Tank ESP", tank_esp_ , len=21
 * payload 0     CH1 Unused Damaged/Dead
 * payload 1     CH2 Raw Sensor Current Sense Well 1 16bit
 * payload 2     CH3 Raw Sensor Current Sense Well 2 16bit
@@ -57,7 +57,8 @@
 * payload[20] =     spare
 * payload[21] =     spare
 */
-    
+
+#define CLIENTID    "Tank Subscriber"
 #define PUB_TOPIC   "Formatted Sensor Data"
 #define PUB_TOPIC_LEN 88
 #define SUB_TOPIC   "Tank ESP"
@@ -187,6 +188,8 @@ int main(int argc, char* argv[])
     
     while(1)
     {
+        time(&t);
+        
         /*
          * Convert Raw hydrostatic Pressure Sensor
          * A/D to Water Height, Gallons & Percent Full

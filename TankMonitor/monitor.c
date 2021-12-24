@@ -7,7 +7,7 @@
 #include "MQTTClient.h"
 #include "../include/water.h"
 
-/* CLIENTID     "Tank Subscriber",  #define PUB_TOPIC  "Monitor Data", monitor_sensor_, len=48
+/* CLIENTID     "Tank Monitor",  #define PUB_TOPIC  "Monitor Data", monitor_sensor_, len=48
 * payload[0] =     PumpCurrentSense[1];
 * payload[2] =     PumpCurrentSense[2];
 * payload[3] =     PumpCurrentSense[3];
@@ -59,6 +59,7 @@
 * payload[21] =     spare
 */
 
+#define CLIENTID    "Tank Monitor"
 #define PUB_TOPIC   "Monitor Data"
 #define PUB_TOPIC_LEN 48
 #define SUB_TOPIC   "Formatted Sensor Data"
@@ -183,7 +184,8 @@ int main(int argc, char* argv[])
     
     while(1)
     {
-        
+        time(&t);
+
         // Channel 2 Voltage Sensor 16 bit data
         raw_voltage1_adc = (int16_t) data_payload[4];
         if (raw_voltage1_adc > 2500) {
