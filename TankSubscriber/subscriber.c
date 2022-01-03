@@ -120,7 +120,8 @@ int main(int argc, char* argv[])
     float WaterPresSensorValue;
     float PresSensorLSB = .0000625;   //lsb voltage value from datasheet
     static float PresSensorValueArray[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-    float PresSensorValue =0;
+    float PresSensorValue = 0;
+    //float Old_PresSensorValue = 0;
     static int   PresIndex = 0;
     float ConstantX = .34;      //Used Excel Polynomial Fitting to come up with equation
     float Constant  = .0962;
@@ -140,7 +141,9 @@ int main(int argc, char* argv[])
     int raw_voltage3_adc = 0;
     int raw_voltage4_adc = 0;
     
-    unsigned short int PresSensorRawValue;
+    float PresSensorRawValue ;
+    //float Old_PresSensorRawValue;
+    //unsigned short int PresSensorRawValue;
     int PressSwitState;
     
     int raw_temp = 0;
@@ -195,21 +198,23 @@ int main(int argc, char* argv[])
          * A/D to Water Height, Gallons & Percent Full
          */
         
-        PresSensorRawValue = data_payload[8];
+        PresSensorRawValue = data_payload[8] * PresSensorLSB;
         
         /*
          * Rolling Average to Smooth data
          */
         PresSensorAverage = 0;
         PresSensorValue = 0;
-        PresSensorValueArray[PresIndex++] = PresSensorRawValue * PresSensorLSB;        //Convert sensor value to voltage
+        PresSensorValueArray[PresIndex++] = PresSensorRawValue;        //Convert sensor value to voltage
         PresIndex = PresIndex % 10;
         
         for( i=0; i<=9; ++i){
             PresSensorAverage += PresSensorValueArray[i];
         }
         PresSensorValue = PresSensorAverage/10;
-        printf("Pressure Sensor Raw: %f  Smoothed: %f\n",  (float)PresSensorRawValue, PresSensorValue);
+        //printf("Pressure Sensor Raw: %f delta: %f Smoothed: %f delta: %f\n",  PresSensorRawValue, PresSensorRawValue-Old_PresSensorRawValue, PresSensorValue, PresSensorValue-Old_PresSensorValue);
+        //Old_PresSensorRawValue = PresSensorRawValue;
+        //Old_PresSensorValue = PresSensorValue;
         
         /*
          *** Use the Equation y=Constandx(x) + Constant solve for x to compute Water Height in tank
