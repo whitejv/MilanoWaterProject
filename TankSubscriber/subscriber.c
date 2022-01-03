@@ -209,7 +209,7 @@ int main(int argc, char* argv[])
             PresSensorAverage += PresSensorValueArray[i];
         }
         PresSensorValue = PresSensorAverage/10;
-        //printf("%d  Sensor Value: %f\n",  data_payload[9], PresSensorValue);
+        printf("Pressure Sensor Raw: %f  Smoothed: %f\n",  (float)PresSensorRawValue, PresSensorValue);
         
         /*
          *** Use the Equation y=Constandx(x) + Constant solve for x to compute Water Height in tank
