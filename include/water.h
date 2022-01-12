@@ -62,6 +62,7 @@ unsigned short int data_payload[22] ;
 unsigned short int ESP_payload[4] ;
 float formatted_sensor_payload [21];
 unsigned short int monitor_sensor_payload[21];
+unsigned short int alert_sensor_data[21];
 
 int firmware = 0;
 int SubFirmware = 0x80FF;

@@ -1,12 +1,3 @@
-/*
- * @file       main.cpp
- * @author     Volodymyr Shymanskyy
- * @license    This project is released under the MIT License (MIT)
- * @copyright  Copyright (c) 2015 Volodymyr Shymanskyy
- * @date       Mar 2015
- * @brief
- */
-
 #define BLYNK_DEBUG
 //#define BLYNK_PRINT stdout
 #ifdef RASPBERRY
@@ -28,35 +19,191 @@ static uint16_t port = 8442;
 #include <stdlib.h>
 #include <string.h>
 #include "MQTTClient.h"
+#include "../include/water.h"
 
+/* #define SUB_TOPIC   "Formatted Sensor Data", formatted_sensor_, len=88
+* payload[0] =    Pressure Sensor Value
+* payload[2] =    Water Height
+* payload[3] =    Tank Gallons
+* payload[4] =    Tank Percent Full
+* payload[5] =    Current Sensor  1 Value
+* payload[6] =    Current Sensor  2 Value
+* payload[7] =    Current Sensor  3 Value
+* payload[8] =    Current Sensor  4 Value
+* payload[9] =    Firmware Version of ESP
+* payload[10] =    I2C Fault Count
+* payload[11] =    Cycle Count
+* payload[12] =    Ambient Temperature
+* payload[13] =    Float State 1
+* payload[14] =    Float State 2
+* payload[15] =    Float State 3
+* payload[16] =    Float State 4
+* payload[17] =    Pressure Switch State
+* payload[18] =    House Water Pressure Value
+* payload[19] =     spare
+* payload[20] =     spare
+* payload[21] =     spare
+*/
 
-//#define ADDRESS     "tcp://soldier.cloudmqtt.com:15599"
-//#define mqttPort 15599 
-//#define mqttUser "zerlcpdf"
-//#define mqttPassword  "OyHBShF_g9ya" 
+/* #define SUB_TOPIC  "Monitor Data", monitor_sensor_, len=48
+* payload[0] =     PumpCurrentSense[1];
+* payload[2] =     PumpCurrentSense[2];
+* payload[3] =     PumpCurrentSense[3];
+* payload[4] =     PumpCurrentSense[4];
+* payload[5] =     PumpLedColor[1];
+* payload[6] =     PumpLedColor[2];
+* payload[7] =     PumpLedColor[3];
+* payload[8] =     PumpLedColor[4];
+* payload[9] =     floatstate[1];
+* payload[10] =     floatstate[2];
+* payload[11] =     floatstate[3];
+* payload[12] =     floatstate[4];
+* payload[13] =     floatLedcolor[1];
+* payload[14] =     floatLedcolor[2];
+* payload[15] =     floatLedcolor[3];
+* payload[16] =     floatLedcolor[4];
+* payload[17] =    spare
+* payload[18] =    spare
+* payload[19] =    spare
+* payload[20] =    Pressure LED Color
+* payload[21] =    spare
+* payload[22] =    spare
+* payload[23] =    spare
+* payload[24] =    spare
+*/
 
-#define ADDRESS     "192.168.1.154:1883"
-#define CLIENTID    "Tank Blynker"
-#define TOPIC       "Tank Blynk"
-#define PAYLOAD     "Hello World!"
-#define QOS         0
-#define TIMEOUT     10000L
+/* #define SUB_TOPIC  "Alert Data"
+* payload[0] =    spare
+* payload[2] =    spare
+* payload[3] =    spare
+* payload[4] =    spare
+* payload[5] =    spare
+* payload[6] =    spare
+* payload[7] =    spare
+* payload[8] =    spare
+* payload[9] =    spare
+* payload[10] =    spare
+* payload[11] =    spare
+* payload[12] =    spare
+* payload[13] =    spare
+* payload[14] =    spare
+* payload[15] =    spare
+* payload[16] =    spare
+* payload[17] =    spare
+* payload[18] =    spare
+* payload[19] =    spare
+* payload[20] =    spare
+* payload[21] =    spare
+*/
+
+#define CLIENTID        "Tank Blynker"
+#define SUB_TOPIC_FORM  "Formatted Sensor Data", formatted_sensor_, len=88
+#define SUB_TOPIC_MONI  "Monitor Data", monitor_sensor_, len=48
+#define SUB_TOPIC_AlER  "Alert Data"
 
 float blynk_payload [30];
 
-unsigned int controlWord1 = 0;
-unsigned int controlWord2 = 0;
-unsigned int controlWord3 = 0;
-unsigned int controlWord = 0;
-unsigned int controlWordLast = 0;
-
-volatile MQTTClient_deliveryToken deliveredtoken;
-
+MQTTClient_deliveryToken deliveredtoken;
 BlynkTimer tmr;
+
 void delivered(void *context, MQTTClient_deliveryToken dt)
 {
-    printf("Message with token value %d delivery confirmed\n", dt);
+    //printf("Message with token value %d delivery confirmed\n", dt);
     deliveredtoken = dt;
+}
+
+int format_msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message)
+{
+    time_t t;
+    time(&t);
+    int i;
+    unsigned short int raw_data_payload[SUB_TOPIC_LEN] ;
+    unsigned short int* payloadptr;
+    
+    
+    //printf("Message From: ");
+    //printf("topic: %s\n", topicName);
+    
+    if (message->payloadlen != 0) {
+        payloadptr = message->payload;
+        for(i=0; i < (message->payloadlen/2); i++)
+        {
+            raw_data_payload[i] = *payloadptr++ ;
+            //printf("%0d ", raw_data_payload[i]);
+        }
+        //printf("%0X ", raw_data_payload[21]);
+        //printf("%s", ctime(&t));
+        printf(". ");
+        MQTTClient_freeMessage(&message);
+        MQTTClient_free(topicName);
+        
+        for ( i=0; i<=20; i++) {
+            data_payload[i] = raw_data_payload[i];
+        }
+    }
+    return 1;
+}
+int monitor_msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message)
+{
+    time_t t;
+    time(&t);
+    int i;
+    unsigned short int raw_data_payload[SUB_TOPIC_LEN] ;
+    unsigned short int* payloadptr;
+    
+    
+    //printf("Message From: ");
+    //printf("topic: %s\n", topicName);
+    
+    if (message->payloadlen != 0) {
+        payloadptr = message->payload;
+        for(i=0; i < (message->payloadlen/2); i++)
+        {
+            raw_data_payload[i] = *payloadptr++ ;
+            //printf("%0d ", raw_data_payload[i]);
+        }
+        //printf("%0X ", raw_data_payload[21]);
+        //printf("%s", ctime(&t));
+        printf(". ");
+        MQTTClient_freeMessage(&message);
+        MQTTClient_free(topicName);
+        
+        for ( i=0; i<=20; i++) {
+            data_payload[i] = raw_data_payload[i];
+        }
+    }
+    return 1;
+}
+int alert_msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message)
+{
+    time_t t;
+    time(&t);
+    int i;
+    unsigned short int raw_data_payload[SUB_TOPIC_LEN] ;
+    unsigned short int* payloadptr;
+    
+    
+    //printf("Message From: ");
+    //printf("topic: %s\n", topicName);
+    
+    if (message->payloadlen != 0) {
+        payloadptr = message->payload;
+        for(i=0; i < (message->payloadlen/2); i++)
+        {
+            raw_data_payload[i] = *payloadptr++ ;
+            //printf("%0d ", raw_data_payload[i]);
+        }
+        //printf("%0X ", raw_data_payload[21]);
+        //printf("%s", ctime(&t));
+        printf(". ");
+        MQTTClient_freeMessage(&message);
+        MQTTClient_free(topicName);
+        
+        for ( i=0; i<=20; i++) {
+            data_payload[i] = raw_data_payload[i];
+        }
+    }
+    return 1;
 }
 
 void connlost(void *context, char *cause)
@@ -64,31 +211,10 @@ void connlost(void *context, char *cause)
     printf("\nConnection lost\n");
     printf("     cause: %s\n", cause);
 }
-int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message)
-{
-    int i;
-    float* payloadptr;
-    
-    
-    printf("Recv Data Arrived - Topic Name: %s Payload length: %d\n", topicName, message->payloadlen);
-    
-    if (message->payloadlen != 0) {
-        
-        //printf("Subscriber Data Payload: ");
-        payloadptr = (float *)message->payload;
-        for(i=0; i < (message->payloadlen/4); i++)
-        {
-            blynk_payload[i] = *payloadptr++ ;
-            printf("%f ", blynk_payload[i]);
-        }
-        printf("\n");
-        MQTTClient_freeMessage(&message);
-        MQTTClient_free(topicName);
-    }
-    
-    return 1;
-}
-MQTTClient client;
+
+MQTTClient format_client;
+MQTTClient monitor_client;
+MQTTClient alert_client;
 
 void setup_mqtt()
 {
@@ -96,7 +222,7 @@ void setup_mqtt()
     int rc;
     int ch;
     
-    rc = MQTTClient_create(&client, ADDRESS, CLIENTID,
+    rc = MQTTClient_create(&format_client, ADDRESS, CLIENTID,
                            MQTTCLIENT_PERSISTENCE_NONE, NULL);
     if (rc != 0)    {
         printf("Failed to create client, return code %d\n", rc);
@@ -106,7 +232,7 @@ void setup_mqtt()
     conn_opts.cleansession = 0;
     //conn_opts.username = mqttUser;
     //conn_opts.password = mqttPassword;
-    MQTTClient_setCallbacks(client, NULL,connlost, msgarrvd, delivered);
+    MQTTClient_setCallbacks(format_client, NULL,connlost, form_msgarrvd, delivered);
     printf("Is Client Already Connected: %d\n",MQTTClient_isConnected(client));
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
     {
@@ -114,14 +240,63 @@ void setup_mqtt()
         exit(EXIT_FAILURE);
     }
     printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
-           "Press Q<Enter> to quit\n\n", TOPIC, CLIENTID, QOS);
-    rc = MQTTClient_subscribe(client, TOPIC, QOS);
+           "Press Q<Enter> to quit\n\n", SUB_TOPIC_FORM, CLIENTID, QOS);
+    rc = MQTTClient_subscribe(format_client, SUB_TOPIC_FORM, QOS);
     if (rc != 0)    {
         printf("Failed to subscribe, return code %d\n", rc);
         exit(EXIT_FAILURE);
     }
     
+    rc = MQTTClient_create(&monitor_client, ADDRESS, CLIENTID,
+                           MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    if (rc != 0)    {
+        printf("Failed to create client, return code %d\n", rc);
+        exit(EXIT_FAILURE);
+    }
+    conn_opts.keepAliveInterval = 20;
+    conn_opts.cleansession = 0;
+    //conn_opts.username = mqttUser;
+    //conn_opts.password = mqttPassword;
+    MQTTClient_setCallbacks(monitor_client, NULL,connlost, monitor_msgarrvd, delivered);
+    printf("Is Client Already Connected: %d\n",MQTTClient_isConnected(client));
+    if ((rc = MQTTClient_connect(monitor_client, &conn_opts)) != MQTTCLIENT_SUCCESS)
+    {
+        printf("Failed to connect, return code %d\n", rc);
+        exit(EXIT_FAILURE);
+    }
+    printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
+           "Press Q<Enter> to quit\n\n", SUB_TOPIC_MONI, CLIENTID, QOS);
     
+    rc = MQTTClient_subscribe(monitor_client, TOPIC, QOS);
+    if (rc != 0)    {
+        printf("Failed to subscribe, return code %d\n", rc);
+        exit(EXIT_FAILURE);
+    }
+    
+    rc = MQTTClient_create(&alert_client, ADDRESS, CLIENTID,
+                           MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    if (rc != 0)    {
+        printf("Failed to create client, return code %d\n", rc);
+        exit(EXIT_FAILURE);
+    }
+    conn_opts.keepAliveInterval = 20;
+    conn_opts.cleansession = 0;
+    //conn_opts.username = mqttUser;
+    //conn_opts.password = mqttPassword;
+    MQTTClient_setCallbacks(alert_client, NULL,connlost, alert_msgarrvd, delivered);
+    printf("Is Client Already Connected: %d\n",MQTTClient_isConnected(client));
+    if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
+    {
+        printf("Failed to connect, return code %d\n", rc);
+        exit(EXIT_FAILURE);
+    }
+    printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
+           "Press Q<Enter> to quit\n\n", SUB_TOPIC_ALER, CLIENTID, QOS);
+    rc = MQTTClient_subscribe(alert_client, SUB_TOPIC_ALER, QOS);
+    if (rc != 0)    {
+        printf("Failed to subscribe, return code %d\n", rc);
+        exit(EXIT_FAILURE);
+    }
     //return rc;
 }
 BLYNK_WRITE(V1)
@@ -185,17 +360,6 @@ BLYNK_WRITE(V18) {
             printf("Unknown item selected\n");
     }
 }
-void setup()
-{
-    printf("Connecting to Blynk: %s, %s, %d\n", serv, auth, port);
-    Blynk.begin(auth, serv, port);
-    /*
-     tmr.setInterval(1000, [](){
-     Blynk.virtualWrite(V0, BlynkMillis()/1000);
-     });
-     */
-}
-
 
 void loop()
 {
@@ -270,7 +434,6 @@ void loop()
     tmr.run();
 }
 
-
 int main(int argc, char* argv[])
 {
     //parse_options(argc, argv, auth, serv, port);
@@ -281,13 +444,14 @@ int main(int argc, char* argv[])
     char* topicNamePtr;
     int  topicLen;
     int* topicLenPtr;
-    MQTTClient_message message;
-    MQTTClient_message* messagePtr;
-    messagePtr = &message;
-    topicNamePtr = topicName;
-    topicLenPtr = &topicLen;
+    MQTTClient client;
+    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+    MQTTClient_message pubmsg = MQTTClient_message_initializer;
+    MQTTClient_deliveryToken token;
     
-    setup();
+    printf("Connecting to Blynk: %s, %s, %d\n", serv, auth, port);
+    Blynk.begin(auth, serv, port);
+    
     setup_mqtt();
     
     while(true) {
