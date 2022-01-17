@@ -59,9 +59,7 @@
 * payload[21] =     spare
 */
 
-#define CLIENTID    "Tank Monitor"
-#define PUB_TOPIC   "Monitor Data"
-#define PUB_TOPIC_LEN 48
+
 #define SUB_TOPIC   "Formatted Sensor Data"
 #define SUB_TOPIC_LEN 88
 
@@ -149,7 +147,7 @@ int main(int argc, char* argv[])
     MQTTClient_deliveryToken token;
     int rc;
     
-    if ((rc = MQTTClient_create(&client, ADDRESS, CLIENTID,
+    if ((rc = MQTTClient_create(&client, ADDRESS, M_CLIENTID,
                                 MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
     {
         printf("Failed to create client, return code %d\n", rc);
@@ -174,7 +172,7 @@ int main(int argc, char* argv[])
         rc = EXIT_FAILURE;
         exit(EXIT_FAILURE);
     }
-    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", SUB_TOPIC, CLIENTID, QOS);
+    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", SUB_TOPIC, M_CLIENTID, QOS);
     
     MQTTClient_subscribe(client, SUB_TOPIC, QOS);
     
@@ -331,11 +329,11 @@ int main(int argc, char* argv[])
         printf("%s", ctime(&t));
 
         pubmsg.payload = monitor_sensor_payload;
-        pubmsg.payloadlen = PUB_TOPIC_LEN;
+        pubmsg.payloadlen = M_LEN;
         pubmsg.qos = QOS;
         pubmsg.retained = 0;
         deliveredtoken = 0;
-        if ((rc = MQTTClient_publishMessage(client, PUB_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
+        if ((rc = MQTTClient_publishMessage(client, M_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
         {
             printf("Failed to publish message, return code %d\n", rc);
             rc = EXIT_FAILURE;

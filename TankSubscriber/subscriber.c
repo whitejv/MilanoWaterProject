@@ -58,11 +58,11 @@
 * payload[21] =     spare
 */
 
-#define CLIENTID    "Tank Subscriber"
-#define PUB_TOPIC   "Formatted Sensor Data"
-#define PUB_TOPIC_LEN 88
 #define SUB_TOPIC   "Tank ESP"
 #define SUB_TOPIC_LEN 21
+
+
+
 
 
 MQTTClient_deliveryToken deliveredtoken;
@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
     MQTTClient_deliveryToken token;
     int rc;
     
-    if ((rc = MQTTClient_create(&client, ADDRESS, CLIENTID,
+    if ((rc = MQTTClient_create(&client, ADDRESS, F_CLIENTID,
                                 MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
     {
         printf("Failed to create client, return code %d\n", rc);
@@ -181,7 +181,7 @@ int main(int argc, char* argv[])
         rc = EXIT_FAILURE;
         exit(EXIT_FAILURE);
     }
-    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", SUB_TOPIC, CLIENTID, QOS);
+    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", SUB_TOPIC, F_CLIENTID, QOS);
     
     MQTTClient_subscribe(client, SUB_TOPIC, QOS);
     
@@ -312,17 +312,17 @@ int main(int argc, char* argv[])
         /*
          * Load Up the Payload
          */
-        for (i=0; i<=17; i++) {
+        for (i=0; i<=F_LEN; i++) {
             printf("%.3f ", formatted_sensor_payload[i]);
         }
         printf("%s", ctime(&t));
         
         pubmsg.payload = formatted_sensor_payload;
-        pubmsg.payloadlen = PUB_TOPIC_LEN;
+        pubmsg.payloadlen = F_LEN * 4;
         pubmsg.qos = QOS;
         pubmsg.retained = 0;
         deliveredtoken = 0;
-        if ((rc = MQTTClient_publishMessage(client, PUB_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
+        if ((rc = MQTTClient_publishMessage(client, F_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
         {
             printf("Failed to publish message, return code %d\n", rc);
             rc = EXIT_FAILURE;

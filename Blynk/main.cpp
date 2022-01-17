@@ -489,6 +489,8 @@ int main(int argc, char* argv[])
          */
         controlWord = controlWord1 | (controlWord2 << 2) | (controlWord3 << 4);
         //printf("controlWord: %0x\n", controlWord);
+        
+        
         if (controlWord != controlWordLast) {
             MQTTClient_message pubmsg = MQTTClient_message_initializer;
             MQTTClient_deliveryToken token;
