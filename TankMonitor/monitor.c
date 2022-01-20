@@ -61,8 +61,9 @@
 
 
 #define SUB_TOPIC   "Formatted Sensor Data"
-#define SUB_TOPIC_LEN 88
+#define SUB_TOPIC_LEN 21
 
+int mon_data_payload[22] ;
 
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
@@ -81,28 +82,33 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
     time_t t;
     time(&t);
     int i;
-    unsigned short int raw_data_payload[SUB_TOPIC_LEN] ;
-    unsigned short int* payloadptr;
-
+    float  raw_data_payload[SUB_TOPIC_LEN] ;
+    float* payloadptr;
+      
+    //printf("Message arrived:\n");
+    //printf("          topic: %s  ", topicName);
+    //printf("         length: %d  ", topicLen);
+    //printf("     PayloadLen: %d\n", message->payloadlen);
+    //printf("message: ");
     
-    //printf("Message From: ");
-    //printf("topic: %s\n", topicName);
-    
+   
     if (message->payloadlen != 0) {
-        payloadptr = message->payload;
-        for(i=0; i < (message->payloadlen/2); i++)
-        {
-            raw_data_payload[i] = *payloadptr++ ;
-            //printf("%0d ", raw_data_payload[i]);
-        }
-        //printf("%0X ", raw_data_payload[21]);
-        //printf("%s", ctime(&t));
-        printf(".");
+         if ( F_LEN*4 == message->payloadlen) {
+            payloadptr = (float *)message->payload;
+            for(i=0; i < (message->payloadlen/4); i++)
+            {
+               raw_data_payload[i] = *payloadptr++ ;
+               //printf("%0f ", raw_data_payload[i]);
+             }
+         }
+         //printf("%0X ", raw_data_payload[21]);
+         //printf("%s", ctime(&t));
+         printf(".");
         MQTTClient_freeMessage(&message);
         MQTTClient_free(topicName);
         
-        for ( i=0; i<=20; i++) {
-            data_payload[i] = raw_data_payload[i];
+        for ( i=0; i<=M_LEN; i++) {
+            mon_data_payload[i] = (int)raw_data_payload[i];
         }
     }
     return 1;
@@ -185,7 +191,7 @@ int main(int argc, char* argv[])
         time(&t);
 
         // Channel 2 Voltage Sensor 16 bit data
-        raw_voltage1_adc = (int16_t) data_payload[4];
+        raw_voltage1_adc = mon_data_payload[4];
         if (raw_voltage1_adc > 2500) {
             Pump1State = 1;
             PumpCurrentSense[1] = 255;
@@ -198,7 +204,7 @@ int main(int argc, char* argv[])
             PumpLedColor[1] = GREEN ; }
         
         // Channel 3 Voltage Sensor 16 bit data
-        raw_voltage2_adc = (int16_t) data_payload[5];
+        raw_voltage2_adc = mon_data_payload[5];
         //printf("voltage ch 2: %d\n", raw_voltage2_adc);
         if (raw_voltage2_adc > 500){
             Pump2State = 1;
@@ -212,7 +218,7 @@ int main(int argc, char* argv[])
             PumpLedColor[2] = GREEN ; }
         
         // Channel 4 Voltage Sensor 16 bit data
-        raw_voltage3_adc = (int16_t) data_payload[6];
+        raw_voltage3_adc = mon_data_payload[6];
         if (raw_voltage3_adc > 500){
             Pump3State = 1;
             PumpCurrentSense[3] = 255;
@@ -226,7 +232,7 @@ int main(int argc, char* argv[])
         
         // MCP3428 #2 Channel 4 Voltage Sensor 16 bit data
         
-        raw_voltage4_adc = (int16_t) data_payload[7];
+        raw_voltage4_adc = mon_data_payload[7];
         if (raw_voltage4_adc > 500){
             Pump4State = 1;
             PumpCurrentSense[4] = 255;
@@ -242,11 +248,11 @@ int main(int argc, char* argv[])
          * Convert the Discrete data
          */
         
-        Float100State  = data_payload[12] ;
-        Float90State   = data_payload[13] ;
-        Float50State   = data_payload[14] ;
-        Float25State   = data_payload[15] ;
-        PressSwitState = data_payload[16] ;
+        Float100State  = mon_data_payload[12] ;
+        Float90State   = mon_data_payload[13] ;
+        Float50State   = mon_data_payload[14] ;
+        Float25State   = mon_data_payload[15] ;
+        PressSwitState = mon_data_payload[16] ;
         
         if (Float100State == 1){
             floatstate[1] = 255;
@@ -287,7 +293,7 @@ int main(int argc, char* argv[])
         
         /*
          * Set Firmware Version
-         * firmware = data_payload[20] & SubFirmware;
+         * firmware = mon_data_payload[20] & SubFirmware;
          */
         
         /*
@@ -296,40 +302,37 @@ int main(int argc, char* argv[])
         
         /* CLIENTID     "Tank Subscriber", TOPIC "Monitor Data", monitor_sensor_ */
         monitor_sensor_payload[0] =     PumpCurrentSense[1];
-        monitor_sensor_payload[2] =     PumpCurrentSense[2];
-        monitor_sensor_payload[3] =     PumpCurrentSense[3];
-        monitor_sensor_payload[4] =     PumpCurrentSense[4];
-        monitor_sensor_payload[5] =     PumpLedColor[1];
-        monitor_sensor_payload[6] =     PumpLedColor[2];
-        monitor_sensor_payload[7] =     PumpLedColor[3];
-        monitor_sensor_payload[8] =     PumpLedColor[4];
-        monitor_sensor_payload[9] =     floatstate[1];
-        monitor_sensor_payload[10] =     floatstate[2];
-        monitor_sensor_payload[11] =     floatstate[3];
-        monitor_sensor_payload[12] =     floatstate[4];
-        monitor_sensor_payload[13] =     floatLedcolor[1];
-        monitor_sensor_payload[14] =     floatLedcolor[2];
-        monitor_sensor_payload[15] =     floatLedcolor[3];
-        monitor_sensor_payload[16] =     floatLedcolor[4];
-        //monitor_sensor_payload[17] =    spare
-        //monitor_sensor_payload[18] =    spare
-        //monitor_sensor_payload[19] =    spare
-        //monitor_sensor_payload[20] =    Pressure LED Color
-        //monitor_sensor_payload[21] =    spare
-        //monitor_sensor_payload[22] =    spare
-        //monitor_sensor_payload[23] =    spare
-        //monitor_sensor_payload[24] =    spare
+        monitor_sensor_payload[1] =     PumpCurrentSense[2];
+        monitor_sensor_payload[2] =     PumpCurrentSense[3];
+        monitor_sensor_payload[3] =     PumpCurrentSense[4];
+        monitor_sensor_payload[4] =     PumpLedColor[1];
+        monitor_sensor_payload[5] =     PumpLedColor[2];
+        monitor_sensor_payload[6] =     PumpLedColor[3];
+        monitor_sensor_payload[7] =     PumpLedColor[4];
+        monitor_sensor_payload[8] =     floatstate[1];
+        monitor_sensor_payload[9] =     floatstate[2];
+        monitor_sensor_payload[10] =    floatstate[3];
+        monitor_sensor_payload[11] =    floatstate[4];
+        monitor_sensor_payload[12] =    floatLedcolor[1];
+        monitor_sensor_payload[13] =    floatLedcolor[2];
+        monitor_sensor_payload[14] =    floatLedcolor[3];
+        monitor_sensor_payload[15] =    floatLedcolor[4];
+        monitor_sensor_payload[16] =    0;
+        monitor_sensor_payload[17] =    0;
+        monitor_sensor_payload[18] =    pressState;
+        monitor_sensor_payload[19] =    pressLedColor;
+
         
         /*
          * Load Up the Payload
          */
-        for (i=0; i<=17; i++) {
+        for (i=0; i<=M_LEN; i++) {
             printf("%0x ", monitor_sensor_payload[i]);
         }
         printf("%s", ctime(&t));
 
         pubmsg.payload = monitor_sensor_payload;
-        pubmsg.payloadlen = M_LEN;
+        pubmsg.payloadlen = M_LEN * 4;
         pubmsg.qos = QOS;
         pubmsg.retained = 0;
         deliveredtoken = 0;
