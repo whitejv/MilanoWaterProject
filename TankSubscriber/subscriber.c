@@ -61,10 +61,6 @@
 #define SUB_TOPIC   "Tank ESP"
 #define SUB_TOPIC_LEN 21
 
-
-
-
-
 MQTTClient_deliveryToken deliveredtoken;
 
 void delivered(void *context, MQTTClient_deliveryToken dt)
