@@ -9,7 +9,7 @@
 CC ?= gcc
 CXX ?= g++
 CXXFLAGS += -I ../../blynk-library/linux -I ../../blynk-library/src -I ./ -DLINUX
-LDFLAGS += -lrt -lpthread -lpaho-mqtt3c
+LDFLAGS += -lrt -lpthread -lpaho-mqtt3c -lpaho-mqtt3a
 
 ifeq ($(build),debug)
 	CXXFLAGS += -c -g2 -O0 \
