@@ -7,12 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		850AB30D27A0B07D00471831 /* alert.c in Sources */ = {isa = PBXBuildFile; fileRef = 850AB30C27A0B07D00471831 /* alert.c */; };
+		850AB31127A0B0E600471831 /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 850AB31027A0B0E600471831 /* Makefile */; };
 		851C3E47277120C5008B07D4 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 851C3E46277120C5008B07D4 /* main.c */; };
 		8555E71E27739111002B3402 /* monitor.c in Sources */ = {isa = PBXBuildFile; fileRef = 8555E71D27739111002B3402 /* monitor.c */; };
 		8555E72B2774F73C002B3402 /* subscriber.c in Sources */ = {isa = PBXBuildFile; fileRef = 8555E72A2774F73C002B3402 /* subscriber.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		850AB31427A1958B00471831 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		851C3E41277120C5008B07D4 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -43,6 +54,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		850AB30C27A0B07D00471831 /* alert.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = alert.c; sourceTree = "<group>"; };
+		850AB31027A0B0E600471831 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		850AB31627A1958B00471831 /* TankAlert */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TankAlert; sourceTree = BUILT_PRODUCTS_DIR; };
 		851C3E43277120C5008B07D4 /* MilanoWaterProject */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MilanoWaterProject; sourceTree = BUILT_PRODUCTS_DIR; };
 		851C3E46277120C5008B07D4 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		8555E6FF27736C32002B3402 /* TankESPClient */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TankESPClient; sourceTree = "<group>"; };
@@ -60,6 +74,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		850AB31327A1958B00471831 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		851C3E40277120C5008B07D4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -84,9 +105,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		850AB30B27A0AFB700471831 /* TankAlert */ = {
+			isa = PBXGroup;
+			children = (
+				850AB31027A0B0E600471831 /* Makefile */,
+			);
+			path = TankAlert;
+			sourceTree = "<group>";
+		};
+		850AB31727A1958B00471831 /* TankAlert */ = {
+			isa = PBXGroup;
+			children = (
+				850AB30C27A0B07D00471831 /* alert.c */,
+			);
+			path = TankAlert;
+			sourceTree = "<group>";
+		};
 		851C3E3A277120C5008B07D4 = {
 			isa = PBXGroup;
 			children = (
+				850AB30B27A0AFB700471831 /* TankAlert */,
 				8555E70127736C33002B3402 /* Blynk */,
 				8555E70427736C33002B3402 /* cronchk.sh */,
 				8555E70327736C33002B3402 /* crontab.file */,
@@ -98,6 +136,7 @@
 				851C3E45277120C5008B07D4 /* MilanoWaterProject */,
 				8555E717277390C8002B3402 /* TankMonitor */,
 				8555E7242774F6F7002B3402 /* TankSubscriber */,
+				850AB31727A1958B00471831 /* TankAlert */,
 				851C3E44277120C5008B07D4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -108,6 +147,7 @@
 				851C3E43277120C5008B07D4 /* MilanoWaterProject */,
 				8555E716277390C8002B3402 /* TankMonitor */,
 				8555E7232774F6F7002B3402 /* TankSubscriber */,
+				850AB31627A1958B00471831 /* TankAlert */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -139,6 +179,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		850AB31527A1958B00471831 /* TankAlert */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 850AB31A27A1958C00471831 /* Build configuration list for PBXNativeTarget "TankAlert" */;
+			buildPhases = (
+				850AB31227A1958B00471831 /* Sources */,
+				850AB31327A1958B00471831 /* Frameworks */,
+				850AB31427A1958B00471831 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TankAlert;
+			productName = TankAlert;
+			productReference = 850AB31627A1958B00471831 /* TankAlert */;
+			productType = "com.apple.product-type.tool";
+		};
 		851C3E42277120C5008B07D4 /* MilanoWaterProject */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 851C3E4A277120C5008B07D4 /* Build configuration list for PBXNativeTarget "MilanoWaterProject" */;
@@ -200,6 +257,9 @@
 				LastSwiftUpdateCheck = 1320;
 				LastUpgradeCheck = 1320;
 				TargetAttributes = {
+					850AB31527A1958B00471831 = {
+						CreatedOnToolsVersion = 13.2.1;
+					};
 					851C3E42277120C5008B07D4 = {
 						CreatedOnToolsVersion = 13.2.1;
 					};
@@ -227,16 +287,26 @@
 				851C3E42277120C5008B07D4 /* MilanoWaterProject */,
 				8555E715277390C8002B3402 /* TankMonitor */,
 				8555E7222774F6F7002B3402 /* TankSubscriber */,
+				850AB31527A1958B00471831 /* TankAlert */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		850AB31227A1958B00471831 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		851C3E3F277120C5008B07D4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				850AB30D27A0B07D00471831 /* alert.c in Sources */,
 				851C3E47277120C5008B07D4 /* main.c in Sources */,
+				850AB31127A0B0E600471831 /* Makefile in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -259,6 +329,26 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		850AB31B27A1958C00471831 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_STYLE = Automatic;
+				MACOSX_DEPLOYMENT_TARGET = 12.1;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		850AB31C27A1958C00471831 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_STYLE = Automatic;
+				MACOSX_DEPLOYMENT_TARGET = 12.1;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		851C3E48277120C5008B07D4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -440,6 +530,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		850AB31A27A1958C00471831 /* Build configuration list for PBXNativeTarget "TankAlert" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				850AB31B27A1958C00471831 /* Debug */,
+				850AB31C27A1958C00471831 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		851C3E3E277120C5008B07D4 /* Build configuration list for PBXProject "MilanoWaterProject" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
