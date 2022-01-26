@@ -25,7 +25,7 @@ LFLAGS = -L../lib -L../lib -L../../../paho.mqtt.c-master/build -L../../../json-c
 LIBS = -lm -lpaho-mqtt3c -lpaho-mqtt3a
 
 # define the C source files
-SRCS = monitor.c
+SRCS = alert.c
 
 # define the C object files 
 #
@@ -38,7 +38,7 @@ SRCS = monitor.c
 OBJS = $(SRCS:.c=.o)
 
 # define the executable file 
-MAIN = ../bin/monitor
+MAIN = ../bin/alert
 
 #
 # The following part of the makefile is generic; it can be used to 
@@ -69,11 +69,6 @@ depend: $(SRCS)
 
 # DO NOT DELETE THIS LINE -- make depend needs it
 
-monitor.o: /usr/include/stdio.h /usr/include/stdlib.h /usr/include/string.h
-monitor.o: /usr/include/math.h /usr/include/time.h /usr/include/features.h
-monitor.o: /usr/include/stdc-predef.h /usr/include/unistd.h
-monitor.o: ../../../paho.mqtt.c-master/src/MQTTClient.h
-monitor.o: ../../../paho.mqtt.c-master/src/MQTTProperties.h
-monitor.o: ../../../paho.mqtt.c-master/src/MQTTReasonCodes.h
-monitor.o: ../../../paho.mqtt.c-master/src/MQTTSubscribeOpts.h
-monitor.o: ../../../paho.mqtt.c-master/src/MQTTClientPersistence.h
+alert.o: /usr/include/stdio.h /usr/include/stdlib.h /usr/include/string.h
+alert.o: /usr/include/time.h /usr/include/features.h
+alert.o: /usr/include/stdc-predef.h ../include/water.h
