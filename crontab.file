@@ -11,4 +11,4 @@
 # For more information see the manual pages of crontab(5) and cron(8)
 # 
 # m h  dom mon dow   command
-@reboot sleep 20 && bash  /home/pi/CodeDev/MilanoWaterProject/h2o.sh
+@reboot sleep 20 && bash  /home/pi/MilanoWaterProject/h2o.sh
