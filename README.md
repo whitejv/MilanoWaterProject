@@ -3,8 +3,10 @@
 This project provides IOT control and monitoring of my home water system.
 
 To Use Remote Shell to Install
+
 --> Open Terminal on Mac/Windows/Raspberry PI/Linus
---> Login to Target:  
+--> Login to Target:  ssh pi@raspi.local
+--> Password: raspberry
 
 
 Intsall Git (if using Rapi-Lite)
