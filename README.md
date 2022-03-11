@@ -2,6 +2,11 @@
 
 This project provides IOT control and monitoring of my home water system.
 
+To Use Remote Shell to Install
+--> Open Terminal on Mac/Windows/Raspberry PI/Linus
+--> Login to Target:  
+
+
 Intsall Git (if using Rapi-Lite)
 
 --> sudo apt install git
