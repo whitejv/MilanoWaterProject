@@ -1,4 +1,9 @@
 
+#define BLYNK_TEMPLATE_ID "TMPLrWkZjlCS"
+#define BLYNK_DEVICE_NAME "Villa Milano Home"
+#define BLYNK_AUTH_TOKEN "qGKZG9ptI-uLjGEG9y_8BSaTDunwLEQM"
+//#define BLYNK_AUTH_TOKEN "50z7wkVf3LuA1G8_5QGjVn54lllSnpG3";
+
 #define BLYNK_DEBUG
 //#define BLYNK_PRINT stdout
 #ifdef RASPBERRY
@@ -9,11 +14,12 @@
 #include <BlynkSocket.h>
 #include <BlynkOptionsParser.h>
 
+
 static BlynkTransportSocket _blynkTransport;
 BlynkSocket Blynk(_blynkTransport);
-static const char serv[] = "blynk-cloud.com";
-static const char auth[] = "50z7wkVf3LuA1G8_5QGjVn54lllSnpG3";
-static uint16_t port = 8442;
+static const char serv[] = "blynk.cloud";
+static const char auth[] = BLYNK_AUTH_TOKEN;
+static uint16_t port = 80;
 
 #include <BlynkWidgets.h>
 #include <stdio.h>
@@ -260,7 +266,11 @@ int main(int argc, char* argv[])
                 exit(EXIT_FAILURE);
         }
         printf("Connecting to Blynk: %s, %s, %d\n", serv, auth, port);
+        
+        //parse_options(argc, argv, auth, serv, port);
         Blynk.begin(auth, serv, port);
+
+
 
         while(true) {
        
