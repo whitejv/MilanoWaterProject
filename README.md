@@ -61,8 +61,13 @@ Install the Project
 --> cd TankSubscriber
 --> make depend
 --> make
---> cd ../blynk
+--> cd TankMonitor
+--> make depend
+--> make
+--> cd ../Blynk
 --> make target=raspberry
+--> cd ../bin
+--> ls -al (check the dates)
 
 Add to Cron for Start on Reboot
 
