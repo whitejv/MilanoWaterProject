@@ -167,3 +167,25 @@ struct pump
    float TotalFlow;       //gallons
    int TimestampOn;       //timestamp
 };
+
+struct pump Pump[NPumps+1];     //Add 1 so that I can start at 1,2,3 not 0
+
+/*
+ *  Pump Run Count and Run Time
+ */
+                
+struct PumpStats
+{
+   int PumpOn;            //TRUE - Pump is in On state
+   int PumpOnTimeStamp;   //Time Stamp Last Time Pump Was Running
+   int PumpLastState;     //Pump on/off Last Time Checked
+   int RunCount;          //Number of Pump Cycles in 24 hours
+   int RunTime;           //Run Time in Seconds in 24 Hours
+};
+
+struct PumpStats      MyPumpStats[NPumps+1];// = {  0,0,0,0,0,            //Add 1 so that I can refer to pumps starting with 1,2,3,4 and not 0
+                                             //     0,0,0,0,0,
+                                             //     0,0,0,0,0,
+                                             //     0,0,0,0,0,
+                                            //      0,0,0,0,0 };
+                
