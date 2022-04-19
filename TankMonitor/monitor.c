@@ -85,11 +85,11 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
     float  raw_data_payload[SUB_TOPIC_LEN] ;
     float* payloadptr;
       
-    //printf("Message arrived:\n");
-    //printf("          topic: %s  ", topicName);
-    //printf("         length: %d  ", topicLen);
-    //printf("     PayloadLen: %d\n", message->payloadlen);
-    //printf("message: ");
+    printf("Message arrived:\n");
+    printf("          topic: %s  ", topicName);
+    printf("         length: %d  ", topicLen);
+    printf("     PayloadLen: %d\n", message->payloadlen);
+    printf("message: ");
     
    
     if (message->payloadlen != 0) {
@@ -122,11 +122,13 @@ void connlost(void *context, char *cause)
  
 int main(int argc, char* argv[])
 {
-    struct pump Pump[NPumps+1];     //Add 1 so that I can start at 1,2,3 not 0
-    int PumpControlWord = 0 ;
-    int i;
+    int i=0;
+    int j=0;
     time_t t;
+    struct tm timenow;
     time(&t);
+    int SecondsFromMidnight = 0 ;
+    int PriorSecondsFromMidnight =0;
     int Pump1State = 0;
     int Pump2State = 0;
     int Pump3State = 0;
@@ -189,7 +191,33 @@ int main(int argc, char* argv[])
     while(1)
     {
         time(&t);
-
+        localtime_r(&t, &timenow);
+        
+        /*
+         * Check the time and see if we passed midnight
+         * if we have then reset data like MyPumpStats to 0 for a new day
+         */
+        
+        SecondsFromMidnight = (timenow.tm_hour * 60 * 60) + (timenow.tm_min * 60) + timenow.tm_sec ;
+        if (SecondsFromMidnight < PriorSecondsFromMidnight) {
+            for (j=1; j<=NPumps; j++) {
+                MyPumpStats[j].PumpOn = 0;
+                MyPumpStats[j].PumpOnTimeStamp = 0;
+                MyPumpStats[j].PumpLastState=0;
+                MyPumpStats[j].RunCount=0;
+                MyPumpStats[j].RunTime=0;
+            }
+        }
+        printf("seconds since midnight: %d\n", SecondsFromMidnight);
+        PriorSecondsFromMidnight = SecondsFromMidnight ;
+        
+        
+        
+        /*
+         * Compute Monitor Values Based on Inputs from
+         * Sensor Data and Format for easy use with Blynk
+         */
+        
         // Channel 2 Voltage Sensor 16 bit data
         raw_voltage1_adc = mon_data_payload[4];
         if (raw_voltage1_adc > 2500) {
@@ -291,6 +319,29 @@ int main(int argc, char* argv[])
         
         // printf("Hi FLoat: %x  Low Float: %x\n", HighFloatState, LowFloatState) ;
         
+        /*
+         * Compute Pump Stats for each pump
+         */
+        for (j=1; j<=NPumps; j++) {
+            MyPumpStats[j].PumpOn = Pump[j].PumpPower;
+            if (MyPumpStats[j].PumpOn == ON) { 
+                //MyPumpStats[j].PumpOnTimeStamp = SecondsFromMidnight ;
+            }
+            if (MyPumpStats[j].PumpOn == ON && MyPumpStats[j].PumpLastState == OFF) {
+                MyPumpStats[j].PumpOnTimeStamp = SecondsFromMidnight ;
+            }
+            if (MyPumpStats[j].PumpOn == OFF && MyPumpStats[j].PumpLastState == ON) {
+                MyPumpStats[j].RunTime += (SecondsFromMidnight - MyPumpStats[j].PumpOnTimeStamp);
+              ++MyPumpStats[j].RunCount;
+            }
+            MyPumpStats[j].PumpLastState = MyPumpStats[j].PumpOn ;
+            printf("MyPumpStats[%0d]  On: %d   TimeStamp: %d   LastState: %d   Count:  %d   Time: %d \n", j, \
+                MyPumpStats[j].PumpOn, \
+                MyPumpStats[j].PumpOnTimeStamp, \
+                MyPumpStats[j].PumpLastState, \
+                MyPumpStats[j].RunCount, \
+                MyPumpStats[j].RunTime) ;
+        }
         /*
          * Set Firmware Version
          * firmware = mon_data_payload[20] & SubFirmware;
