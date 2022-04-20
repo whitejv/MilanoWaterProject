@@ -94,7 +94,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTAsync_message *me
           for(i=0; i<M_LEN; i++)
           {
              monitor_sensor_payload[i] = *i_payloadptr++ ;
-             //printf("%d ", monitor_sensor_payload[i]);
+             //printf("%x ", monitor_sensor_payload[i]);
           }
           printf(": ");
           printf("\n");
@@ -168,6 +168,10 @@ void onConnect(void* context, MQTTAsync_successData* response)
 }
 void loop()
 {
+    u_int32_t  BitPackedPayload = 0;
+    int PumpRunCount[5] ;
+    int floatState[5] ;
+    int floatLedcolor[5] ;
     
     char *ledcolor[] = { "Green", "Blue", "Orange", "Red" } ; // to help with debug print
     
@@ -183,16 +187,42 @@ void loop()
      * Jazz up the basic collors
      */
     //Blynk.setProperty(3, "color", "0x01ffB0"); 
+    
+    /*
+     * Unpack the Data for Some Items
+     */
+      
+      
+      BitPackedPayload = monitor_sensor_payload[8];
+      PumpRunCount[4]=(BitPackedPayload & 0xff000000) >> 24 ;
+      PumpRunCount[3]=(BitPackedPayload & 0x00ff0000) >> 16 ;
+      PumpRunCount[2]=(BitPackedPayload & 0x0000ff00) >>  8 ;
+      PumpRunCount[1]=(BitPackedPayload & 0x000000ff)       ;
+    
+      BitPackedPayload = monitor_sensor_payload[13];
+      floatState[4]=(BitPackedPayload & 0xffff0000) >> 16 ;
+      floatState[3]=(BitPackedPayload & 0x0000ffff) ;
+      BitPackedPayload = monitor_sensor_payload[14];
+      floatState[2]=(BitPackedPayload & 0xffff0000) >>  16;
+      floatState[1]=(BitPackedPayload & 0x0000ffff)       ;
+
+      BitPackedPayload = monitor_sensor_payload[15];
+      floatLedcolor[4]=(BitPackedPayload & 0xff000000) >> 24 ;
+      floatLedcolor[3]=(BitPackedPayload & 0x00ff0000) >> 16 ;
+      floatLedcolor[2]=(BitPackedPayload & 0x0000ff00) >>  8 ;
+      floatLedcolor[1]=(BitPackedPayload & 0x000000ff)       ;
 
                              
     Blynk.setProperty(5, "color", ledcolorPalette[monitor_sensor_payload[4]]);  // Set LED Label to HEX colour
     Blynk.setProperty(6, "color", ledcolorPalette[monitor_sensor_payload[5]]);  // Set LED Label to HEX colour
     Blynk.setProperty(7, "color", ledcolorPalette[monitor_sensor_payload[6]]);  // Set LED Label to HEX colour
-    Blynk.setProperty(12, "color", ledcolorPalette[monitor_sensor_payload[12]]);  // Set LED Label to HEX colour
-    Blynk.setProperty(13, "color", ledcolorPalette[monitor_sensor_payload[13]]);  // Set LED Label to HEX colour
-    Blynk.setProperty(14, "color", ledcolorPalette[monitor_sensor_payload[14]]);  // Set LED Label to HEX colour
-    Blynk.setProperty(15, "color", ledcolorPalette[monitor_sensor_payload[15]]);  // Set LED Label to HEX colour
     Blynk.setProperty(20, "color", ledcolorPalette[monitor_sensor_payload[7]]);  // Set LED Label to HEX colour
+   
+    Blynk.setProperty(12, "color", ledcolorPalette[floatLedcolor[1]]);  // Set LED Label to HEX colour
+    Blynk.setProperty(13, "color", ledcolorPalette[floatLedcolor[2]]);  // Set LED Label to HEX colour
+    Blynk.setProperty(14, "color", ledcolorPalette[floatLedcolor[3]]);  // Set LED Label to HEX colour
+    Blynk.setProperty(15, "color", ledcolorPalette[floatLedcolor[4]]);  // Set LED Label to HEX colour
+    
     Blynk.setProperty(21, "color", ledcolorPalette[monitor_sensor_payload[19]]);  // Set LED Label to HEX colour
     
     Blynk.setProperty(16, "label", pumpMenu[(int)blynk_payload[23]]);
@@ -202,18 +232,18 @@ void loop()
     Blynk.setProperty(17, "labels", "Off", "On", "Auto");
     Blynk.setProperty(18, "labels", "Off", "On", "Auto");
  
-
  /*  
     printf("Pump LED 1 %s  \n",  ledcolor[monitor_sensor_payload[4]]);  // Set LED Label to HEX colour
     printf("Pump LED 2 %s  \n",  ledcolor[monitor_sensor_payload[5]]);  // Set LED Label to HEX colour
     printf("Pump LED 3 %s  \n",  ledcolor[monitor_sensor_payload[6]]);
-    printf("Pump LED 4 %s  \n",  ledcolor[monitor_sensor_payload[7]]); 
-    printf("Float LED 1 %s \n",  ledcolor[monitor_sensor_payload[12]]);
-    printf("Float LED 2 %s \n",  ledcolor[monitor_sensor_payload[13]]);
-    printf("Float LED 3 %s \n",  ledcolor[monitor_sensor_payload[14]]);
-    printf("Float LED 4 %s \n",  ledcolor[monitor_sensor_payload[15]]);
-    printf("Press LED 4 %s \n",  ledcolor[monitor_sensor_payload[19]]); 
-*/   
+    printf("Pump LED 4 %s  \n",  ledcolor[monitor_sensor_payload[7]]);
+  
+    printf("Float LED 1 %s \n",  ledcolor[floatLedcolor[4]]);
+    printf("Float LED 2 %s \n",  ledcolor[floatLedcolor[3]]);
+    printf("Float LED 3 %s \n",  ledcolor[floatLedcolor[2]]);
+    printf("Float LED 4 %s \n",  ledcolor[floatLedcolor[1]]);
+    printf("Press LED 5 %s \n",  ledcolor[monitor_sensor_payload[19]]); 
+  */ 
      
       
 /***  SEND INFO TO BLYNK     ***/              
@@ -229,17 +259,24 @@ void loop()
     Blynk.virtualWrite(V9, (int)formatted_sensor_payload[9]);   //Faults
     Blynk.virtualWrite(V10,(int)formatted_sensor_payload[10]);  //Cycle Count
     Blynk.virtualWrite(V11, formatted_sensor_payload[11]); //Temperature f
-    Blynk.virtualWrite(V12, monitor_sensor_payload[8]); //Float 1 Hi
-    Blynk.virtualWrite(V13, monitor_sensor_payload[9]); //Float 2 90%
-    Blynk.virtualWrite(V14, monitor_sensor_payload[10]); //Float 3 50%
-    Blynk.virtualWrite(V15, monitor_sensor_payload[11]); //Float 4 Low
+    Blynk.virtualWrite(V12, floatState[4]); //Float 1 Hi
+    Blynk.virtualWrite(V13, floatState[3]); //Float 2 90%
+    Blynk.virtualWrite(V14, floatState[2]); //Float 3 50%
+    Blynk.virtualWrite(V15, floatState[1]); //Float 4 Low
     Blynk.virtualWrite(V16, (int)blynk_payload[23]);//Run Commanded P1
     Blynk.virtualWrite(V17, (int)blynk_payload[24]);//Run Commanded P2
     Blynk.virtualWrite(V18, (int)blynk_payload[25]);//Run Commanded P3
     Blynk.virtualWrite(V19, formatted_sensor_payload[17]);//House Water Press
     Blynk.virtualWrite(V20, monitor_sensor_payload[3]);//LED 4 Spinkler Pump
     Blynk.virtualWrite(V21, monitor_sensor_payload[18]);//LED 5 Home Pres SW
-    
+    Blynk.virtualWrite(V22, PumpRunCount[1]); //Pump Run Count
+    Blynk.virtualWrite(V23, PumpRunCount[2]); //Pump Run Count
+    Blynk.virtualWrite(V24, PumpRunCount[3]); //Pump Run Count
+    Blynk.virtualWrite(V25, PumpRunCount[4]); //Pump Run Count
+    Blynk.virtualWrite(V26, (monitor_sensor_payload[9]/60.));//PumpRunTime
+    Blynk.virtualWrite(V27, (monitor_sensor_payload[10]/60.));//PumpRunTime
+    Blynk.virtualWrite(V28, (monitor_sensor_payload[11]/60.));//PumpRunTime
+    Blynk.virtualWrite(V29, (monitor_sensor_payload[12]/60.));//PumpRunTime
     Blynk.run();
     tmr.run();
 }
