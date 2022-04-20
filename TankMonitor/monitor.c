@@ -26,12 +26,9 @@
 * payload[16] =     floatLedcolor[4];
 * payload[17] =    spare
 * payload[18] =    spare
-* payload[19] =    spare
+* payload[19] =    Pressure Relay Sense
 * payload[20] =    Pressure LED Color
 * payload[21] =    spare
-* payload[22] =    spare
-* payload[23] =    spare
-* payload[24] =    spare
 */
 
 
@@ -60,10 +57,9 @@
 */
 
 
-#define SUB_TOPIC   "Formatted Sensor Data"
-#define SUB_TOPIC_LEN 21
+#define datafile "./datafile.txt"
 
-int mon_data_payload[22] ;
+int mon_data_payload[M_LEN] ;
 
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
@@ -82,14 +78,14 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
     time_t t;
     time(&t);
     int i;
-    float  raw_data_payload[SUB_TOPIC_LEN] ;
+    float  raw_data_payload[F_LEN] ;
     float* payloadptr;
       
-    printf("Message arrived:\n");
-    printf("          topic: %s  ", topicName);
-    printf("         length: %d  ", topicLen);
-    printf("     PayloadLen: %d\n", message->payloadlen);
-    printf("message: ");
+    //printf("Message arrived:\n");
+    //printf("          topic: %s  ", topicName);
+    //printf("         length: %d  ", topicLen);
+    //printf("     PayloadLen: %d\n", message->payloadlen);
+    //printf("message: ");
     
    
     if (message->payloadlen != 0) {
@@ -124,15 +120,15 @@ int main(int argc, char* argv[])
 {
     int i=0;
     int j=0;
+    FILE *fptr;
     time_t t;
     struct tm timenow;
     time(&t);
     int SecondsFromMidnight = 0 ;
     int PriorSecondsFromMidnight =0;
-    int Pump1State = 0;
-    int Pump2State = 0;
-    int Pump3State = 0;
-    int Pump4State = 0;
+    u_int32_t A43floatState = 0;
+    u_int32_t A21floatState = 0;
+    u_int32_t AllfloatLedcolor = 0;
     int Float100State = 0;
     int Float90State = 0;
     int Float50State = 0;
@@ -146,6 +142,7 @@ int main(int argc, char* argv[])
     int pressLedColor ;
     int floatstate[5];
     int floatLedcolor[5];
+    u_int32_t PumpRunCount = 0;
     int PumpCurrentSense[5];
     int PumpLedColor[5];
     
@@ -180,9 +177,9 @@ int main(int argc, char* argv[])
         rc = EXIT_FAILURE;
         exit(EXIT_FAILURE);
     }
-    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", SUB_TOPIC, M_CLIENTID, QOS);
+    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, M_CLIENTID, QOS);
     
-    MQTTClient_subscribe(client, SUB_TOPIC, QOS);
+    MQTTClient_subscribe(client, F_TOPIC, QOS);
     
     /*
      * Main Loop
@@ -200,15 +197,19 @@ int main(int argc, char* argv[])
         
         SecondsFromMidnight = (timenow.tm_hour * 60 * 60) + (timenow.tm_min * 60) + timenow.tm_sec ;
         if (SecondsFromMidnight < PriorSecondsFromMidnight) {
+            fptr = fopen(datafile, "a");
+            
             for (j=1; j<=NPumps; j++) {
+                fprintf(fptr, "%d, %d, %d ", j, MyPumpStats[j].RunCount, MyPumpStats[j].RunTime);          
                 MyPumpStats[j].PumpOn = 0;
                 MyPumpStats[j].PumpOnTimeStamp = 0;
                 MyPumpStats[j].PumpLastState=0;
                 MyPumpStats[j].RunCount=0;
                 MyPumpStats[j].RunTime=0;
             }
+            fprintf(fptr, "%s", ctime(&t));
         }
-        printf("seconds since midnight: %d\n", SecondsFromMidnight);
+        //printf("seconds since midnight: %d\n", SecondsFromMidnight);
         PriorSecondsFromMidnight = SecondsFromMidnight ;
         
         
@@ -221,12 +222,10 @@ int main(int argc, char* argv[])
         // Channel 2 Voltage Sensor 16 bit data
         raw_voltage1_adc = mon_data_payload[4];
         if (raw_voltage1_adc > 2500) {
-            Pump1State = 1;
             PumpCurrentSense[1] = 255;
             Pump[1].PumpPower = ON;
             PumpLedColor[1] = BLUE; }
         else {
-            Pump1State =0;
             PumpCurrentSense[1] = 255 ;
             Pump[1].PumpPower = OFF;
             PumpLedColor[1] = GREEN ; }
@@ -235,12 +234,10 @@ int main(int argc, char* argv[])
         raw_voltage2_adc = mon_data_payload[5];
         //printf("voltage ch 2: %d\n", raw_voltage2_adc);
         if (raw_voltage2_adc > 500){
-            Pump2State = 1;
             PumpCurrentSense[2] = 255;
             Pump[2].PumpPower = ON;
             PumpLedColor[2] = BLUE;}
         else {
-            Pump2State = 0;
             PumpCurrentSense[2] = 255 ;
             Pump[2].PumpPower = OFF;
             PumpLedColor[2] = GREEN ; }
@@ -248,12 +245,10 @@ int main(int argc, char* argv[])
         // Channel 4 Voltage Sensor 16 bit data
         raw_voltage3_adc = mon_data_payload[6];
         if (raw_voltage3_adc > 500){
-            Pump3State = 1;
             PumpCurrentSense[3] = 255;
             Pump[3].PumpPower = ON;
             PumpLedColor[3] = BLUE;}
         else {
-            Pump3State = 0;
             PumpCurrentSense[3] = 255;
             Pump[3].PumpPower = OFF;
             PumpLedColor[3] = GREEN ;}
@@ -262,12 +257,10 @@ int main(int argc, char* argv[])
         
         raw_voltage4_adc = mon_data_payload[7];
         if (raw_voltage4_adc > 500){
-            Pump4State = 1;
             PumpCurrentSense[4] = 255;
             Pump[4].PumpPower = ON;
             PumpLedColor[4] = BLUE;}
         else {
-            Pump4State = 0;
             PumpCurrentSense[4] = 255;
             Pump[4].PumpPower = OFF;
             PumpLedColor[4] = GREEN ;}
@@ -335,18 +328,38 @@ int main(int argc, char* argv[])
               ++MyPumpStats[j].RunCount;
             }
             MyPumpStats[j].PumpLastState = MyPumpStats[j].PumpOn ;
+           
+           /*
             printf("MyPumpStats[%0d]  On: %d   TimeStamp: %d   LastState: %d   Count:  %d   Time: %d \n", j, \
                 MyPumpStats[j].PumpOn, \
                 MyPumpStats[j].PumpOnTimeStamp, \
                 MyPumpStats[j].PumpLastState, \
                 MyPumpStats[j].RunCount, \
                 MyPumpStats[j].RunTime) ;
+            */
         }
         /*
          * Set Firmware Version
          * firmware = mon_data_payload[20] & SubFirmware;
          */
+        /*
+         * Bit Pack Some Data
+         */
+         A43floatState = 0;
+         A21floatState = 0;
+         A43floatState = floatstate[4] << 16 | floatstate[3] ;
+         A21floatState = floatstate[2] << 16 | floatstate[1] ;
         
+         AllfloatLedcolor = 0;
+         AllfloatLedcolor = floatLedcolor[4] << 24 |  \
+                            floatLedcolor[3] << 16 |  \
+                            floatLedcolor[2] <<  8 |  \
+                            floatLedcolor[1] ;                
+         PumpRunCount = 0;
+         PumpRunCount = MyPumpStats[4].RunCount << 24 |  \
+                        MyPumpStats[3].RunCount << 16 |  \
+                        MyPumpStats[2].RunCount <<  8 |  \
+                        MyPumpStats[1].RunCount ;
         /*
          * Load Up the Data
          */
@@ -360,14 +373,14 @@ int main(int argc, char* argv[])
         monitor_sensor_payload[5] =     PumpLedColor[2];
         monitor_sensor_payload[6] =     PumpLedColor[3];
         monitor_sensor_payload[7] =     PumpLedColor[4];
-        monitor_sensor_payload[8] =     floatstate[1];
-        monitor_sensor_payload[9] =     floatstate[2];
-        monitor_sensor_payload[10] =    floatstate[3];
-        monitor_sensor_payload[11] =    floatstate[4];
-        monitor_sensor_payload[12] =    floatLedcolor[1];
-        monitor_sensor_payload[13] =    floatLedcolor[2];
-        monitor_sensor_payload[14] =    floatLedcolor[3];
-        monitor_sensor_payload[15] =    floatLedcolor[4];
+        monitor_sensor_payload[8] =     PumpRunCount;
+        monitor_sensor_payload[9] =     MyPumpStats[1].RunTime;
+        monitor_sensor_payload[10] =    MyPumpStats[2].RunTime;
+        monitor_sensor_payload[11] =    MyPumpStats[3].RunTime;
+        monitor_sensor_payload[12] =    MyPumpStats[4].RunTime;
+        monitor_sensor_payload[13] =    A43floatState;
+        monitor_sensor_payload[14] =    A21floatState;
+        monitor_sensor_payload[15] =    AllfloatLedcolor;
         monitor_sensor_payload[16] =    0;
         monitor_sensor_payload[17] =    0;
         monitor_sensor_payload[18] =    pressState;
@@ -400,7 +413,7 @@ int main(int argc, char* argv[])
         sleep(1) ;
     }
     
-    MQTTClient_unsubscribe(client, SUB_TOPIC);
+    MQTTClient_unsubscribe(client, F_TOPIC);
     MQTTClient_disconnect(client, 10000);
     MQTTClient_destroy(&client);
     return rc;
