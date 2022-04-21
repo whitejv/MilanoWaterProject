@@ -208,6 +208,7 @@ int main(int argc, char* argv[])
                 MyPumpStats[j].RunTime=0;
             }
             fprintf(fptr, "%s", ctime(&t));
+            fclose(fptr);
         }
         //printf("seconds since midnight: %d\n", SecondsFromMidnight);
         PriorSecondsFromMidnight = SecondsFromMidnight ;
