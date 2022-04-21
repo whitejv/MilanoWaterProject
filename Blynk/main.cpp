@@ -173,12 +173,23 @@ void loop()
     int floatState[5] ;
     int floatLedcolor[5] ;
     
-    char *ledcolor[] = { "Green", "Blue", "Orange", "Red" } ; // to help with debug print
+    char *ledcolor[] = {  "Green", 
+                          "Blue", 
+                          "Orange", 
+                          "Red", 
+                          "Yellow", 
+                          "Purple", 
+                          "Fuscia", 
+                          "Black" } ; 
     
     char *ledcolorPalette[] = { "0x00ff00",   //green
                                 "0x0000FF",   //blue
-                                "0xffff00",   //orange
-                                "0xff0000" }; //red
+                                "0xff8000",   //orange
+                                "0xff0000",   //red
+                                "0xffff00",   //yellow
+                                "0xbf00ff",   //purple
+                                "0xfe2e9a",   //fuscia 
+                                "0x000000" }; //black
     char *pumpMenu[] = { "OFF",   
                          "ON",   
                          "AUTO",   
@@ -224,7 +235,7 @@ void loop()
     Blynk.setProperty(15, "color", ledcolorPalette[floatLedcolor[4]]);  // Set LED Label to HEX colour
     
     Blynk.setProperty(21, "color", ledcolorPalette[monitor_sensor_payload[19]]);  // Set LED Label to HEX colour
-    
+
     Blynk.setProperty(16, "label", pumpMenu[(int)blynk_payload[23]]);
     Blynk.setProperty(17, "label", pumpMenu[(int)blynk_payload[24]]);
     Blynk.setProperty(18, "label", pumpMenu[(int)blynk_payload[25]]);
