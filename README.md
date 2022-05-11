@@ -1,31 +1,31 @@
 # MilanoWaterProject
 
-This project provides IOT control and monitoring of my home water system.
+## This project provides IOT control and monitoring of my home water system.
 
-To Use Remote Shell to Install
+## To Use Remote Shell to Install
 
 --> Open Terminal on Mac/Windows/Raspberry PI/Linus
 --> Login to Target:  ssh pi@raspi.local
 --> Password: raspberry
 
 
-Intsall Git (if using Rapi-Lite)
+## Intsall Git (if using Rapi-Lite)
 
 --> sudo apt install git
 
 
-Install OpenSSL for C/C++ programs
+## Install OpenSSL for C/C++ programs
 
 --> sudo apt-get install libssl-dev
 --> sudo apt-get install xutils-dev
 
-Install Mosquitto MQTT Service
+## Install Mosquitto MQTT Service
 
 --> sudo apt install -y mosquitto mosquitto-clients
 --> sudo systemctl enable mosquitto.service
 --> mosquitto -v
 
-Install MQTT and Update Config File and Application Libraries
+## Install MQTT and Update Config File and Application Libraries
 
 --> git clone https://github.com/eclipse/paho.mqtt.c.git
 --> cd paho.mqtt.c
@@ -40,7 +40,7 @@ Install MQTT and Update Config File and Application Libraries
 -->> Shift+zz
 ![image](https://user-images.githubusercontent.com/41390348/167849852-2fd8cb29-3461-4562-9e7c-22be091cd4f3.png)
 
-Install Wiringpi (needed by Blynk)
+## Install Wiringpi (needed by Blynk)
 
 --> wget https://project-downloads.drogon.net/wiringpi-latest.deb
 --> sudo dpkg -i wiringpi-latest.deb
@@ -51,7 +51,7 @@ Install Wiringpi (needed by Blynk)
 === This is free software with ABSOLUTELY NO WARRANTY.
 === For details type: gpio -warranty
 
-Install Blynk
+## Install Blynk
 
 --> git clone https://github.com/blynkkk/blynk-library.git
 --> cd blynk-library/linux
@@ -59,7 +59,7 @@ Install Blynk
 --> make target=raspberry
 === clean build means succesful install
 
-Install the Project
+## Install the Project
 
 --> git clone https://github.com/whitejv/MilanoWaterProject.git
 --> cd MilanoWaterProject
@@ -75,7 +75,7 @@ Install the Project
 --> cd ../bin
 --> ls -al (check the dates)
 
-Add to Cron for Start on Reboot
+## Add to Cron for Start on Reboot
 
 --> crontab -e
 --> add the following line to the bottom of the cron file: @reboot sleep 20 && bash /home/pi/MilanoWaterProject/h2o.sh
