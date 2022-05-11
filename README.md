@@ -19,9 +19,11 @@ Install OpenSSL for C/C++ programs
 --> sudo apt-get install libssl-dev
 --> sudo apt-get install xutils-dev
 
-Install Code Directory
+Install Mosquitto MQTT Service
 
---> mkdir CodeDev
+--> sudo apt install -y mosquitto mosquitto-clients
+--> sudo systemctl enable mosquitto.service
+--> mosquitto -v
 
 Install MQTT and Update Config File and Application Libraries
 
@@ -31,8 +33,12 @@ Install MQTT and Update Config File and Application Libraries
 --> sudo make install
 --> cd /etc/mosquitto
 --> sudo vi mosquitto.conf
+-->> press 'i' for insert mode
 -->>> add: listener 1883
 -->>> add: allow_anonymous true
+-->> press esc
+-->> Shift+zz
+![image](https://user-images.githubusercontent.com/41390348/167849852-2fd8cb29-3461-4562-9e7c-22be091cd4f3.png)
 
 Install Wiringpi (needed by Blynk)
 
