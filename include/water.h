@@ -22,7 +22,7 @@
 #define ORANGE  2
 #define RED     3
 
-#define ADDRESS     "192.168.1.154:1883" //Local RaspberryPI as MQTT Server
+#define ADDRESS     "192.168.1.250:1883" //Local RaspberryPI as MQTT Server
 #define QOS         1
 #define TIMEOUT     10000L
 
@@ -181,6 +181,8 @@ struct PumpStats
    int PumpLastState;     //Pump on/off Last Time Checked
    int RunCount;          //Number of Pump Cycles in 24 hours
    int RunTime;           //Run Time in Seconds in 24 Hours
+   int StartGallons;      //Tank Gallon Reading when pump starts
+   int StopGallons;       //Tank Gallons Reading when pump stops
 };
 
 struct PumpStats      MyPumpStats[NPumps+1];// = {  0,0,0,0,0,            //Add 1 so that I can refer to pumps starting with 1,2,3,4 and not 0

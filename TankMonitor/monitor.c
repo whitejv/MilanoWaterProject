@@ -7,59 +7,56 @@
 #include "MQTTClient.h"
 #include "../include/water.h"
 
-/* CLIENTID     "Tank Monitor",  #define PUB_TOPIC  "Monitor Data", monitor_sensor_, len=48
-* payload[0] =     PumpCurrentSense[1];
-* payload[2] =     PumpCurrentSense[2];
-* payload[3] =     PumpCurrentSense[3];
-* payload[4] =     PumpCurrentSense[4];
-* payload[5] =     PumpLedColor[1];
-* payload[6] =     PumpLedColor[2];
-* payload[7] =     PumpLedColor[3];
-* payload[8] =     PumpLedColor[4];
-* payload[9] =     floatstate[1];
-* payload[10] =     floatstate[2];
-* payload[11] =     floatstate[3];
-* payload[12] =     floatstate[4];
-* payload[13] =     floatLedcolor[1];
-* payload[14] =     floatLedcolor[2];
-* payload[15] =     floatLedcolor[3];
-* payload[16] =     floatLedcolor[4];
-* payload[17] =    spare
-* payload[18] =    spare
-* payload[19] =    Pressure Relay Sense
-* payload[20] =    Pressure LED Color
-* payload[21] =    spare
-*/
 
+ /* payload[0] =    Pressure Sensor Value
+ * payload[1] =    Water Height
+ * payload[2] =    Tank Gallons
+ * payload[3] =    Tank Percent Full
+ * payload[4] =    Current Sensor  1 Value
+ * payload[5] =    Current Sensor  2 Value
+ * payload[6] =    Current Sensor  3 Value
+ * payload[7] =    Current Sensor  4 Value
+ * payload[8] =    Firmware Version of ESP
+ * payload[9] =    I2C Fault Count
+ * payload[10] =    Cycle Count
+ * payload[11] =    Ambient Temperature
+ * payload[12] =    Float State 1
+ * payload[13] =    Float State 2
+ * payload[14] =    Float State 3
+ * payload[15] =    Float State 4
+ * payload[16] =    Pressure Switch State
+ * payload[17] =    House Water Pressure Value
+ * payload[18] =     spare
+ * payload[19] =     spare
+ * payload[20] =     spare
+ */
 
-/* CLIENTID     "Tank Subscriber", #define PUB_TOPIC   "Formatted Sensor Data", formatted_sensor_, len=88
-* payload[0] =    Pressure Sensor Value
-* payload[2] =    Water Height
-* payload[3] =    Tank Gallons
-* payload[4] =    Tank Percent Full
-* payload[5] =    Current Sensor  1 Value
-* payload[6] =    Current Sensor  2 Value
-* payload[7] =    Current Sensor  3 Value
-* payload[8] =    Current Sensor  4 Value
-* payload[9] =    Firmware Version of ESP
-* payload[10] =    I2C Fault Count
-* payload[11] =    Cycle Count
-* payload[12] =    Ambient Temperature
-* payload[13] =    Float State 1
-* payload[14] =    Float State 2
-* payload[15] =    Float State 3
-* payload[16] =    Float State 4
-* payload[17] =    Pressure Switch State
-* payload[18] =    House Water Pressure Value
-* payload[19] =     spare
-* payload[20] =     spare
-* payload[21] =     spare
-*/
+ /* payload[0] =     PumpCurrentSense[1];
+ * payload[1] =     PumpCurrentSense[2];
+ * payload[2] =     PumpCurrentSense[3];
+ * payload[3] =     PumpCurrentSense[4];
+ * payload[4] =     PumpLedColor[1];
+ * payload[5] =     PumpLedColor[2];
+ * payload[6] =     PumpLedColor[3];
+ * payload[7] =     PumpLedColor[4];
+ * payload[8] =     PumpRunCount;  //byte4-pump4;byte3-pump3;byte2-pump2;byte1-pump1
+ * payload[9] =    PumpRunTime{1] ; //Seconds
+ * payload[10] =    PumpRunTime{2] ; //Seconds
+ * payload[11] =    PumpRunTime{3] ; //Seconds
+ * payload[12] =    PumpRunTime{4] ; //Seconds
+ * payload[13] =     43floatState;  //byte34-float4;byte123-float3
+ * payload[14] =     21floatState;  //bytes34-float2;byte12-float1
+ * payload[15] =     AllfloatLedcolor;  //byte4-color4;byte3-color3;byte2-color2;byte1-color1
+ * payload[16] =    spare
+ * payload[17] =    spare
+ * payload[18] =    Pressure Relay Sense
+ * payload[19] =    Pressure LED Color
+ * payload[20] =    spare
+ */
 
 
 #define datafile "./datafile.txt"
-
-int mon_data_payload[M_LEN] ;
+#define pumpdata "./pumpdata.txt"
 
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
@@ -93,7 +90,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
             payloadptr = (float *)message->payload;
             for(i=0; i < (message->payloadlen/4); i++)
             {
-               raw_data_payload[i] = *payloadptr++ ;
+               formatted_sensor_payload[i] = *payloadptr++ ;
                //printf("%0f ", raw_data_payload[i]);
              }
          }
@@ -102,10 +99,6 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
          printf(".");
         MQTTClient_freeMessage(&message);
         MQTTClient_free(topicName);
-        
-        for ( i=0; i<=M_LEN; i++) {
-            mon_data_payload[i] = (int)raw_data_payload[i];
-        }
     }
     return 1;
 }
@@ -221,7 +214,7 @@ int main(int argc, char* argv[])
          */
         
         // Channel 2 Voltage Sensor 16 bit data
-        raw_voltage1_adc = mon_data_payload[4];
+        raw_voltage1_adc = formatted_sensor_payload[4];
         if (raw_voltage1_adc > 2500) {
             PumpCurrentSense[1] = 255;
             Pump[1].PumpPower = ON;
@@ -232,7 +225,7 @@ int main(int argc, char* argv[])
             PumpLedColor[1] = GREEN ; }
         
         // Channel 3 Voltage Sensor 16 bit data
-        raw_voltage2_adc = mon_data_payload[5];
+        raw_voltage2_adc = formatted_sensor_payload[5];
         //printf("voltage ch 2: %d\n", raw_voltage2_adc);
         if (raw_voltage2_adc > 500){
             PumpCurrentSense[2] = 255;
@@ -244,7 +237,7 @@ int main(int argc, char* argv[])
             PumpLedColor[2] = GREEN ; }
         
         // Channel 4 Voltage Sensor 16 bit data
-        raw_voltage3_adc = mon_data_payload[6];
+        raw_voltage3_adc = formatted_sensor_payload[6];
         if (raw_voltage3_adc > 500){
             PumpCurrentSense[3] = 255;
             Pump[3].PumpPower = ON;
@@ -256,7 +249,7 @@ int main(int argc, char* argv[])
         
         // MCP3428 #2 Channel 4 Voltage Sensor 16 bit data
         
-        raw_voltage4_adc = mon_data_payload[7];
+        raw_voltage4_adc = formatted_sensor_payload[7];
         if (raw_voltage4_adc > 500){
             PumpCurrentSense[4] = 255;
             Pump[4].PumpPower = ON;
@@ -270,11 +263,11 @@ int main(int argc, char* argv[])
          * Convert the Discrete data
          */
         
-        Float100State  = mon_data_payload[12] ;
-        Float90State   = mon_data_payload[13] ;
-        Float50State   = mon_data_payload[14] ;
-        Float25State   = mon_data_payload[15] ;
-        PressSwitState = mon_data_payload[16] ;
+        Float100State  = formatted_sensor_payload[12] ;
+        Float90State   = formatted_sensor_payload[13] ;
+        Float50State   = formatted_sensor_payload[14] ;
+        Float25State   = formatted_sensor_payload[15] ;
+        PressSwitState = formatted_sensor_payload[16] ;
         
         if (Float100State == 1){
             floatstate[1] = 255;
@@ -323,10 +316,22 @@ int main(int argc, char* argv[])
             }
             if (MyPumpStats[j].PumpOn == ON && MyPumpStats[j].PumpLastState == OFF) {
                 MyPumpStats[j].PumpOnTimeStamp = SecondsFromMidnight ;
+                MyPumpStats[j].StartGallons = formatted_sensor_payload[2] ;
             }
             if (MyPumpStats[j].PumpOn == OFF && MyPumpStats[j].PumpLastState == ON) {
                 MyPumpStats[j].RunTime += (SecondsFromMidnight - MyPumpStats[j].PumpOnTimeStamp);
+                MyPumpStats[j].StopGallons = formatted_sensor_payload[2];
               ++MyPumpStats[j].RunCount;
+                /* Write Individual record for Well #3 to monitor GPM*/
+                if (j == 3){
+                    fptr = fopen(pumpdata, "a");
+                    fprintf(fptr, "Well: %d, Start Gallons: %d, Stop Gallons: %d, Seconds: %d ", j, \
+                                   MyPumpStats[j].StartGallons, \
+                                   MyPumpStats[j].StopGallons, \
+                                   (SecondsFromMidnight - MyPumpStats[j].PumpOnTimeStamp));
+                    fprintf(fptr, "%s", ctime(&t));
+                    fclose(fptr);
+                }
             }
             MyPumpStats[j].PumpLastState = MyPumpStats[j].PumpOn ;
            
@@ -341,7 +346,7 @@ int main(int argc, char* argv[])
         }
         /*
          * Set Firmware Version
-         * firmware = mon_data_payload[20] & SubFirmware;
+         * firmware = formatted_sensor_payload[20] & SubFirmware;
          */
         /*
          * Bit Pack Some Data
@@ -387,10 +392,6 @@ int main(int argc, char* argv[])
         monitor_sensor_payload[18] =    pressState;
         monitor_sensor_payload[19] =    pressLedColor;
 
-        
-        /*
-         * Load Up the Payload
-         */
         for (i=0; i<=M_LEN; i++) {
             printf("%0x ", monitor_sensor_payload[i]);
         }
