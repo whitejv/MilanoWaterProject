@@ -75,7 +75,6 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
     time_t t;
     time(&t);
     int i;
-    float  raw_data_payload[F_LEN] ;
     float* payloadptr;
       
     //printf("Message arrived:\n");
