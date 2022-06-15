@@ -174,6 +174,13 @@ int main(int argc, char* argv[])
     MQTTClient_subscribe(client, F_TOPIC, QOS);
     
     /*
+     * Initialize the data file with headers
+     */
+     fptr = fopen(pumpdata, "a");
+     fprintf(fptr, "Well #, Start Gallons, Stop Gallons, Run Time (sec) ");
+     fclose(fptr);
+
+    /*
      * Main Loop
      */
     
@@ -322,9 +329,9 @@ int main(int argc, char* argv[])
                 MyPumpStats[j].StopGallons = formatted_sensor_payload[2];
               ++MyPumpStats[j].RunCount;
                 /* Write Individual record for Well #3 to monitor GPM*/
-                if (j == 3){
+                if (j == 3 || j==4){
                     fptr = fopen(pumpdata, "a");
-                    fprintf(fptr, "Well: %d, Start Gallons: %d, Stop Gallons: %d, Seconds: %d ", j, \
+                    fprintf(fptr, "%d, %d, %d, %d ", j, \
                                    MyPumpStats[j].StartGallons, \
                                    MyPumpStats[j].StopGallons, \
                                    (SecondsFromMidnight - MyPumpStats[j].PumpOnTimeStamp));
