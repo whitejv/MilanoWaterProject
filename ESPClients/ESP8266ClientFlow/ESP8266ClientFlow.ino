@@ -1,16 +1,40 @@
 #include <stdio.h>
 #include <string.h>
 #include <Wire.h>
-#include <ESP8266WiFi.h>
 #include <IPAddress.h>
 #include <PubSubClient.h>
 
-char ssid[] = "ATT9LCV8fL_2.4"; //local wifi network SSID
-char pass[] = "6jhz7ai7pqy5";   //local network password
+/* NCD ESP8266 Board - Select GENERIC ESP8266 MODULE
+ * in Arduino Board Manager 
+ */
+#if defined (ARDUINO_ESP8266_GENERIC)
+   #include <ESP8266WiFi.h>
+   #include <OneWire.h>
+   #include <DallasTemperature.h>
+#endif
+/* NCD ESP32 Board - Select Adafruit ESP32 Feather
+ * in Arduino Board Manager 
+ */
+#if defined (ARDUINO_FEATHER_ESP32)
+   #include <WiFi.h>
+   #include <esp_task_wdt.h>
+#endif
+/* RPI PICO W - Select ARDUINO_RASPBERRY_PI_PICO_W
+ * in Arduino Board Manager 
+ */
+#if defined (ARDUINO_RASPBERRY_PI_PICO_W)
+   #include <WiFi.h>
+   #include "pico/stdlib.h"
+   #include "hardware/i2c.h"
+   #include "pico/binary_info.h"
+#endif
 
-#define firmwareVer  0x8002
+#define WDT_TIMEOUT 10  //10 seconds Watch Dog Timer (WDT)
 
-IPAddress MQTT_BrokerIP(192, 168, 1, 154);
+char ssid[] = "ATT9LCV8fL_2.4";    //local wifi network SSID
+char password[] = "6jhz7ai7pqy5";  //local network password
+
+IPAddress MQTT_BrokerIP(192, 168, 1, 250);
 const char *mqttServer = "raspberrypi.local";
 const int mqttPort = 1883;
 
@@ -23,191 +47,188 @@ WiFiClient espClient;
 
 PubSubClient client(MQTT_BrokerIP, mqttPort, espClient);
 
+int WDT_Interval = 0;
 unsigned int masterCounter = 0;
-
-int I2CPanicCount = 0;
-int I2CPanic = 0;
-float calibrationFactor = 4.5;
-volatile byte pulseCount = 0;  
-float flowRate = 0.0;
-unsigned int flowMilliLitres = 0;
-float flowGallons = 0;
-unsigned long totalMilliLitres = 0;
-unsigned long oldTime = 0;
-/*
- *Liquid flow rate sensor -DIYhacking.com Arvind Sanjeev
- *
- *Measure the liquid/water flow rate using this code. 
- *Connect Vcc and Gnd of sensor to arduino, and the 
- *signal line to arduino digital pin 2.
- */
-
-// The hall-effect flow sensor outputs approximately 4.5 pulses per second per
-// litre/minute of flow.
-
-int HallFlowSensorPin = 2;
-
-/*
- * Client app for reading Raspberry PI GPIO signals
- * and transferring them via MQTT to a subscriber app.
- *
- */
 
 /*
  * Data Block Interface Control
  */
 
 /*
- * Data Word 0:  Gallons Per Minute
- * Data Word 1:  Pump Temperature - analog 16bit
- * Data Word 2:  Pump PSI - analog 16bit
- * Data Word 3:  spare
- * Data Word 4:  spare
+ * Data Word 0:  CH1: Dead - Damaged
+ * Data Word 1:  CH2: Raw Sensor Current Sense Well 1 16bit
+ * Data Word 2:  CH3: Raw Sensor Current Sense Well 2 16bit
+ * Data Word 3:  CH4: Raw Sensor Current Sense Well 3 16bit
+ * Data Word 4:  GPIO 8 bits Hex (8 bits: 0-3 floats, 4 Pump Relay Command)
+ * Data Word 5:  Raw Temp Celcius
+ * Data Word 6:  Flow Sensor Count 16bit Int
+ * Data Word 7:  Flow Sensor Period 16bit Int
+ * Data Word 8:  CH1: 4-20 mA Raw Sensor HydroStatic Pressure 16bit
+ * Data Word 9:  CH2: Raw Sensor House Water Pressure 16bit ADC 0-5v
+ * Data Word 10: CH3: Unused 2 16bit
+ * Data Word 11: CH4: Raw Sensor Current Sense Irrigation pump 4 (16bit)
+ * Data Word 12: Cycle Counter 16bit Int
+ * Data Word 13: spare
+ * Data Word 14: spare
+ * Data Word 15: spare
+ * Data Word 16: I2C Panic Count 16bit Int
+ * Data Word 17: TMP100 I2C Error
+ * Data Word 18: MCP23008 I2C Error
+ * Data Word 19: MCP3428 I2C Error
+ * Data Word 20: FW Version 4 Hex 
  */
 
 
-unsigned short int raw_sensor_data[22] = {0, 0, 0, 0, 0};
+unsigned short int raw_flow_data[22] =   { 0, 0, 0, 0, 0,
+                                           0, 0, 0, 0, 0,
+                                           0, 0, 0, 0, 0,
+                                           0, 0, 0, 0, 0, 0,
+                                           0 };
 
-IRAM_ATTR void pulseCounter()
+#define FLOWSENSOR  13
+ 
+long currentMillis = 0;
+long previousMillis = 0;
+long millisecond = 0;
+int interval = 2000;
+volatile byte pulseCount;
+byte pulse1Sec = 0;
+
+void IRAM_ATTR pulseCounter()
 {
-  // Increment the pulse counter
   pulseCount++;
 }
-void ReadFlowSensorCallback()
-{
-    // Disable the interrupt while calculating flow rate and sending the value to
-    // the host
-    detachInterrupt(digitalPinToInterrupt(HallFlowSensorPin));
-    printf("Pulse Count = %d\n", pulseCount);
-    // pulseCount = 8230;  //testing only    
-    // Because this loop may not complete in exactly 1 second intervals we calculate
-    // the number of milliseconds that have passed since the last execution and use
-    // that to scale the output. We also apply the calibrationFactor to scale the output
-    // based on the number of pulses per second per units of measure (litres/minute in
-    // this case) coming from the sensor.
-    flowRate = ((1000.0 / (millis() - oldTime)) * pulseCount) / calibrationFactor;
-    flowRate = flowRate * .00026417 ;
-    printf("Flow Rate: %f\n", flowRate);
-    // Note the time this processing pass was executed. Note that because we've
-    // disabled interrupts the millis() function won't actually be incrementing right
-    // at this point, but it will still return the value it was set to just before
-    // interrupts went away.
-    oldTime = millis();
-    
-    // Divide the flow rate in litres/minute by 60 to determine how many litres have
-    // passed through the sensor in this 1 second interval, then multiply by 1000 to
-    // convert to millilitres.
-    flowMilliLitres = (flowRate / 60) * 1000;
-    flowGallons = flowMilliLitres * .00026417;
-    
-    // Add the millilitres passed in this second to the cumulative total
-    //totalMilliLitres += flowMilliLitres;
-    
+// GPIO where the DS18B20 is connected to
+const int oneWireBus = 2;     
+
+// Setup a oneWire instance to communicate with any OneWire devices
+OneWire oneWire(oneWireBus);
+
+// Pass our oneWire reference to Dallas Temperature sensor 
+DallasTemperature sensors(&oneWire);
+
+void setup() {
+
+  Serial.begin(115200);
+  delay(10);
+
+  // We start by connecting to a WiFi network
+
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("WiFi connected -- ");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  client.setServer(MQTT_BrokerIP, mqttPort);
+
+  while (!client.connected()) {
+    Serial.printf("Connecting to MQTT.....");
+    //if (client.connect("ESP8266Client", mqttUser, mqttPassword))
+    if (client.connect("ESP8266Client")) {
+      Serial.printf("connected\n");
+    } else {
+      Serial.printf("failed with ");
+      Serial.printf("client state %d\n", client.state());
+      delay(2000);
+    }
+  }
+  client.subscribe("ESP Control");
+
+#if defined (ARDUINO_FEATHER_ESP32)
+  Serial.printf("Configuring WDT...");
+  esp_task_wdt_init(WDT_TIMEOUT, true);  //enable panic so ESP32 restarts
+  esp_task_wdt_add(NULL);                //add current thread to WDT watch
+  Serial.printf("Complete\n");
+  Wire.begin();
+#endif
+#if defined (ARDUINO_ESP8266_GENERIC)
+  Wire.begin(12,14);
+  pinMode(FLOWSENSOR, INPUT_PULLUP);  
+  sensors.begin(); // Start the DS18B20 sensor
+  attachInterrupt(digitalPinToInterrupt(FLOWSENSOR), pulseCounter, FALLING);
+#endif
+#if defined (ARDUINO_RASPBERRY_PI_PICO_W)
+  i2c_init(i2c_default, 100 * 1000);
+  gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
+  gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
+  //gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
+  //gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
+  Wire.begin();
+#endif
+pulseCount = 0;
+previousMillis = 0;
+}
+void loop() {
+  int i;
+  int decimal;
+
+/* If I2C Errors Exceed 100 in 10 seconds then force a reboot to hopefully clear up */
+/*
+  if (((I2CPanicCount - last_I2CPanicCount) > 25) && (WDT_Interval >= WDT_TIMEOUT)) {
+    Serial.printf("%d %d %d\n", I2CPanicCount, last_I2CPanicCount, WDT_Interval);
+    while (1) {}  //force a reboot
+  }
+*/
+  if (WDT_Interval++ > WDT_TIMEOUT) { WDT_Interval = 0; }
+
+  #if defined (ARDUINO_FEATHER_ESP32)
+  esp_task_wdt_reset();
+  #endif
+
+  //I2CComm();
+
+  ++masterCounter;
+
+  if (masterCounter > 28800) {  //Force a reboot every 8 hours
+    while (1) {};
+  }
+  currentMillis = millis();
+  if (currentMillis - previousMillis > interval) {
+    pulse1Sec = pulseCount;
+    millisecond = millis() - previousMillis ;
+    raw_flow_data[0] = pulse1Sec ;
+    raw_flow_data[1] = millisecond ;
+    raw_flow_data[2] = 1;
+    previousMillis = millis();
+  } else {
+    raw_flow_data[2] = 0 ;
+  }
+  pulseCount =0 ;
+ 
+  sensors.requestTemperatures(); 
+  float temperatureF = sensors.getTempFByIndex(0);
+  raw_flow_data[17] = temperatureF ;
+  raw_flow_data[12] = masterCounter;
+ // raw_sensor_data[16] = I2CPanicCount;
+  raw_flow_data[3] = analogRead(A0);  // This reads the analog in value
   
   
-    // Reset the pulse counter so we can start incrementing again
-    pulseCount = 0;
-    
-    // Enable the interrupt again now that we've finished sending output
-      attachInterrupt(digitalPinToInterrupt(HallFlowSensorPin), pulseCounter, FALLING);
-}
-void INTCommCallback()
-{   
-   /*** Disable the interrupt while calculating     ***/
-   /*** flow rate and sending the value to the host ***/
+  client.loop();
 
-    detachInterrupt(digitalPinToInterrupt(HallFlowSensorPin));
-    printf("Pulse Count = %d\n", pulseCount);
-    
-    raw_sensor_data[6]  = pulseCount;
-    pulseCount = 0;   // Reset the pulse counter so we can start incrementing again
-    
-    // Enable the interrupt again now that we've finished sending output
-    attachInterrupt(digitalPinToInterrupt(HallFlowSensorPin), pulseCounter, FALLING);
-}
+  client.publish("Flow ESP", (byte *)raw_flow_data, 42);
 
+  Serial.printf("FLow Data: ");
+  for (i = 0; i <= 16; ++i) {
+    Serial.printf("%x ", raw_flow_data[i]);
+  }
+  for (i = 17; i <= 19; ++i) {
+    decimal = (short)raw_flow_data[i];
+    Serial.printf("%d ", decimal);
+  }
+  for (i = 20; i <= 20; ++i) {
+    Serial.printf("%x ", raw_flow_data[i]);
+  }
+  Serial.printf("\n");
 
-void setup()
-{
-
-
-   Serial.begin(115200);
-
-   WiFi.begin(ssid, pass); // Connect to WiFi network
-
-   delay(20);
-
-   while (WiFi.status() != WL_CONNECTED)
-   {
-      delay(500);
-   }
-
-   //WifiStatus = WiFi.status();
-
-  
-  // The Hall-effect sensor is connected to pin 04.
-  // Configured to trigger on a FALLING state change (transition from HIGH
-  // state to LOW state)
-
-   attachInterrupt(digitalPinToInterrupt(HallFlowSensorPin), pulseCounter, FALLING);
-
-   client.setServer(MQTT_BrokerIP, mqttPort);
-   //client.setCallback(callback);
-
-   while (!client.connected())
-   {
-      printf("Connecting to MQTT.....");
-      //if (client.connect("ESP8266Client", mqttUser, mqttPassword))
-      if (client.connect("ESP8266Client"))
-      {
-         printf("connected\n");
-      }
-      else
-      {
-         printf("failed with ");
-         printf("client state %d\n", client.state());
-         delay(2000);
-      }
-   }
-
-   client.subscribe("ESP Control");
+  delay(500);
 }
 
-void loop()
-{
-   int i;
-   int decimal;
-
-   ++masterCounter;
-
-   if (masterCounter == 32000)
-   {
-      masterCounter = 0;
-   }
-   raw_sensor_data[12] = masterCounter;
-   raw_sensor_data[16] = I2CPanicCount;
-
-   client.loop();
-
-   client.publish("Tank ESP", (byte *)raw_sensor_data, 42);
-
-   printf("ESP Data: ");
-   for (i = 0; i <= 16; ++i)
-   {
-      printf("%x ", raw_sensor_data[i]);
-   }
-   for (i = 17; i <= 19; ++i)
-   {
-      decimal = (short)raw_sensor_data[i];
-      printf("%d ", decimal);
-   }
-   for (i = 20; i <= 20; ++i)
-   {
-      printf("%x ", raw_sensor_data[i]);
-   }
-  
-   // printf("|| Frame Rate: %4.5f", frameRate);
-   // printf("\n");
-
-   delay(400);
-}
