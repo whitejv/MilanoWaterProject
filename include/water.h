@@ -92,7 +92,7 @@ unsigned int 	monitor_sensor_payload[M_LEN];
 #define A_CLIENTID "Tank Alert"
 #define A_TOPIC  "Alert Data"
 #define A_LEN 21
-
+unsigned int     alert_sensor_payload[A_LEN];
 /* payload[0] =	spare
 * payload[1] =	spare
 * payload[2] =	spare
@@ -116,8 +116,60 @@ unsigned int 	monitor_sensor_payload[M_LEN];
 * payload[20] =	spare
 */	
 	
-	
-unsigned int 	alert_sensor_payload[A_LEN];
+
+#define FL_CLIENTID "Flow Monitor"
+#define FL_TOPIC    "Flow Data"
+#define FL_LEN 21
+float flow_sensor_payload[FL_LEN];
+/* payload[0] =    Gallons Per Minute
+* payload[1] =    Total Gallons (24 Hrs)
+* payload[2] =    Irrigation Pressure
+* payload[3] =    Pump Temperature
+* payload[4] =    spare
+* payload[5] =    spare
+* payload[6] =    spare
+* payload[7] =    spare
+* payload[8] =    spare
+* payload[9] =    spare
+* payload[10] =    Cycle Count
+* payload[11] =    spare
+* payload[12] =    spare
+* payload[13] =    spare
+* payload[14] =    spare
+* payload[15] =    spare
+* payload[16] =    spare
+* payload[17] =    spare
+* payload[18] =    spare
+* payload[19] =    spare
+* payload[20] =    spare
+*/
+
+/* CLIENTID     "ESP8266 ClientFlow", #define PUB_TOPIC   "Flow ESP", flow_esp_ , len=21
+* payload 0    Pulses Counted in Time Window
+* payload 1    Number of milliseconds in Time Window
+* payload 2    Flag 1=new data 0=stale data
+* payload 3    Pressure Sensor Analog Value
+* payload 4     unused
+* payload 5     unused
+* payload 6     unused
+* payload 7     unused
+* payload 8     unused
+* payload 9     unused
+* payload 10     unused
+* payload 11     unused
+* payload 12     Cycle Counter 16bit Int
+* payload 13     unused
+* payload 14     unused
+* payload 15     unused
+* payload 16     unused
+* payload 17    Temperature in F
+* payload 18     unused
+* payload 19     unused
+* payload 20     FW Version 4 Hex
+*/
+/*
+* payload 21     Last payload is Control Word From User
+*/
 
 float Tank_Radius_sqd = 16;    //internal radius of tank in Ft squared - Example my tank is 8ft Diameter = 4ft radius = 16 when squared
 unsigned short int data_payload[22] ;

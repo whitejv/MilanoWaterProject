@@ -55,28 +55,31 @@ unsigned int masterCounter = 0;
  */
 
 /*
- * Data Word 0:  CH1: Dead - Damaged
- * Data Word 1:  CH2: Raw Sensor Current Sense Well 1 16bit
- * Data Word 2:  CH3: Raw Sensor Current Sense Well 2 16bit
- * Data Word 3:  CH4: Raw Sensor Current Sense Well 3 16bit
- * Data Word 4:  GPIO 8 bits Hex (8 bits: 0-3 floats, 4 Pump Relay Command)
- * Data Word 5:  Raw Temp Celcius
- * Data Word 6:  Flow Sensor Count 16bit Int
- * Data Word 7:  Flow Sensor Period 16bit Int
- * Data Word 8:  CH1: 4-20 mA Raw Sensor HydroStatic Pressure 16bit
- * Data Word 9:  CH2: Raw Sensor House Water Pressure 16bit ADC 0-5v
- * Data Word 10: CH3: Unused 2 16bit
- * Data Word 11: CH4: Raw Sensor Current Sense Irrigation pump 4 (16bit)
- * Data Word 12: Cycle Counter 16bit Int
- * Data Word 13: spare
- * Data Word 14: spare
- * Data Word 15: spare
- * Data Word 16: I2C Panic Count 16bit Int
- * Data Word 17: TMP100 I2C Error
- * Data Word 18: MCP23008 I2C Error
- * Data Word 19: MCP3428 I2C Error
- * Data Word 20: FW Version 4 Hex 
- */
+* payload 0	Pulses Counted in Time Window
+* payload 1	Number of milliseconds in Time Window
+* payload 2	Flag 1=new data 0=stale data
+* payload 3	Pressure Sensor Analog Value
+* payload 4	 unused
+* payload 5	 unused
+* payload 6	 unused
+* payload 7	 unused
+* payload 8	 unused
+* payload 9	 unused
+* payload 10	 unused
+* payload 11	 unused
+* payload 12	 Cycle Counter 16bit Int
+* payload 13	 unused
+* payload 14	 unused
+* payload 15	 unused
+* payload 16	 unused
+* payload 17	Temperature in F
+* payload 18	 unused
+* payload 19	 unused
+* payload 20	 FW Version 4 Hex 
+*/	
+/*	
+* payload 21	 Last payload is Control Word From User
+*/ 	
 
 
 unsigned short int raw_flow_data[22] =   { 0, 0, 0, 0, 0,
