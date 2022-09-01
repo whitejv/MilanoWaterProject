@@ -12,6 +12,7 @@
 		851C3E47277120C5008B07D4 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 851C3E46277120C5008B07D4 /* main.c */; };
 		8555E71E27739111002B3402 /* monitor.c in Sources */ = {isa = PBXBuildFile; fileRef = 8555E71D27739111002B3402 /* monitor.c */; };
 		8555E72B2774F73C002B3402 /* subscriber.c in Sources */ = {isa = PBXBuildFile; fileRef = 8555E72A2774F73C002B3402 /* subscriber.c */; };
+		856632B528C1528D000AC942 /* flowmonitor.c in Sources */ = {isa = PBXBuildFile; fileRef = 856632B428C1528D000AC942 /* flowmonitor.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -51,6 +52,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
+		856632AB28C1527D000AC942 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -71,6 +81,9 @@
 		8555E71D27739111002B3402 /* monitor.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = monitor.c; sourceTree = "<group>"; };
 		8555E7232774F6F7002B3402 /* TankSubscriber */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TankSubscriber; sourceTree = BUILT_PRODUCTS_DIR; };
 		8555E72A2774F73C002B3402 /* subscriber.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = subscriber.c; sourceTree = "<group>"; };
+		856632A828C14968000AC942 /* FlowMonitor */ = {isa = PBXFileReference; lastKnownFileType = folder; path = FlowMonitor; sourceTree = "<group>"; };
+		856632AD28C1527D000AC942 /* FlowMonitor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = FlowMonitor; sourceTree = BUILT_PRODUCTS_DIR; };
+		856632B428C1528D000AC942 /* flowmonitor.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = flowmonitor.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +115,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		856632AA28C1527D000AC942 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -124,6 +144,7 @@
 		851C3E3A277120C5008B07D4 = {
 			isa = PBXGroup;
 			children = (
+				856632A828C14968000AC942 /* FlowMonitor */,
 				850AB30B27A0AFB700471831 /* TankAlert */,
 				8555E70127736C33002B3402 /* Blynk */,
 				8555E70427736C33002B3402 /* cronchk.sh */,
@@ -137,6 +158,7 @@
 				8555E717277390C8002B3402 /* TankMonitor */,
 				8555E7242774F6F7002B3402 /* TankSubscriber */,
 				850AB31727A1958B00471831 /* TankAlert */,
+				856632AE28C1527D000AC942 /* FlowMonitor */,
 				851C3E44277120C5008B07D4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -148,6 +170,7 @@
 				8555E716277390C8002B3402 /* TankMonitor */,
 				8555E7232774F6F7002B3402 /* TankSubscriber */,
 				850AB31627A1958B00471831 /* TankAlert */,
+				856632AD28C1527D000AC942 /* FlowMonitor */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -174,6 +197,14 @@
 				8555E72A2774F73C002B3402 /* subscriber.c */,
 			);
 			path = TankSubscriber;
+			sourceTree = "<group>";
+		};
+		856632AE28C1527D000AC942 /* FlowMonitor */ = {
+			isa = PBXGroup;
+			children = (
+				856632B428C1528D000AC942 /* flowmonitor.c */,
+			);
+			path = FlowMonitor;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -247,6 +278,23 @@
 			productReference = 8555E7232774F6F7002B3402 /* TankSubscriber */;
 			productType = "com.apple.product-type.tool";
 		};
+		856632AC28C1527D000AC942 /* FlowMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 856632B128C1527D000AC942 /* Build configuration list for PBXNativeTarget "FlowMonitor" */;
+			buildPhases = (
+				856632A928C1527D000AC942 /* Sources */,
+				856632AA28C1527D000AC942 /* Frameworks */,
+				856632AB28C1527D000AC942 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FlowMonitor;
+			productName = FlowMonitor;
+			productReference = 856632AD28C1527D000AC942 /* FlowMonitor */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -269,6 +317,9 @@
 					8555E7222774F6F7002B3402 = {
 						CreatedOnToolsVersion = 13.2.1;
 					};
+					856632AC28C1527D000AC942 = {
+						CreatedOnToolsVersion = 13.4.1;
+					};
 				};
 			};
 			buildConfigurationList = 851C3E3E277120C5008B07D4 /* Build configuration list for PBXProject "MilanoWaterProject" */;
@@ -288,6 +339,7 @@
 				8555E715277390C8002B3402 /* TankMonitor */,
 				8555E7222774F6F7002B3402 /* TankSubscriber */,
 				850AB31527A1958B00471831 /* TankAlert */,
+				856632AC28C1527D000AC942 /* FlowMonitor */,
 			);
 		};
 /* End PBXProject section */
@@ -323,6 +375,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				8555E72B2774F73C002B3402 /* subscriber.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		856632A928C1527D000AC942 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				856632B528C1528D000AC942 /* flowmonitor.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -501,7 +561,8 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
-				HEADER_SEARCH_PATHS = /Users/dub/lib/paho.mqtt.c/src;
+				HEADER_SEARCH_PATHS = "";
+				"HEADER_SEARCH_PATHS[arch=*]" = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -512,7 +573,7 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
-				HEADER_SEARCH_PATHS = /Users/dub/lib/paho.mqtt.c/src;
+				HEADER_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -533,6 +594,26 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		856632B228C1527D000AC942 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		856632B328C1527D000AC942 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -581,6 +662,15 @@
 			buildConfigurations = (
 				8555E7282774F6F7002B3402 /* Debug */,
 				8555E7292774F6F7002B3402 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		856632B128C1527D000AC942 /* Build configuration list for PBXNativeTarget "FlowMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				856632B228C1527D000AC942 /* Debug */,
+				856632B328C1527D000AC942 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
