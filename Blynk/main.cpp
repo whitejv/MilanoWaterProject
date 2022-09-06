@@ -100,6 +100,16 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTAsync_message *me
           printf("\n");
       }
     }
+    else if (strcmp(topicName, FL_TOPIC) == 0) {
+          f_payloadptr = (float *)message->payload;
+          for(i=0; i<FL_LEN; i++)
+          {
+              flow_sensor_payload[i] = *f_payloadptr++ ;
+              printf("%.3f ", flow_sensor_payload[i]);
+          }
+          printf(".\n");
+          printf("\n");      
+    }
     else if (strcmp(topicName, A_TOPIC) == 0){
     }
     else {
@@ -146,23 +156,28 @@ void onConnect(void* context, MQTTAsync_successData* response)
            "Press Q<Enter> to quit\n\n", M_TOPIC, CLIENTID, QOS);
         if ((rc = MQTTAsync_subscribe(client, M_TOPIC, QOS, &opts)) != MQTTASYNC_SUCCESS)
         {
-                printf("Failed to start subscribe Monitor Topic, return code %d\n", rc);
+                printf("Failed to start subscribe %s Topic, return code %d\n", M_TOPIC, rc);
                 exit(EXIT_FAILURE);
         }
         printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
            "Press Q<Enter> to quit\n\n", F_TOPIC, CLIENTID, QOS);
-
         if ((rc = MQTTAsync_subscribe(client, F_TOPIC, QOS, &opts)) != MQTTASYNC_SUCCESS)
         {
-                printf("Failed to start subscribe Formatted Topic, return code %d\n", rc);
+                printf("Failed to start subscribe %s Topic, return code %d\n", F_TOPIC, rc);
                 exit(EXIT_FAILURE);
         }
-
+        printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
+        "Press Q<Enter> to quit\n\n", FL_TOPIC, CLIENTID, QOS);
+        if ((rc = MQTTAsync_subscribe(client, FL_TOPIC, QOS, &opts)) != MQTTASYNC_SUCCESS)
+        {
+                printf("Failed to start subscribe %s Topic, return code %d\n", FL_TOPIC, rc);
+                exit(EXIT_FAILURE);
+        }
         printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
            "Press Q<Enter> to quit\n\n", A_TOPIC, CLIENTID, QOS);
         if ((rc = MQTTAsync_subscribe(client, A_TOPIC, QOS, &opts)) != MQTTASYNC_SUCCESS)
         {
-                printf("Failed to start subscribe Alert Topic, return code %d\n", rc);
+                printf("Failed to start subscribe %s Topic, return code %d\n", A_TOPIC, rc);
                 exit(EXIT_FAILURE);
         }
 }
@@ -288,6 +303,7 @@ void loop()
     Blynk.virtualWrite(V27, (monitor_sensor_payload[10]/60.));//PumpRunTime
     Blynk.virtualWrite(V28, (monitor_sensor_payload[11]/60.));//PumpRunTime
     Blynk.virtualWrite(V29, (monitor_sensor_payload[12]/60.));//PumpRunTime
+    Blynk.virtualWrite(V30, (flow_sensor_payload[3]));//irrigation pump temperature
     Blynk.run();
     tmr.run();
 }

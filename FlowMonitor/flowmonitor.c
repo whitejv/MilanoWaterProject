@@ -7,8 +7,11 @@
 #include "MQTTClient.h"
 #include "../include/water.h"
 
-/* CLIENTID     "ESP8266 ClientFlow", #define PUB_TOPIC   "Flow ESP", flow_esp_ , len=21
-* payload 0    Pulses Counted in Time Window
+
+unsigned short int flow_data_payload[21];
+#define CLIENTID     "ESP8266 ClientFlow"
+#define TOPIC   "Flow ESP"
+/* payload 0    Pulses Counted in Time Window
 * payload 1    Number of milliseconds in Time Window
 * payload 2    Flag 1=new data 0=stale data
 * payload 3    Pressure Sensor Analog Value
@@ -77,27 +80,27 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
     time_t t;
     time(&t);
     int i;
-    float* payloadptr;
+    unsigned short int* payloadptr;
       
-    //printf("Message arrived:\n");
-    //printf("          topic: %s  ", topicName);
-    //printf("         length: %d  ", topicLen);
-    //printf("     PayloadLen: %d\n", message->payloadlen);
-    //printf("message: ");
+    printf("Message arrived:\n");
+    printf("          topic: %s  ", topicName);
+    printf("         length: %d  ", topicLen);
+    printf("     PayloadLen: %d\n", message->payloadlen);
+    printf("message: ");
     
    
     if (message->payloadlen != 0) {
-         if ( F_LEN*4 == message->payloadlen) {
-            payloadptr = (float *)message->payload;
-            for(i=0; i < (message->payloadlen/4); i++)
+         if ( message->payloadlen == 42) {
+            payloadptr = (unsigned short int *)message->payload;
+            for(i=0; i < (message->payloadlen/2); i++)
             {
-               formatted_sensor_payload[i] = *payloadptr++ ;
-               //printf("%0f ", raw_data_payload[i]);
+               flow_data_payload[i] = *payloadptr++ ;
+               printf("%0x ", flow_data_payload[i]);
              }
          }
          //printf("%0X ", raw_data_payload[21]);
-         //printf("%s", ctime(&t));
-         printf(".");
+         printf("%s", ctime(&t));
+         //printf(".");
         MQTTClient_freeMessage(&message);
         MQTTClient_free(topicName);
     }
@@ -153,9 +156,9 @@ int main(int argc, char* argv[])
         rc = EXIT_FAILURE;
         exit(EXIT_FAILURE);
     }
-    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, M_CLIENTID, QOS);
+    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TOPIC, CLIENTID, QOS);
     
-    MQTTClient_subscribe(client, FL_TOPIC, QOS);
+    MQTTClient_subscribe(client, TOPIC, QOS);
     
     /*
      * Initialize the data file with headers
@@ -206,7 +209,7 @@ int main(int argc, char* argv[])
          */
         
         
-        }
+        
         /*
          * Set Firmware Version
          * firmware = formatted_sensor_payload[20] & SubFirmware;
@@ -218,28 +221,28 @@ int main(int argc, char* argv[])
         
         /* CLIENTID     "Tank Subscriber", TOPIC "flow Data", flow_sensor_ */
         flow_sensor_payload[0] =    0;
-        flow_sensor_payload[1] =    1;
-        flow_sensor_payload[2] =    2;
-        flow_sensor_payload[3] =    3;
-        flow_sensor_payload[4] =    4;
-        flow_sensor_payload[5] =    5;
-        flow_sensor_payload[6] =    6;
-        flow_sensor_payload[7] =    7;
-        flow_sensor_payload[8] =    8;
-        flow_sensor_payload[9] =    9;
-        flow_sensor_payload[10] =   10;
-        flow_sensor_payload[11] =   11;
-        flow_sensor_payload[12] =   12;
-        flow_sensor_payload[13] =   13;
-        flow_sensor_payload[14] =   14;
-        flow_sensor_payload[15] =   15;
-        flow_sensor_payload[16] =   16;
-        flow_sensor_payload[17] =   17;
-        flow_sensor_payload[18] =   18;
-        flow_sensor_payload[19] =   19;
+        flow_sensor_payload[1] =    0;
+        flow_sensor_payload[2] =    0;
+        flow_sensor_payload[3] =    (float)flow_data_payload[17];
+        flow_sensor_payload[4] =    0;
+        flow_sensor_payload[5] =    0;
+        flow_sensor_payload[6] =    0;
+        flow_sensor_payload[7] =    0;
+        flow_sensor_payload[8] =    0;
+        flow_sensor_payload[9] =    0;
+        flow_sensor_payload[10] =   0;
+        flow_sensor_payload[11] =   0;
+        flow_sensor_payload[12] =   0;
+        flow_sensor_payload[13] =   0;
+        flow_sensor_payload[14] =   0;
+        flow_sensor_payload[15] =   0;
+        flow_sensor_payload[16] =   0;
+        flow_sensor_payload[17] =   0;
+        flow_sensor_payload[18] =   0;
+        flow_sensor_payload[19] =   0;
 
         for (i=0; i<=FL_LEN; i++) {
-            printf("%0x ", flow_sensor_payload[i]);
+            printf("%f ", flow_sensor_payload[i]);
         }
         printf("%s", ctime(&t));
 

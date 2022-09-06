@@ -43,9 +43,9 @@ const int mqttPort = 1883;
 //const char *mqttUser = "zerlcpdf";
 //const char *mqttPassword = "OyHBShF_g9ya";
 
-WiFiClient espClient;
+WiFiClient espFlowClient;
 
-PubSubClient client(MQTT_BrokerIP, mqttPort, espClient);
+PubSubClient client(MQTT_BrokerIP, mqttPort, espFlowClient);
 
 int WDT_Interval = 0;
 unsigned int masterCounter = 0;
@@ -135,8 +135,8 @@ void setup() {
 
   while (!client.connected()) {
     Serial.printf("Connecting to MQTT.....");
-    //if (client.connect("ESP8266Client", mqttUser, mqttPassword))
-    if (client.connect("ESP8266Client")) {
+    //if (client.connect("ESP8266FlowClient", mqttUser, mqttPassword))
+    if (client.connect("ESP8266FlowClient")) {
       Serial.printf("connected\n");
     } else {
       Serial.printf("failed with ");
@@ -234,4 +234,3 @@ void loop() {
 
   delay(500);
 }
-
