@@ -174,6 +174,7 @@ void loop() {
   int i;
   int decimal;
 
+
 /* If I2C Errors Exceed 100 in 10 seconds then force a reboot to hopefully clear up */
 /*
   if (((I2CPanicCount - last_I2CPanicCount) > 25) && (WDT_Interval >= WDT_TIMEOUT)) {
@@ -206,14 +207,27 @@ void loop() {
     raw_flow_data[2] = 0 ;
   }
   pulseCount =0 ;
- 
+
+
   sensors.requestTemperatures(); 
   float temperatureF = sensors.getTempFByIndex(0);
-  raw_flow_data[17] = temperatureF ;
+  //printf("%f \n", temperatureF) ;
+  raw_flow_data[17] = *(((int16_t *)&temperatureF) + 0);
+// store first 2 bytes of float into i[0]
+// be careful here!!! endianness matters
+// for little endian, use
+// i[0] = *(((int16_t *)&f) + 1);
+
+raw_flow_data[18] = *(((int16_t *)&temperatureF) + 1);
+// store last 2 bytes of float into i[1]
+// be careful here!!! endianness matters
+// for little endian, use
+// i[1] = *(((int16_t *)&f) + 0);
+
+  
   raw_flow_data[12] = masterCounter;
  // raw_sensor_data[16] = I2CPanicCount;
   raw_flow_data[3] = analogRead(A0);  // This reads the analog in value
-  
   
   client.loop();
 
@@ -223,11 +237,10 @@ void loop() {
   for (i = 0; i <= 16; ++i) {
     Serial.printf("%x ", raw_flow_data[i]);
   }
-  for (i = 17; i <= 19; ++i) {
-    decimal = (short)raw_flow_data[i];
-    Serial.printf("%d ", decimal);
+  for (i = 17; i <= 17; ++i) {
+    Serial.printf("%f ", *((float *)&raw_flow_data[i]));
   }
-  for (i = 20; i <= 20; ++i) {
+  for (i = 19; i <= 20; ++i) {
     Serial.printf("%x ", raw_flow_data[i]);
   }
   Serial.printf("\n");

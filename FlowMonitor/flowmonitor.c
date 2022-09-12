@@ -220,9 +220,9 @@ int main(int argc, char* argv[])
          */
         
         /* CLIENTID     "Tank Subscriber", TOPIC "flow Data", flow_sensor_ */
-        flow_sensor_payload[0] =    0;
-        flow_sensor_payload[1] =    0;
-        flow_sensor_payload[2] =    0;
+        flow_sensor_payload[0] =    15.6;//GallonsPerMinute;
+        flow_sensor_payload[1] =    2002.3;//TotalGallons;
+        flow_sensor_payload[2] =    45.3;//IrrigationPress;
         flow_sensor_payload[3] =    (float)flow_data_payload[17];
         flow_sensor_payload[4] =    0;
         flow_sensor_payload[5] =    0;
@@ -230,7 +230,7 @@ int main(int argc, char* argv[])
         flow_sensor_payload[7] =    0;
         flow_sensor_payload[8] =    0;
         flow_sensor_payload[9] =    0;
-        flow_sensor_payload[10] =   0;
+        flow_sensor_payload[10] =   (float)flow_data_payload[12];
         flow_sensor_payload[11] =   0;
         flow_sensor_payload[12] =   0;
         flow_sensor_payload[13] =   0;

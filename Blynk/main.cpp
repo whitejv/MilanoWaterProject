@@ -69,15 +69,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTAsync_message *me
     //printf("         length: %d  ", topicLen);
     //printf("     PayloadLen: %d\n", message->payloadlen);
     //printf("message: ");
- /*   
-    payloadptr = (char *)message->payload;
-   
-    for(i=0; i<message->payloadlen; i++)
-    {
-        printf("%x ", *payloadptr++);
-    }
-    putchar('\n'); 
-*/
+ 
     if (strcmp(topicName, F_TOPIC) == 0) {
        f_payloadptr = (float *)message->payload;
        for(i=0; i<F_LEN; i++)
@@ -96,7 +88,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTAsync_message *me
              monitor_sensor_payload[i] = *i_payloadptr++ ;
              //printf("%x ", monitor_sensor_payload[i]);
           }
-          printf(": ");
+          printf("+ ");
           printf("\n");
       }
     }
@@ -107,7 +99,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTAsync_message *me
               flow_sensor_payload[i] = *f_payloadptr++ ;
               printf("%.3f ", flow_sensor_payload[i]);
           }
-          printf(".\n");
+          printf("* ");
           printf("\n");      
     }
     else if (strcmp(topicName, A_TOPIC) == 0){
@@ -205,10 +197,13 @@ void loop()
                                 "0xbf00ff",   //purple
                                 "0xfe2e9a",   //fuscia 
                                 "0x000000" }; //black
-    char *pumpMenu[] = { "OFF",   
+    /*
+    char *pumpMenu[] = { "OFF",
                          "ON",   
                          "AUTO",   
-                         "ERROR" };                                
+                         "ERROR" };
+    */
+    
     /*
      * Jazz up the basic collors
      */
@@ -250,7 +245,7 @@ void loop()
     Blynk.setProperty(15, "color", ledcolorPalette[floatLedcolor[4]]);  // Set LED Label to HEX colour
     
     Blynk.setProperty(21, "color", ledcolorPalette[monitor_sensor_payload[19]]);  // Set LED Label to HEX colour
-
+/*
     Blynk.setProperty(16, "label", pumpMenu[(int)blynk_payload[23]]);
     Blynk.setProperty(17, "label", pumpMenu[(int)blynk_payload[24]]);
     Blynk.setProperty(18, "label", pumpMenu[(int)blynk_payload[25]]);
@@ -258,7 +253,6 @@ void loop()
     Blynk.setProperty(17, "labels", "Off", "On", "Auto");
     Blynk.setProperty(18, "labels", "Off", "On", "Auto");
  
- /*  
     printf("Pump LED 1 %s  \n",  ledcolor[monitor_sensor_payload[4]]);  // Set LED Label to HEX colour
     printf("Pump LED 2 %s  \n",  ledcolor[monitor_sensor_payload[5]]);  // Set LED Label to HEX colour
     printf("Pump LED 3 %s  \n",  ledcolor[monitor_sensor_payload[6]]);
@@ -304,6 +298,10 @@ void loop()
     Blynk.virtualWrite(V28, (monitor_sensor_payload[11]/60.));//PumpRunTime
     Blynk.virtualWrite(V29, (monitor_sensor_payload[12]/60.));//PumpRunTime
     Blynk.virtualWrite(V30, (flow_sensor_payload[3]));//irrigation pump temperature
+    Blynk.virtualWrite(V31, (flow_sensor_payload[0]));//irrigation pump temperature
+    Blynk.virtualWrite(V32, (flow_sensor_payload[1]));//irrigation pump temperature
+    Blynk.virtualWrite(V33, (flow_sensor_payload[2]));//irrigation pump temperature
+    Blynk.virtualWrite(V34,  (flow_sensor_payload[10]));//irrigation pump temperature
     Blynk.run();
     tmr.run();
 }
