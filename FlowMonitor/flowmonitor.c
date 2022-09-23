@@ -116,14 +116,23 @@ void connlost(void *context, char *cause)
 int main(int argc, char* argv[])
 {
     int i=0;
-    int j=0;
     FILE *fptr;
     time_t t;
     struct tm timenow;
     time(&t);
     int SecondsFromMidnight = 0 ;
     int PriorSecondsFromMidnight =0;
-
+    float irrigationPressure = 0;
+    float temperatureF;
+    float calibrationFactor = 1.0;
+    float flowRate = 0.0;
+    float dailyGallons = 0;
+    int pulseCount = 0;
+    int millsElapsed = 0;
+    int millsTotal = 0;
+    int dailyPulseCount = 0;
+    int newPulseData = 0;
+    
     
     MQTTClient client;
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -183,31 +192,47 @@ int main(int argc, char* argv[])
         
         SecondsFromMidnight = (timenow.tm_hour * 60 * 60) + (timenow.tm_min * 60) + timenow.tm_sec ;
         if (SecondsFromMidnight < PriorSecondsFromMidnight) {
-            /*
-            fptr = fopen(datafile1, "a");
             
-            for (j=1; j<=NPumps; j++) {
-                fprintf(fptr, "%d, %d, %d ", j, MyPumpStats[j].RunCount, MyPumpStats[j].RunTime);          
-                MyPumpStats[j].PumpOn = 0;
-                MyPumpStats[j].PumpOnTimeStamp = 0;
-                MyPumpStats[j].PumpLastState=0;
-                MyPumpStats[j].RunCount=0;
-                MyPumpStats[j].RunTime=0;
-            }
+            fptr = fopen(datafile, "a");
+            
+            /* reset 24 hr stuff */
+            
             fprintf(fptr, "%s", ctime(&t));
             fclose(fptr);
-            */
+            
         }
         //printf("seconds since midnight: %d\n", SecondsFromMidnight);
         PriorSecondsFromMidnight = SecondsFromMidnight ;
         
-        
+
         
         /*
          * Compute Monitor Values Based on Inputs from
          * Sensor Data and Format for easy use with Blynk
          */
+
+
+        newPulseData = flow_data_payload[2] ;
+        if ( newPulseData == 1){
+            
+            pulseCount = flow_data_payload[0];
+            dailyPulseCount = dailyPulseCount + pulseCount ;
+            millsElapsed = flow_data_payload[1] ;
+            millsTotal = millsTotal + millsElapsed;
+            flowRate = ((pulseCount / (millsElapsed/1000)) / .5) / calibrationFactor;
+            flowRate = ((flowRate * .00026417)/(millsElapsed/1000)) * 60;  //GPM
+            printf("Pulse Count %d Daily Pulse Count %d Flow Rate: %f\n", pulseCount, dailyPulseCount, flowRate);
+            dailyGallons = (dailyPulseCount/(millsTotal/1000)) / calibrationFactor * .00026417;
+            
+        } else {
+            pulseCount = 0;
+            millsElapsed = 0 ;
+        }
         
+        
+        irrigationPressure = flow_data_payload[3] * .0015259021 ;
+        
+        temperatureF = *((float *)&flow_data_payload[17]);
         
         
         /*
@@ -220,17 +245,17 @@ int main(int argc, char* argv[])
          */
         
         /* CLIENTID     "Tank Subscriber", TOPIC "flow Data", flow_sensor_ */
-        flow_sensor_payload[0] =    15.6;//GallonsPerMinute;
-        flow_sensor_payload[1] =    2002.3;//TotalGallons;
-        flow_sensor_payload[2] =    45.3;//IrrigationPress;
-        flow_sensor_payload[3] =    (float)flow_data_payload[17];
+        flow_sensor_payload[0] =    flowRate;
+        flow_sensor_payload[1] =    dailyGallons;
+        flow_sensor_payload[2] =    irrigationPressure;
+        flow_sensor_payload[3] =    temperatureF;
         flow_sensor_payload[4] =    0;
         flow_sensor_payload[5] =    0;
         flow_sensor_payload[6] =    0;
         flow_sensor_payload[7] =    0;
         flow_sensor_payload[8] =    0;
         flow_sensor_payload[9] =    0;
-        flow_sensor_payload[10] =   (float)flow_data_payload[12];
+        flow_sensor_payload[10] =   flow_data_payload[12];
         flow_sensor_payload[11] =   0;
         flow_sensor_payload[12] =   0;
         flow_sensor_payload[13] =   0;

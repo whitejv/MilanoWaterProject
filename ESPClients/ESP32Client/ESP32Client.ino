@@ -175,17 +175,17 @@ void setup() {
 
   Wire.beginTransmission(MCP23008Addr);
   Wire.write(0x00);        //Selects the IODIRA Register
-  Wire.write(0b00011111);  //0 Set the first 4 as Input and the next 4 as Output
-  Wire.write(0b00011111);  //1 Set the first 4 as Input and the next 4 as Output
-  Wire.write(0b00000000);  //2 Set the first 4 as Input and the next 4 as Output
-  Wire.write(0b00000000);  //3 Set the first 4 as Input and the next 4 as Output
-  Wire.write(0b00000000);  //4 Set the first 4 as Input and the next 4 as Output
-  Wire.write(0b00000000);  //5 Set the first 4 as Input and the next 4 as Output
-  Wire.write(0b00011111);  //6 Set the first 4 as Input and the next 4 as Output
-  Wire.write(0b00000000);  //7 Set the first 4 as Input and the next 4 as Output
-  Wire.write(0b00000000);  //8 Set the first 4 as Input and the next 4 as Output
-  Wire.write(0b00000000);  //9 Set the first 4 as Input and the next 4 as Output
-  Wire.write(0b00000000);  //A Set the first 4 as Input and the next 4 as Output
+  Wire.write(0b00111111);  //0 Set the first 6 as Input and the next 2 as Output
+  Wire.write(0b00111111);  //1 Set the first 6 as Input and the next 2 as Output
+  Wire.write(0b00000000);  //2 
+  Wire.write(0b00000000);  //3
+  Wire.write(0b00000000);  //4
+  Wire.write(0b00000000);  //5
+  Wire.write(0b00111111);  //6 Set the first 6 as Input and the next 2 as Output
+  Wire.write(0b00000000);  //7
+  Wire.write(0b00000000);  //8
+  Wire.write(0b00000000);  //9
+  Wire.write(0b00000000);  //A
 
   Wire.endTransmission();  // Stop I2C Transmission
 }

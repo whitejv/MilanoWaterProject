@@ -196,7 +196,7 @@ void loop() {
     while (1) {};
   }
   currentMillis = millis();
-  if (currentMillis - previousMillis > interval) {
+  if (((currentMillis - previousMillis) > interval) && pulseCount > 0 ) {
     pulse1Sec = pulseCount;
     millisecond = millis() - previousMillis ;
     raw_flow_data[0] = pulse1Sec ;
