@@ -19,6 +19,10 @@
 - -> sudo apt-get install libssl-dev
 - -> sudo apt-get install xutils-dev
 
+## Install FTP Daemon
+
+--> Follow the FTP Setup Document in Interesting Stuff repository
+
 ## Install Mosquitto MQTT Service
 
 - -> sudo apt install -y mosquitto mosquitto-clients
