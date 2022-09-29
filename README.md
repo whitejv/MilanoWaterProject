@@ -46,9 +46,14 @@
 
 ## Install Wiringpi (needed by Blynk)
 
+#### New Method
+- -> sudo apt install wiringpi
+#### Old Method
 - -> wget https://project-downloads.drogon.net/wiringpi-latest.deb
 - -> sudo dpkg -i wiringpi-latest.deb
 - -> dpkg-deb -x wiringpi-latest.deb WiringPi/
+
+#### Verify Installed Correctly
 - -> gpio -v (look below means good install)
 === gpio version: 2.52
 === Copyright (c) 2012-2018 Gordon Henderson
