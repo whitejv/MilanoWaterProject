@@ -81,13 +81,13 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
     time(&t);
     int i;
     unsigned short int* payloadptr;
-      
+/*      
     printf("Message arrived:\n");
     printf("          topic: %s  ", topicName);
     printf("         length: %d  ", topicLen);
     printf("     PayloadLen: %d\n", message->payloadlen);
     printf("message: ");
-    
+*/    
    
     if (message->payloadlen != 0) {
          if ( message->payloadlen == 42) {
@@ -95,11 +95,11 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
             for(i=0; i < (message->payloadlen/2); i++)
             {
                flow_data_payload[i] = *payloadptr++ ;
-               printf("%0x ", flow_data_payload[i]);
+              // printf("%0x ", flow_data_payload[i]);
              }
          }
          //printf("%0X ", raw_data_payload[21]);
-         printf("%s", ctime(&t));
+         //printf("%s", ctime(&t));
          //printf(".");
         MQTTClient_freeMessage(&message);
         MQTTClient_free(topicName);
@@ -127,6 +127,7 @@ int main(int argc, char* argv[])
     float calibrationFactor = 1.0;
     float flowRate = 0.0;
     float dailyGallons = 0;
+    float flowRateGPM = 0;
     int pulseCount = 0;
     int millsElapsed = 0;
     int millsTotal = 0;
@@ -196,7 +197,7 @@ int main(int argc, char* argv[])
             fptr = fopen(datafile, "a");
             
             /* reset 24 hr stuff */
-            
+            dailyGallons = 0;            
             fprintf(fptr, "%s", ctime(&t));
             fclose(fptr);
             
@@ -215,22 +216,29 @@ int main(int argc, char* argv[])
         newPulseData = flow_data_payload[2] ;
         if ( newPulseData == 1){
             
-            pulseCount = flow_data_payload[0];
-            dailyPulseCount = dailyPulseCount + pulseCount ;
             millsElapsed = flow_data_payload[1] ;
-            millsTotal = millsTotal + millsElapsed;
-            flowRate = ((pulseCount / (millsElapsed/1000)) / .5) / calibrationFactor;
-            flowRate = ((flowRate * .00026417)/(millsElapsed/1000)) * 60;  //GPM
-            printf("Pulse Count %d Daily Pulse Count %d Flow Rate: %f\n", pulseCount, dailyPulseCount, flowRate);
-            dailyGallons = (dailyPulseCount/(millsTotal/1000)) / calibrationFactor * .00026417;
+            pulseCount = flow_data_payload[0];
+
+            if (millsElapsed < 5000) {     //ignore the really long intervals
+               dailyPulseCount = dailyPulseCount + pulseCount ;
+               millsElapsed = flow_data_payload[1] ;
+               millsTotal = millsTotal + millsElapsed;
+               flowRate = ((pulseCount / (millsElapsed/1000)) / .5) / calibrationFactor;
+               flowRate = ((flowRate * .00026417)/(millsElapsed/1000)) * 60;  //GPM
+               flowRateGPM = flowRate * 30;
+               dailyGallons = dailyGallons + flowRate ;
             
+               printf("Pulse Count: %d   Daily Pulse Count: %d\n", pulseCount, dailyPulseCount);
+               printf("Milliseconds Elapsed: %d   Milliseconds Total:  %d\n", millsElapsed, millsTotal);
+               printf("Flow Rate: %f  Flow Rate GPM:  %f   Daily Gallons:  %f\n", flowRate, flowRateGPM,  dailyGallons);
+           }    
         } else {
             pulseCount = 0;
             millsElapsed = 0 ;
         }
         
         
-        irrigationPressure = flow_data_payload[3] * .0015259021 ;
+        irrigationPressure = (flow_data_payload[3] * .9756525)/10 ;
         
         temperatureF = *((float *)&flow_data_payload[17]);
         
@@ -245,7 +253,7 @@ int main(int argc, char* argv[])
          */
         
         /* CLIENTID     "Tank Subscriber", TOPIC "flow Data", flow_sensor_ */
-        flow_sensor_payload[0] =    flowRate;
+        flow_sensor_payload[0] =    flowRateGPM;
         flow_sensor_payload[1] =    dailyGallons;
         flow_sensor_payload[2] =    irrigationPressure;
         flow_sensor_payload[3] =    temperatureF;
@@ -267,9 +275,9 @@ int main(int argc, char* argv[])
         flow_sensor_payload[19] =   0;
 
         for (i=0; i<=FL_LEN; i++) {
-            printf("%f ", flow_sensor_payload[i]);
+           // printf("%f ", flow_sensor_payload[i]);
         }
-        printf("%s", ctime(&t));
+       // printf("%s", ctime(&t));
 
         pubmsg.payload = flow_sensor_payload;
         pubmsg.payloadlen = FL_LEN * 4;
