@@ -46,9 +46,14 @@
 
 ## Install Wiringpi (needed by Blynk)
 
-#### New Method
+#### New Method (works for 32bit and may work for 64bit)
 - -> sudo apt install wiringpi
-#### Old Method
+#### Alternative Method is to Clone
+- ->git clone https://github.com/WiringPi/WiringPi.git
+- ->cd WiringPi
+- ->./build
+
+#### Old Method (depricated)
 - -> wget https://project-downloads.drogon.net/wiringpi-latest.deb
 - -> sudo dpkg -i wiringpi-latest.deb
 - -> dpkg-deb -x wiringpi-latest.deb WiringPi/
