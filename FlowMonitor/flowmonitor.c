@@ -60,7 +60,7 @@ unsigned short int flow_data_payload[21];
 * payload[20] =    spare
 */
 
-#define datafile "./datafile1.txt"
+#define flowfile "./flowfile.txt"
 #define flowdata "./flowdata.txt"
 
 float TotalDailyGallons = 0;
@@ -81,13 +81,15 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
     time(&t);
     int i;
     unsigned short int* payloadptr;
-/*      
+    float* sensorpayloadptr;
+
+    /*  
     printf("Message arrived:\n");
     printf("          topic: %s  ", topicName);
     printf("         length: %d  ", topicLen);
     printf("     PayloadLen: %d\n", message->payloadlen);
     printf("message: ");
-*/    
+   */
    
     if (message->payloadlen != 0) {
          if ( message->payloadlen == 42) {
@@ -97,10 +99,20 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
                flow_data_payload[i] = *payloadptr++ ;
               // printf("%0x ", flow_data_payload[i]);
              }
+             printf("|\n");
          }
-         //printf("%0X ", raw_data_payload[21]);
+         else if ( F_LEN*4 == message->payloadlen) {
+            sensorpayloadptr = (float *)message->payload;
+            for(i=0; i < (message->payloadlen/4); i++)
+            {
+               formatted_sensor_payload[i] = *sensorpayloadptr++ ;
+               //printf("%0f ", formatted_sensor_payload[i]);
+             }
+             printf("+\n");
+         }
          //printf("%s", ctime(&t));
-         //printf(".");
+         
+         
         MQTTClient_freeMessage(&message);
         MQTTClient_free(topicName);
     }
@@ -118,6 +130,8 @@ int main(int argc, char* argv[])
     int i=0;
     FILE *fptr;
     time_t t;
+    time_t start_t, end_t;
+    double diff_t;
     struct tm timenow;
     time(&t);
     int SecondsFromMidnight = 0 ;
@@ -128,11 +142,19 @@ int main(int argc, char* argv[])
     float flowRate = 0.0;
     float dailyGallons = 0;
     float flowRateGPM = 0;
+    float avgflowRateGPM = 0;
+    float avgflowRate = 0;
+    static int   flowIndex = 0;
+    static float flowRateValueArray[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
     int pulseCount = 0;
     int millsElapsed = 0;
     int millsTotal = 0;
     int dailyPulseCount = 0;
     int newPulseData = 0;
+    int pumpState = 0;
+    int lastpumpState = 0;
+    int startGallons = 0;
+    int stopGallons = 0;
     
     
     MQTTClient client;
@@ -170,12 +192,14 @@ int main(int argc, char* argv[])
     
     MQTTClient_subscribe(client, TOPIC, QOS);
     
+    MQTTClient_subscribe(client, "Formatted Sensor Data", QOS);
+    
     /*
      * Initialize the data file with headers
      */
-     fptr = fopen(flowdata, "a");
-     fprintf(fptr, "Hello World ");
-     fclose(fptr);
+     //fptr = fopen(flowdata, "a");
+     //fprintf(fptr, "Hello World ");
+     //fclose(fptr);
 
     /*
      * Main Loop
@@ -194,11 +218,12 @@ int main(int argc, char* argv[])
         SecondsFromMidnight = (timenow.tm_hour * 60 * 60) + (timenow.tm_min * 60) + timenow.tm_sec ;
         if (SecondsFromMidnight < PriorSecondsFromMidnight) {
             
-            fptr = fopen(datafile, "a");
+            fptr = fopen(flowfile, "a");
             
             /* reset 24 hr stuff */
-            dailyGallons = 0;            
-            fprintf(fptr, "%s", ctime(&t));
+                       
+            fprintf(fptr, "Daily Gallons Used: %f %s", dailyGallons, ctime(&t));
+            dailyGallons = 0; 
             fclose(fptr);
             
         }
@@ -227,10 +252,24 @@ int main(int argc, char* argv[])
                flowRate = ((flowRate * .00026417)/(millsElapsed/1000)) * 60;  //GPM
                flowRateGPM = flowRate * 30;
                dailyGallons = dailyGallons + flowRate ;
-            
+               
+               if (flowRateGPM > 4.0) {
+                  flowRateValueArray[flowIndex++] = flowRateGPM;
+                  flowIndex = flowIndex % 10;
+              }
+               avgflowRate = 0 ;
+               for( i=0; i<=9; ++i){
+                  avgflowRate += flowRateValueArray[i];
+                  //printf("flowRateValueArray[%d]: %f avgflowRate: %f\n", i, flowRateValueArray[i], avgflowRate );
+               }
+               avgflowRateGPM = avgflowRate/10;
+               
+             /* 
                printf("Pulse Count: %d   Daily Pulse Count: %d\n", pulseCount, dailyPulseCount);
                printf("Milliseconds Elapsed: %d   Milliseconds Total:  %d\n", millsElapsed, millsTotal);
                printf("Flow Rate: %f  Flow Rate GPM:  %f   Daily Gallons:  %f\n", flowRate, flowRateGPM,  dailyGallons);
+               printf("Average Flow Rate: %f\n", avgflowRateGPM);
+              */ 
            }    
         } else {
             pulseCount = 0;
@@ -244,8 +283,7 @@ int main(int argc, char* argv[])
         
         
         /*
-         * Set Firmware Version
-         * firmware = formatted_sensor_payload[20] & SubFirmware;
+         * Log the Data Based on Pump 4 on/off
          */
   
         /*
@@ -253,7 +291,7 @@ int main(int argc, char* argv[])
          */
         
         /* CLIENTID     "Tank Subscriber", TOPIC "flow Data", flow_sensor_ */
-        flow_sensor_payload[0] =    flowRateGPM;
+        flow_sensor_payload[0] =    avgflowRateGPM;
         flow_sensor_payload[1] =    dailyGallons;
         flow_sensor_payload[2] =    irrigationPressure;
         flow_sensor_payload[3] =    temperatureF;
@@ -293,6 +331,28 @@ int main(int argc, char* argv[])
         /*
          * Run at this interval
          */
+        
+        if (formatted_sensor_payload[7] > 500) {
+           pumpState = ON;
+        }
+        else {
+           pumpState = OFF;
+        }
+        
+        if ((pumpState == ON) && (lastpumpState == OFF)){
+           startGallons = dailyGallons;
+           time(&start_t);
+           lastpumpState = ON;
+        }
+        else if ((pumpState == OFF) && (lastpumpState == ON)){
+            fptr = fopen(flowdata, "a");
+            stopGallons = dailyGallons - startGallons ;
+            time(&end_t);
+            diff_t = difftime(end_t, start_t);
+            fprintf(fptr, "Last Pump Cycle Gallons Used: %d   Run Time: %f  Min.  %s", stopGallons, (diff_t/60), ctime(&t));
+            fclose(fptr);
+           lastpumpState = OFF ;
+        }
         
         sleep(1) ;
     }

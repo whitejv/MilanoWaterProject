@@ -39,7 +39,7 @@ char password[] = "6jhz7ai7pqy5";  //local network password
 #define firmwareVer 0x8004
 #define ResolutionBits 10
 
-IPAddress MQTT_BrokerIP(192, 168, 1, 250);
+IPAddress MQTT_BrokerIP(192, 168, 1, 209);
 const char *mqttServer = "raspberrypi.local";
 const int mqttPort = 1883;
 

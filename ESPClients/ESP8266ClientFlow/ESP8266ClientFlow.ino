@@ -34,7 +34,7 @@
 char ssid[] = "ATT9LCV8fL_2.4";    //local wifi network SSID
 char password[] = "6jhz7ai7pqy5";  //local network password
 
-IPAddress MQTT_BrokerIP(192, 168, 1, 250);
+IPAddress MQTT_BrokerIP(192, 168, 1, 209);
 const char *mqttServer = "raspberrypi.local";
 const int mqttPort = 1883;
 
