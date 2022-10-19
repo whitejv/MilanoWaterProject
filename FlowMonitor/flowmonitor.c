@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
     int PriorSecondsFromMidnight =0;
     float irrigationPressure = 0;
     float temperatureF;
-    float calibrationFactor = 1.0;
+    float calibrationFactor = .5;
     float flowRate = 0.0;
     float dailyGallons = 0;
     float flowRateGPM = 0;
@@ -155,6 +155,8 @@ int main(int argc, char* argv[])
     int lastpumpState = 0;
     int startGallons = 0;
     int stopGallons = 0;
+    int tankstartGallons = 0;
+    int tankstopGallons = 0;
     
     
     MQTTClient client;
@@ -244,10 +246,10 @@ int main(int argc, char* argv[])
             millsElapsed = flow_data_payload[1] ;
             pulseCount = flow_data_payload[0];
 
-            if (millsElapsed < 5000) {     //ignore the really long intervals
-               dailyPulseCount = dailyPulseCount + pulseCount ;
+            if ((millsElapsed < 5000) && (millsElapsed != 0)) {     //ignore the really long intervals
+               //dailyPulseCount = dailyPulseCount + pulseCount ;
                millsElapsed = flow_data_payload[1] ;
-               millsTotal = millsTotal + millsElapsed;
+               //millsTotal = millsTotal + millsElapsed;
                flowRate = ((pulseCount / (millsElapsed/1000)) / .5) / calibrationFactor;
                flowRate = ((flowRate * .00026417)/(millsElapsed/1000)) * 60;  //GPM
                flowRateGPM = flowRate * 30;
@@ -264,7 +266,7 @@ int main(int argc, char* argv[])
                }
                avgflowRateGPM = avgflowRate/10;
                
-             /* 
+              /*
                printf("Pulse Count: %d   Daily Pulse Count: %d\n", pulseCount, dailyPulseCount);
                printf("Milliseconds Elapsed: %d   Milliseconds Total:  %d\n", millsElapsed, millsTotal);
                printf("Flow Rate: %f  Flow Rate GPM:  %f   Daily Gallons:  %f\n", flowRate, flowRateGPM,  dailyGallons);
@@ -341,17 +343,22 @@ int main(int argc, char* argv[])
         
         if ((pumpState == ON) && (lastpumpState == OFF)){
            startGallons = dailyGallons;
+           tankstartGallons = formatted_sensor_payload[2];
            time(&start_t);
            lastpumpState = ON;
         }
         else if ((pumpState == OFF) && (lastpumpState == ON)){
             fptr = fopen(flowdata, "a");
             stopGallons = dailyGallons - startGallons ;
+            tankstopGallons = formatted_sensor_payload[2];
             time(&end_t);
             diff_t = difftime(end_t, start_t);
-            fprintf(fptr, "Last Pump Cycle Gallons Used: %d   Run Time: %f  Min.  %s", stopGallons, (diff_t/60), ctime(&t));
+            fprintf(fptr, "Last Pump Cycle Gallons Used: %d   ", stopGallons);
+            fprintf(fptr, "Run Time: %f  Min. ", (diff_t/60));
+            fprintf(fptr, "Tank Gallons Used: %d  ", (tankstartGallons-tankstopGallons));
+            fprintf(fptr, "%s", ctime(&t));
             fclose(fptr);
-           lastpumpState = OFF ;
+            lastpumpState = OFF ;
         }
         
         sleep(1) ;
