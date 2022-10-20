@@ -95,6 +95,9 @@
 - -> cd TankMonitor
 - -> make depend
 - -> make
+ - -> cd FlowMonitor
+- -> make depend
+- -> make
 - -> cd ../Blynk
 - -> make target=raspberry
 - -> cd ../bin
