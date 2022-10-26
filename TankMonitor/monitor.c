@@ -8,7 +8,7 @@
 #include "../include/water.h"
 
 
- /* payload[0] =    Pressure Sensor Value
+ /*payload[0] =    Pressure Sensor Value
  * payload[1] =    Water Height
  * payload[2] =    Tank Gallons
  * payload[3] =    Tank Percent Full
@@ -26,7 +26,7 @@
  * payload[15] =    Float State 4
  * payload[16] =    Pressure Switch State
  * payload[17] =    House Water Pressure Value
- * payload[18] =     spare
+ * payload[18] =    Septic Alert
  * payload[19] =     spare
  * payload[20] =     spare
  */
@@ -47,8 +47,8 @@
  * payload[13] =     43floatState;  //byte34-float4;byte123-float3
  * payload[14] =     21floatState;  //bytes34-float2;byte12-float1
  * payload[15] =     AllfloatLedcolor;  //byte4-color4;byte3-color3;byte2-color2;byte1-color1
- * payload[16] =    spare
- * payload[17] =    spare
+ * payload[16] =    Septic Relay Alert
+ * payload[17] =    Septic Relay Alert Color
  * payload[18] =    Pressure Relay Sense
  * payload[19] =    Pressure LED Color
  * payload[20] =    spare
@@ -137,6 +137,10 @@ int main(int argc, char* argv[])
     u_int32_t PumpRunCount = 0;
     int PumpCurrentSense[5];
     int PumpLedColor[5];
+    int SepticAlert = 0;
+    int SepticAlertColor;
+    int SepticAlertState;
+    
     
     MQTTClient client;
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -274,6 +278,7 @@ int main(int argc, char* argv[])
         Float50State   = formatted_sensor_payload[14] ;
         Float25State   = formatted_sensor_payload[15] ;
         PressSwitState = formatted_sensor_payload[16] ;
+        SepticAlert    = formatted_sensor_payload[18] ;
         
         if (Float100State == 1){
             floatstate[1] = 255;
@@ -310,7 +315,13 @@ int main(int argc, char* argv[])
             pressState = 255;
             pressLedColor = GREEN; }
         
-        // printf("Hi FLoat: %x  Low Float: %x\n", HighFloatState, LowFloatState) ;
+        if (SepticAlert == 1){
+            SepticAlertState = 255;
+            SepticAlertColor = RED;}
+        else {
+            SepticAlertState = 255;
+            SepticAlertColor = GREEN; }
+
         
         /*
          * Compute Pump Stats for each pump
@@ -393,8 +404,8 @@ int main(int argc, char* argv[])
         monitor_sensor_payload[13] =    A43floatState;
         monitor_sensor_payload[14] =    A21floatState;
         monitor_sensor_payload[15] =    AllfloatLedcolor;
-        monitor_sensor_payload[16] =    0;
-        monitor_sensor_payload[17] =    0;
+        monitor_sensor_payload[16] =    SepticAlertState;
+        monitor_sensor_payload[17] =    SepticAlertColor;
         monitor_sensor_payload[18] =    pressState;
         monitor_sensor_payload[19] =    pressLedColor;
 

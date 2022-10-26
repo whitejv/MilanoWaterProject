@@ -7,7 +7,7 @@
 #include "MQTTClient.h"
 #include "../include/water.h"
 
-/* CLIENTID     "ESP CLient", #define PUB_TOPIC   "Tank ESP", tank_esp_ , len=21
+/*CLIENTID     "ESP CLient", #define PUB_TOPIC   "Tank ESP", tank_esp_ , len=21
 * payload 0     CH1 Unused Damaged/Dead
 * payload 1     CH2 Raw Sensor Current Sense Well 1 16bit
 * payload 2     CH3 Raw Sensor Current Sense Well 2 16bit
@@ -131,6 +131,7 @@ int main(int argc, char* argv[])
     int Float90State = 0;
     int Float50State = 0;
     int Float25State = 0;
+    int SepticAlert = 0;
     
     int raw_voltage1_adc = 0;
     int raw_voltage2_adc = 0;
@@ -266,7 +267,8 @@ int main(int argc, char* argv[])
         Float50State   = (data_payload[4] & 0x0004) >> 2;
         Float25State   = (data_payload[4] & 0x0008) >> 3;
         PressSwitState = (data_payload[4] & 0x0010) >> 4;
-        // printf("Hi FLoat: %x  Low Float: %x\n", HighFloatState, LowFloatState) ;
+        SepticAlert    = (data_payload[4] & 0x0020) >> 5;
+        
         
         /*
          * Convert Raw Temp Sensor to degrees farenhiet
@@ -304,7 +306,7 @@ int main(int argc, char* argv[])
         formatted_sensor_payload[15] = Float25State;
         formatted_sensor_payload[16] = PressSwitState;
         formatted_sensor_payload[17] = WaterPresSensorValue;
-        
+        formatted_sensor_payload[18] = SepticAlert;
         /*
          * Load Up the Payload
          */
