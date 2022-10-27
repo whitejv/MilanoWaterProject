@@ -52,7 +52,7 @@
 * payload[15] =	Float State 4
 * payload[16] =	Pressure Switch State
 * payload[17] =	House Water Pressure Value
-* payload[18] =	 spare
+* payload[18] =	Septic Alert
 * payload[19] =	 spare
 * payload[20] =	 spare
 */	
@@ -62,7 +62,7 @@ float	formatted_sensor_payload[F_LEN];
 #define M_CLIENTID "Tank Monitor"
 #define M_TOPIC  "Monitor Data"
 #define M_LEN 21
-
+ 
 /* payload[0] =	 PumpCurrentSense[1];
 * payload[1] =	 PumpCurrentSense[2];
 * payload[2] =	 PumpCurrentSense[3];
@@ -71,17 +71,17 @@ float	formatted_sensor_payload[F_LEN];
 * payload[5] =	 PumpLedColor[2];
 * payload[6] =	 PumpLedColor[3];
 * payload[7] =	 PumpLedColor[4];
-* payload[8] =	 floatstate[1];
-* payload[9] =	 floatstate[2];
-* payload[10] =	 floatstate[3];
-* payload[11] =	 floatstate[4];
-* payload[12] =	 floatLedcolor[1];
-* payload[13] =	 floatLedcolor[2];
-* payload[14] =	 floatLedcolor[3];
-* payload[15] =	 floatLedcolor[4];
-* payload[16] =	spare
-* payload[17] =	spare
-* payload[18] =	spare
+* payload[8] =	 PumpRunCount;  //byte4-pump4;byte3-pump3;byte2-pump2;byte1-pump1
+* payload[9] =	PumpRunTime{1] ; //Seconds
+* payload[10] =	PumpRunTime{2] ; //Seconds
+* payload[11] =	PumpRunTime{3] ; //Seconds
+* payload[12] =	PumpRunTime{4] ; //Seconds
+* payload[13] =	 43floatState;  //byte34-float4;byte123-float3
+* payload[14] =	 21floatState;  //bytes34-float2;byte12-float1
+* payload[15] =	 AllfloatLedcolor;  //byte4-color4;byte3-color3;byte2-color2;byte1-color1
+* payload[16] =	Septic Relay Alert
+* payload[17] =	Septic Relay Alert Color
+* payload[18] =	Pressure Relay Sense
 * payload[19] =	Pressure LED Color
 * payload[20] =	spare
 */	
