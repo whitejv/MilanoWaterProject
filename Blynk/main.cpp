@@ -55,7 +55,7 @@ void connlost(void *context, char *cause)
       finished = 1;
    }
 }
-int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message)
+int msgarrvd(void *context, char *topicName, int topicLen, MQTTAsync_message *message)
 {
    
    int i;
@@ -97,8 +97,8 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
       printf("-\n");
    }
    
-   MQTTClient_freeMessage(&message);
-   MQTTClient_free(topicName);
+   MQTTAsync_freeMessage(&message);
+   MQTTAsync_free(topicName);
    return 1;
 }
 void onDisconnect(void* context, MQTTAsync_successData* response)
