@@ -72,36 +72,50 @@ void delivered(void *context, MQTTClient_deliveryToken dt)
 
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message)
 {
-   time_t t;
-   time(&t);
+   
    int i;
-   float* payloadptr;
    
-   //printf("Message arrived:\n");
-   //printf("          topic: %s  ", topicName);
-   //printf("         length: %d  ", topicLen);
-   //printf("     PayloadLen: %d\n", message->payloadlen);
-   //printf("message: ");
+   printf("Message arrived:\n");
+   printf("          topic: %s  ", topicName);
+   printf("         length: %d  ", topicLen);
+   printf("     PayloadLen: %d\n", message->payloadlen);
+   printf("message: ");
    
-   
-   if (message->payloadlen != 0) {
-      if ( F_LEN*4 == message->payloadlen) {
-         payloadptr = (float *)message->payload;
-         for(i=0; i < (message->payloadlen/4); i++)
-         {
-            formatted_sensor_payload[i] = *payloadptr++ ;
-            //printf("%0f ", raw_data_payload[i]);
-         }
-      }
-      //printf("%0X ", raw_data_payload[21]);
-      //printf("%s", ctime(&t));
-      printf(".");
-      MQTTClient_freeMessage(&message);
-      MQTTClient_free(topicName);
+   if ( strcmp(topicName, FLO_TOPIC)) {
+      memcpy(flow_data_payload, message->payload, message->payloadlen);
+      for(i=0; i < FLO_LEN; i++) {printf("%0x ", flow_data_payload[i]);}
+      printf("|\n");
    }
+   else if ( strcmp(topicName, F_TOPIC)) {
+      memcpy(formatted_sensor_payload, message->payload, message->payloadlen);
+      for(i=0; i < F_LEN; i++) { printf("%0f ", formatted_sensor_payload[i]);}
+      printf("+\n");
+   }
+   else if ( strcmp(topicName, M_TOPIC)) {
+      memcpy(monitor_sensor_payload, message->payload, message->payloadlen);
+      for(i=0; i < M_LEN; i++) { printf("%0x ", monitor_sensor_payload[i]);}
+      printf(".\n");
+   }
+   else if ( strcmp(topicName, A_TOPIC)) {
+      memcpy(alert_sensor_payload, message->payload, message->payloadlen);
+      for(i=0; i < A_LEN; i++) {printf("%0x ", alert_sensor_payload[i]);}
+      printf("*\n");
+   }
+   else if ( strcmp(topicName, FL_TOPIC)) {
+      memcpy(flow_sensor_payload, message->payload, message->payloadlen);
+      for(i=0; i < FL_LEN; i++) {printf("%0f ", flow_sensor_payload[i]);}
+      printf("^\n");
+   }
+   else if ( strcmp(topicName, ESP_TOPIC)) {
+      memcpy(data_payload, message->payload, message->payloadlen);
+      for(i=0; i < ESP_LEN; i++) {printf("%0x ", data_payload[i]);}
+      printf("-\n");
+   }
+   
+   MQTTClient_freeMessage(&message);
+   MQTTClient_free(topicName);
    return 1;
 }
-
 void connlost(void *context, char *cause)
 {
    printf("\nConnection lost\n");
