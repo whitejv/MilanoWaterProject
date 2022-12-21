@@ -55,59 +55,50 @@ void connlost(void *context, char *cause)
       finished = 1;
    }
 }
-int msgarrvd(void *context, char *topicName, int topicLen, MQTTAsync_message *message)
+int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message)
 {
+   
    int i;
-   char* payloadptr;
-   float* f_payloadptr;
-   int*   i_payloadptr;
    
-   //printf("Message arrived:\n");
-   //printf("          topic: %s  ", topicName);
-   //printf("         length: %d  ", topicLen);
-   //printf("     PayloadLen: %d\n", message->payloadlen);
-   //printf("message: ");
+   printf("Message arrived:\n");
+   printf("          topic: %s  ", topicName);
+   printf("         length: %d  ", topicLen);
+   printf("     PayloadLen: %d\n", message->payloadlen);
+   printf("message: ");
    
-   if (strcmp(topicName, F_TOPIC) == 0) {
-      f_payloadptr = (float *)message->payload;
-      for(i=0; i<F_LEN; i++)
-      {
-         formatted_sensor_payload[i] = *f_payloadptr++ ;
-         //printf("%.3f ", formatted_sensor_payload[i]);
-      }
+   if ( strcmp(topicName, FLO_TOPIC) == 0) {
+      memcpy(flow_data_payload, message->payload, message->payloadlen);
+      for(i=0; i < FLO_LEN; i++) {printf("%0x ", flow_data_payload[i]);}
+      printf("|\n");
+   }
+   else if ( strcmp(topicName, F_TOPIC) == 0) {
+      memcpy(formatted_sensor_payload, message->payload, message->payloadlen);
+      for(i=0; i < F_LEN; i++) { printf("%0f ", formatted_sensor_payload[i]);}
+      printf("+\n");
+   }
+   else if ( strcmp(topicName, M_TOPIC) == 0) {
+      memcpy(monitor_sensor_payload, message->payload, message->payloadlen);
+      for(i=0; i < M_LEN; i++) { printf("%0x ", monitor_sensor_payload[i]);}
       printf(".\n");
-      printf("\n");
    }
-   else if (strcmp(topicName, M_TOPIC) == 0) {
-      if ( M_LEN*4 == message->payloadlen) {
-         i_payloadptr = (int *)message->payload;
-         for(i=0; i<M_LEN; i++)
-         {
-            monitor_sensor_payload[i] = *i_payloadptr++ ;
-            //printf("%d ", monitor_sensor_payload[i]);
-         }
-         printf("+ ");
-         printf("\n");
-      }
+   else if ( strcmp(topicName, A_TOPIC) == 0) {
+      memcpy(alert_sensor_payload, message->payload, message->payloadlen);
+      for(i=0; i < A_LEN; i++) {printf("%0x ", alert_sensor_payload[i]);}
+      printf("*\n");
    }
-   else if (strcmp(topicName, FL_TOPIC) == 0) {
-      f_payloadptr = (float *)message->payload;
-      for(i=0; i<FL_LEN; i++)
-      {
-         flow_sensor_payload[i] = *f_payloadptr++ ;
-         //printf("%.3f ", flow_sensor_payload[i]);
-      }
-      printf("* ");
-      printf("\n");
+   else if ( strcmp(topicName, FL_TOPIC) == 0) {
+      memcpy(flow_sensor_payload, message->payload, message->payloadlen);
+      for(i=0; i < FL_LEN; i++) {printf("%0f ", flow_sensor_payload[i]);}
+      printf("^\n");
    }
-   else if (strcmp(topicName, A_TOPIC) == 0){
-   }
-   else {
-      printf("Unknown Topic Recieved: %s\n", topicName ) ;
+   else if ( strcmp(topicName, ESP_TOPIC) == 0) {
+      memcpy(data_payload, message->payload, message->payloadlen);
+      for(i=0; i < ESP_LEN; i++) {printf("%0x ", data_payload[i]);}
+      printf("-\n");
    }
    
-   MQTTAsync_freeMessage(&message);
-   MQTTAsync_free(topicName);
+   MQTTClient_freeMessage(&message);
+   MQTTClient_free(topicName);
    return 1;
 }
 void onDisconnect(void* context, MQTTAsync_successData* response)
