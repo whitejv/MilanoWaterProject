@@ -61,6 +61,29 @@
 #define SUB_TOPIC   "Tank ESP"
 #define SUB_TOPIC_LEN 21
 
+/* Kalman Filter Setup */
+#define DT 0.1   // Time step
+#define A 1      // Matrix A
+#define H 1      // Matrix H
+#define Q 0.001  // Process noise covariance
+#define R 0.1    // Measurement noise covariance
+
+double x = 0;  // Estimated state
+double P = 1;  // Estimated state covariance
+double z = 0;  // Measurement
+
+/* Kalman Filter Functions */
+void predict() {
+  x = A * x;  // Predict new state
+  P = A * P * A + Q;  // Predict new state covariance
+}
+
+void update() {
+  double K = P * H / (H * P * H + R);  // Kalman gain
+  x = x + K * (z - H * x);  // Update state
+  P = (1 - K * H) * P;  // Update state covariance
+}
+
 MQTTClient_deliveryToken deliveredtoken;
 
 void delivered(void *context, MQTTClient_deliveryToken dt)
@@ -115,13 +138,13 @@ int main(int argc, char* argv[])
    time(&t);
    float WaterPresSensorValue;
    float PresSensorLSB = .0000625;   //lsb voltage value from datasheet
-   static float PresSensorValueArray[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+   //static float PresSensorValueArray[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
    float PresSensorValue = 0;
    //float Old_PresSensorValue = 0;
-   static int   PresIndex = 0;
+   //static int   PresIndex = 0;
    float ConstantX = .34;      //Used Excel Polynomial Fitting to come up with equation
    float Constant  = .0962;
-   float PresSensorAverage = 0;
+   //float PresSensorAverage = 0;
    float WaterHeight = 0;
    float TankGallons = 0;
    float TankPerFull = 0;
@@ -146,6 +169,10 @@ int main(int argc, char* argv[])
    int raw_temp = 0;
    float AmbientTempF = 0;
    float AmbientTempC = 0;
+   
+   // Set initial state and state covariance for Kalman filter
+    x = 0;
+    P = 1;
    
    MQTTClient client;
    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -198,8 +225,18 @@ int main(int argc, char* argv[])
       PresSensorRawValue = data_payload[8] * PresSensorLSB;
       
       /*
+       * Kalman Filter to smooth the hydrostatic sensor readings
+       */
+       
+      z = PresSensorRawValue ;
+      predict();
+      update();
+      //printf("x: %f\n", x);  // Print updated state
+      PresSensorValue = x ;
+      /*
        * Rolling Average to Smooth data
        */
+      /*
       PresSensorAverage = 0;
       PresSensorValue = 0;
       PresSensorValueArray[PresIndex++] = PresSensorRawValue;        //Convert sensor value to voltage
@@ -212,7 +249,7 @@ int main(int argc, char* argv[])
       //printf("Pressure Sensor Raw: %f delta: %f Smoothed: %f delta: %f\n",  PresSensorRawValue, PresSensorRawValue-Old_PresSensorRawValue, PresSensorValue, PresSensorValue-Old_PresSensorValue);
       //Old_PresSensorRawValue = PresSensorRawValue;
       //Old_PresSensorValue = PresSensorValue;
-      
+      */
       /*
        *** Use the Equation y=Constandx(x) + Constant solve for x to compute Water Height in tank
        */

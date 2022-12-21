@@ -8,9 +8,6 @@
 #include "../include/water.h"
 
 
-unsigned short int flow_data_payload[21];
-#define CLIENTID     "ESP8266 ClientFlow"
-#define TOPIC   "Flow ESP"
 /* payload 0    Pulses Counted in Time Window
  * payload 1    Number of milliseconds in Time Window
  * payload 2    Flag 1=new data 0=stale data
@@ -83,13 +80,13 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
    unsigned short int* payloadptr;
    float* sensorpayloadptr;
    
-   /*
-    printf("Message arrived:\n");
-    printf("          topic: %s  ", topicName);
-    printf("         length: %d  ", topicLen);
-    printf("     PayloadLen: %d\n", message->payloadlen);
-    printf("message: ");
-    */
+   
+   //printf("Message arrived:\n");
+   //printf("          topic: %s  ", topicName);
+   //printf("         length: %d  ", topicLen);
+   //printf("     PayloadLen: %d\n", message->payloadlen);
+   //printf("message: ");
+   
    
    if (message->payloadlen != 0) {
       if ( message->payloadlen == 42) {
@@ -97,7 +94,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
          for(i=0; i < (message->payloadlen/2); i++)
          {
             flow_data_payload[i] = *payloadptr++ ;
-            // printf("%0x ", flow_data_payload[i]);
+            //printf("%0x ", flow_data_payload[i]);
          }
          printf("|\n");
       }
@@ -165,7 +162,7 @@ int main(int argc, char* argv[])
    MQTTClient_deliveryToken token;
    int rc;
    
-   if ((rc = MQTTClient_create(&client, ADDRESS, FL_CLIENTID,
+   if ((rc = MQTTClient_create(&client, ADDRESS, FLO_CLIENTID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to create client, return code %d\n", rc);
@@ -190,11 +187,12 @@ int main(int argc, char* argv[])
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TOPIC, CLIENTID, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", FLO_TOPIC, FLO_CLIENTID, QOS);
    
-   MQTTClient_subscribe(client, TOPIC, QOS);
+   MQTTClient_subscribe(client, FLO_TOPIC, QOS);
    
-   MQTTClient_subscribe(client, "Formatted Sensor Data", QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, F_CLIENTID, QOS);  
+   MQTTClient_subscribe(client, F_TOPIC, QOS);
    
    /*
     * Initialize the data file with headers
@@ -225,7 +223,7 @@ int main(int argc, char* argv[])
          /* reset 24 hr stuff */
          
          fprintf(fptr, "Daily Gallons Used: %f %s", dailyGallons, ctime(&t));
-         dailyGallons = 0;
+         dailyGallons = 0; 
          fclose(fptr);
          
       }
@@ -271,8 +269,8 @@ int main(int argc, char* argv[])
              printf("Milliseconds Elapsed: %d   Milliseconds Total:  %d\n", millsElapsed, millsTotal);
              printf("Flow Rate: %f  Flow Rate GPM:  %f   Daily Gallons:  %f\n", flowRate, flowRateGPM,  dailyGallons);
              printf("Average Flow Rate: %f\n", avgflowRateGPM);
-             */
-         }
+             */ 
+         }    
       } else {
          pulseCount = 0;
          millsElapsed = 0 ;
@@ -281,7 +279,9 @@ int main(int argc, char* argv[])
       
       irrigationPressure = (flow_data_payload[3] * .9756525)/10 ;
       
-      temperatureF = *((float *)&flow_data_payload[17]);
+      //temperatureF = *((float *)&flow_data_payload[17]);
+      
+      memcpy(&temperatureF, &flow_data_payload[17], sizeof(float));
       
       
       /*
