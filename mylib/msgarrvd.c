@@ -15,9 +15,6 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
 {
    
    int i;
-   unsigned short int* payloadptr;
-   float* sensorpayloadptr;
-   
    
    printf("Message arrived:\n");
    printf("          topic: %s  ", topicName);
@@ -25,28 +22,40 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
    printf("     PayloadLen: %d\n", message->payloadlen);
    printf("message: ");
    
-   if ( strcmp(topicName, FLO_TOPIC) {
-      memcpy(flow_data_payload, message->payload, topicLen)
-      for(i=0; i < (message->payloadlen/2); i++)
-      {
-         printf("%0x ", flow_data_payload[i]);
-      }
+   if ( strcmp(topicName, FLO_TOPIC)) {
+      memcpy(flow_data_payload, message->payload, message->payloadlen);
+      for(i=0; i < FLO_LEN; i++) {printf("%0x ", flow_data_payload[i]);}
       printf("|\n");
-      
    }
    else if ( strcmp(topicName, F_TOPIC)) {
-      memcpy(formatted_sensor_payload, message->payload, topicLen)
-      for(i=0; i < (message->payloadlen/4); i++)
-      {
-         printf("%0f ", formatted_sensor_payload[i]);
-      }
+      memcpy(formatted_sensor_payload, message->payload, message->payloadlen);
+      for(i=0; i < F_LEN; i++) { printf("%0f ", formatted_sensor_payload[i]);}
       printf("+\n");
    }
-       
-       
-       MQTTClient_freeMessage(&message);
-       MQTTClient_free(topicName);
-       return 1;
+   else if ( strcmp(topicName, M_TOPIC)) {
+      memcpy(monitor_sensor_payload, message->payload, message->payloadlen);
+      for(i=0; i < M_LEN; i++) { printf("%0x ", monitor_sensor_payload[i]);}
+      printf(".\n");
+   }
+   else if ( strcmp(topicName, A_TOPIC)) {
+      memcpy(alert_sensor_payload, message->payload, message->payloadlen);
+      for(i=0; i < A_LEN; i++) {printf("%0x ", alert_sensor_payload[i]);}
+      printf("*\n");
+   }
+   else if ( strcmp(topicName, FL_TOPIC)) {
+      memcpy(flow_sensor_payload, message->payload, message->payloadlen);
+      for(i=0; i < FL_LEN; i++) {printf("%0f ", flow_sensor_payload[i]);}
+      printf("^\n");
+   }
+   else if ( strcmp(topicName, ESP_TOPIC)) {
+      memcpy(data_payload, message->payload, message->payloadlen);
+      for(i=0; i < ESP_LEN; i++) {printf("%0x ", data_payload[i]);}
+      printf("-\n");
+   }
+   
+   MQTTClient_freeMessage(&message);
+   MQTTClient_free(topicName);
+   return 1;
 }
        
        
