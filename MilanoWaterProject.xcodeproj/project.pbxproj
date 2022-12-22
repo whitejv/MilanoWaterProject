@@ -69,6 +69,7 @@
 		850AB31627A1958B00471831 /* TankAlert */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TankAlert; sourceTree = BUILT_PRODUCTS_DIR; };
 		851C3E43277120C5008B07D4 /* MilanoWaterProject */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MilanoWaterProject; sourceTree = BUILT_PRODUCTS_DIR; };
 		851C3E46277120C5008B07D4 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		853B25FB2954FC5E0092AA63 /* mylib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = mylib; sourceTree = "<group>"; };
 		8555E6FF27736C32002B3402 /* TankESPClient */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TankESPClient; sourceTree = "<group>"; };
 		8555E70027736C33002B3402 /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; path = include; sourceTree = "<group>"; };
 		8555E70127736C33002B3402 /* Blynk */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Blynk; sourceTree = "<group>"; };
@@ -144,6 +145,7 @@
 		851C3E3A277120C5008B07D4 = {
 			isa = PBXGroup;
 			children = (
+				853B25FB2954FC5E0092AA63 /* mylib */,
 				856632A828C14968000AC942 /* FlowMonitor */,
 				850AB30B27A0AFB700471831 /* TankAlert */,
 				8555E70127736C33002B3402 /* Blynk */,

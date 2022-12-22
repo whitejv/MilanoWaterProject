@@ -362,10 +362,10 @@ int main(int argc, char* argv[])
       /*
        * Load Up the Payload
        */
-      for (i=0; i<=F_LEN; i++) {
-         printf("%.3f ", formatted_sensor_payload[i]);
-      }
-      printf("%s", ctime(&t));
+      //for (i=0; i<=F_LEN; i++) {
+      //   printf("%.3f ", formatted_sensor_payload[i]);
+      //}
+      //printf("%s", ctime(&t));
       
       pubmsg.payload = formatted_sensor_payload;
       pubmsg.payloadlen = F_LEN * 4;
