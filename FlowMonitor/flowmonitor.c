@@ -72,7 +72,7 @@ void delivered(void *context, MQTTClient_deliveryToken dt)
    deliveredtoken = dt;
 }
 
-iint msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message)
+int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message)
 {
    
    int i;
