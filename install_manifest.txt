@@ -1,0 +1,2 @@
+/home/pi/MilanoWaterProject/bin/flowmonitor
+/home/pi/MilanoWaterProject/bin/monitor
