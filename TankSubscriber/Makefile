@@ -72,9 +72,4 @@ depend: $(SRCS)
 subscriber.o: /usr/include/stdio.h /usr/include/stdlib.h
 subscriber.o: /usr/include/string.h /usr/include/math.h /usr/include/time.h
 subscriber.o: /usr/include/features.h /usr/include/stdc-predef.h
-subscriber.o: /usr/include/unistd.h
-subscriber.o: ../../../paho.mqtt.c-master/src/MQTTClient.h
-subscriber.o: ../../../paho.mqtt.c-master/src/MQTTProperties.h
-subscriber.o: ../../../paho.mqtt.c-master/src/MQTTReasonCodes.h
-subscriber.o: ../../../paho.mqtt.c-master/src/MQTTSubscribeOpts.h
-subscriber.o: ../../../paho.mqtt.c-master/src/MQTTClientPersistence.h
+subscriber.o: /usr/include/unistd.h ../include/water.h ../mylib/msgarrvd.c

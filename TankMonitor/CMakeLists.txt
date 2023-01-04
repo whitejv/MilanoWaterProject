@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.2)
+project (monitor)
+add_executable(monitor monitor.c)
+target_link_directories(monitor PRIVATE /home/pi/paho.mqtt.c/build/output/lib)
+target_link_libraries(monitor libpaho-mqtt3c.so libpaho-mqtt3a.so libpaho-mqtt3as.so libpaho-mqtt3cs.so)
+install(TARGETS monitor DESTINATION /home/pi/MilanoWaterProject/bin)

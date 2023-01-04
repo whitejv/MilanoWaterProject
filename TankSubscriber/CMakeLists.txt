@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.2)
+project (subsrciber)
+add_executable(subsrciber subsrciber.c)
+target_link_directories(subsrciber PRIVATE /home/pi/paho.mqtt.c/build/output/lib)
+target_link_libraries(subsrciber libpaho-mqtt3c.so libpaho-mqtt3a.so libpaho-mqtt3as.so libpaho-mqtt3cs.so)
+install(TARGETS subsrciber DESTINATION /home/pi/MilanoWaterProject/bin)
