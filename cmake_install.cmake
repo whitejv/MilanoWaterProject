@@ -46,6 +46,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/pi/MilanoWaterProject/FlowMonitor/cmake_install.cmake")
   include("/home/pi/MilanoWaterProject/TankMonitor/cmake_install.cmake")
+  include("/home/pi/MilanoWaterProject/TankSubscriber/cmake_install.cmake")
 
 endif()
 

@@ -228,10 +228,22 @@ monitor_BINARY_DIR:STATIC=/home/pi/MilanoWaterProject/TankMonitor
 monitor_SOURCE_DIR:STATIC=/home/pi/MilanoWaterProject/TankMonitor
 
 //Value Computed by CMake
+subscriber_BINARY_DIR:STATIC=/home/pi/MilanoWaterProject/TankSubscriber
+
+//Value Computed by CMake
+subscriber_SOURCE_DIR:STATIC=/home/pi/MilanoWaterProject/TankSubscriber
+
+//Value Computed by CMake
 subsrciber_BINARY_DIR:STATIC=/home/pi/MilanoWaterProject/TankSubscriber
 
 //Value Computed by CMake
 subsrciber_SOURCE_DIR:STATIC=/home/pi/MilanoWaterProject/TankSubscriber
+
+//Value Computed by CMake
+subsriber_BINARY_DIR:STATIC=/home/pi/MilanoWaterProject/TankSubscriber
+
+//Value Computed by CMake
+subsriber_SOURCE_DIR:STATIC=/home/pi/MilanoWaterProject/TankSubscriber
 
 
 ########################

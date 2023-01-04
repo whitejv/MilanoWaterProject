@@ -1,2 +1,3 @@
 /home/pi/MilanoWaterProject/bin/flowmonitor
 /home/pi/MilanoWaterProject/bin/monitor
+/home/pi/MilanoWaterProject/bin/subscriber

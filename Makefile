@@ -201,6 +201,19 @@ monitor/fast:
 	$(MAKE) $(MAKESILENT) -f TankMonitor/CMakeFiles/monitor.dir/build.make TankMonitor/CMakeFiles/monitor.dir/build
 .PHONY : monitor/fast
 
+#=============================================================================
+# Target rules for targets named subscriber
+
+# Build rule for target.
+subscriber: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 subscriber
+.PHONY : subscriber
+
+# fast build rule for target.
+subscriber/fast:
+	$(MAKE) $(MAKESILENT) -f TankSubscriber/CMakeFiles/subscriber.dir/build.make TankSubscriber/CMakeFiles/subscriber.dir/build
+.PHONY : subscriber/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -215,6 +228,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... flowmonitor"
 	@echo "... monitor"
+	@echo "... subscriber"
 .PHONY : help
 
 
