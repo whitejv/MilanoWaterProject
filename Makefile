@@ -214,6 +214,19 @@ subscriber/fast:
 	$(MAKE) $(MAKESILENT) -f TankSubscriber/CMakeFiles/subscriber.dir/build.make TankSubscriber/CMakeFiles/subscriber.dir/build
 .PHONY : subscriber/fast
 
+#=============================================================================
+# Target rules for targets named blynk
+
+# Build rule for target.
+blynk: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 blynk
+.PHONY : blynk
+
+# fast build rule for target.
+blynk/fast:
+	$(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/build
+.PHONY : blynk/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -226,6 +239,7 @@ help:
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
+	@echo "... blynk"
 	@echo "... flowmonitor"
 	@echo "... monitor"
 	@echo "... subscriber"
