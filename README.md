@@ -89,7 +89,7 @@
 - -> git clone https://github.com/whitejv/MilanoWaterProject.git
 - -> cd MilanoWaterProject
 - -> mkdir bin
-# CMake Process
+### CMake Process
 - -> cmake -S . (to rebuild the Root Makefile
 - -> make clean
 - -> make depend
@@ -98,7 +98,7 @@
 - -> cd bin
 - -> ls -al (check the dates)
  
-# Manual Build Process
+### Manual Build Process
 - -> cd TankSubscriber
 - -> make depend
 - -> make
