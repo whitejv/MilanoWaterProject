@@ -34,6 +34,10 @@
 - -> chmod a-w /home/<user>/FTP
 - -> sudo service vsftpd restart
 
+## Install CMake
+
+- -> sudo apt-get install cmake
+ 
 ## Install Mosquitto MQTT Service
 
 - -> sudo apt install -y mosquitto mosquitto-clients
