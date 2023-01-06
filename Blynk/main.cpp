@@ -55,6 +55,14 @@ void connlost(void *context, char *cause)
       finished = 1;
    }
 }
+
+/* Using an include here to allow me to reuse a chunk of code that
+   would not work as a library file. So treating it like an include to 
+   copy and paste the same code into multiple programs. 
+*/
+
+//#include "../mylib/msgarrvd.c"
+
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTAsync_message *message)
 {
    
@@ -101,6 +109,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTAsync_message *me
    MQTTAsync_free(topicName);
    return 1;
 }
+
 void onDisconnect(void* context, MQTTAsync_successData* response)
 {
    printf("Successful disconnection\n");
@@ -169,7 +178,7 @@ void loop()
    int floatState[5] ;
    int floatLedcolor[5] ;
    
-   char *ledcolor[] = {  "Green",
+   const char *ledcolor[] = {  "Green",
       "Blue",
       "Orange",
       "Red",
@@ -178,7 +187,7 @@ void loop()
       "Fuscia",
       "Black" } ;
    
-   char *ledcolorPalette[] = { "0x00ff00",   //green
+   const char *ledcolorPalette[] = { "0x00ff00",   //green
       "0x0000FF",   //blue
       "0xff8000",   //orange
       "0xff0000",   //red
