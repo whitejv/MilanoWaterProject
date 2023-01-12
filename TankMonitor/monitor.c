@@ -53,9 +53,6 @@
  * payload[20] =    spare
  */
 
-#define datafile "./datafile.txt"
-#define pumpdata "./pumpdata.txt"
-
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
 
@@ -157,7 +154,10 @@ int main(int argc, char *argv[])
     * Initialize the data file with headers
     */
    fptr = fopen(pumpdata, "a");
-   fprintf(fptr, "Well #, Start Gallons, Stop Gallons, Run Time (sec) ");
+   fprintf(fptr, "Well #, Start Gallons, Stop Gallons, Run Time (sec) \n");
+   fclose(fptr);
+   fptr = fopen(datafile, "a");
+   fprintf(fptr, "Pump #, Run Count, Run Time (sec) \n");
    fclose(fptr);
 
    /*

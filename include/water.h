@@ -17,6 +17,9 @@
 #define QOS         1
 #define TIMEOUT     10000L
 
+#define datafile "/home/pi/MilanoWaterProject/logdata/datafile.txt"
+#define pumpdata "/home/pi/MilanoWaterProject/logdata/pumpdata.txt"
+
 /* Library function prototypes */
 
 void log_message(const char *format, ...);
