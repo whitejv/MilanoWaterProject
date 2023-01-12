@@ -125,10 +125,13 @@ int main(int argc, char* argv[])
    MQTTClient_deliveryToken token;
    int rc;
    
+   log_message("FlowMonitor: Started\n");
+
    if ((rc = MQTTClient_create(&client, ADDRESS, FLO_CLIENTID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to create client, return code %d\n", rc);
+      log_message("FlowMonitor: Error == Failed to Create Client. Return Code: %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
@@ -136,6 +139,7 @@ int main(int argc, char* argv[])
    if ((rc = MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, delivered)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to set callbacks, return code %d\n", rc);
+      log_message("FlowMonitor: Error == Failed to Set Callbacks. Return Code: %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
@@ -147,26 +151,23 @@ int main(int argc, char* argv[])
    if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to connect, return code %d\n", rc);
+      log_message("FlowMonitor: Error == Failed to Connect. Return Code: %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", FLO_TOPIC, FLO_CLIENTID, QOS);
-   
+   log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", FLO_TOPIC, FLO_CLIENTID);
    MQTTClient_subscribe(client, FLO_TOPIC, QOS);
    
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, F_CLIENTID, QOS);  
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, F_CLIENTID, QOS);
+   log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", F_TOPIC, F_CLIENTID);
    MQTTClient_subscribe(client, F_TOPIC, QOS);
-   
-   /*
-    * Initialize the data file with headers
-    */
-   //fptr = fopen(flowdata, "a");
-   //fprintf(fptr, "Hello World ");
-   //fclose(fptr);
    
    /*
     * Main Loop
     */
+
+   log_message("FlowMonitor: Entering Main Loop\n") ;
    
    while(1)
    {
@@ -276,12 +277,12 @@ int main(int argc, char* argv[])
       flow_sensor_payload[17] =   0;
       flow_sensor_payload[18] =   0;
       flow_sensor_payload[19] =   0;
-      
+      /*
       for (i=0; i<=FL_LEN; i++) {
-         // printf("%f ", flow_sensor_payload[i]);
+          printf("%f ", flow_sensor_payload[i]);
       }
-      // printf("%s", ctime(&t));
-      
+      printf("%s", ctime(&t));
+      */
       pubmsg.payload = flow_sensor_payload;
       pubmsg.payloadlen = FL_LEN * 4;
       pubmsg.qos = QOS;
@@ -290,6 +291,7 @@ int main(int argc, char* argv[])
       if ((rc = MQTTClient_publishMessage(client, FL_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
       {
          printf("Failed to publish message, return code %d\n", rc);
+         log_message("FlowMonitor: Error == Failed to Publish Message. Return Code: %d\n", rc);
          rc = EXIT_FAILURE;
       }
       
@@ -327,6 +329,7 @@ int main(int argc, char* argv[])
       sleep(1) ;
    }
    
+   log_message("FlowMonitor: Exited Main Loop\n");
    MQTTClient_unsubscribe(client, F_TOPIC);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);

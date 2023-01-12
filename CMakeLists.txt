@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.2)
 project (MilanoWaterProject)
+add_subdirectory (./mylib)
 add_subdirectory (./FlowMonitor)
 add_subdirectory (./TankMonitor)
 add_subdirectory (./TankSubscriber)

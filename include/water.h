@@ -17,6 +17,10 @@
 #define QOS         1
 #define TIMEOUT     10000L
 
+/* Library function prototypes */
+
+void log_message(const char *format, ...);
+
 /*
  * Data Block Interface Control
  */
@@ -105,7 +109,7 @@ int    monitor_sensor_payload[M_LEN];
 int    alert_sensor_payload[A_LEN];
    
 
-#define Fl_CLIENTID    "Flow Monitor"
+#define FL_CLIENTID    "Flow Monitor"
 #define FL_TOPIC       "Flow Data"
 #define FL_LEN 21      //flow_sensor_,
 /* payload[0] =   Gallons Per Minute

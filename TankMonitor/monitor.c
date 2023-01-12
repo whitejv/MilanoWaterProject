@@ -113,6 +113,8 @@ int main(int argc, char *argv[])
    int SepticAlertColor;
    int SepticAlertState;
 
+   log_message("TankMonitor: Started\n"); 
+
    MQTTClient client;
    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
    MQTTClient_message pubmsg = MQTTClient_message_initializer;
@@ -122,6 +124,7 @@ int main(int argc, char *argv[])
    if ((rc = MQTTClient_create(&client, ADDRESS, M_CLIENTID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
+      log_message("TankMonitor: Error == Failed to Create Client. Return Code: %d\n", rc);
       printf("Failed to create client, return code %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
@@ -129,6 +132,7 @@ int main(int argc, char *argv[])
 
    if ((rc = MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, delivered)) != MQTTCLIENT_SUCCESS)
    {
+      log_message("TankMonitor: Error == Failed to Set Callbacks. Return Code: %d\n", rc);
       printf("Failed to set callbacks, return code %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
@@ -140,12 +144,13 @@ int main(int argc, char *argv[])
    // conn_opts.password = mqttPassword;   //only if req'd by MQTT Server
    if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
    {
+      log_message("TankMonitor: Error == Failed to Connect. Return Code: %d\n", rc);
       printf("Failed to connect, return code %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, M_CLIENTID, QOS);
-
+   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", F_TOPIC, M_CLIENTID);
    MQTTClient_subscribe(client, F_TOPIC, QOS);
 
    /*
@@ -158,6 +163,8 @@ int main(int argc, char *argv[])
    /*
     * Main Loop
     */
+
+   log_message("TankMonitor: Entering Main Loop\n") ;
 
    while (1)
    {
@@ -437,6 +444,7 @@ int main(int argc, char *argv[])
       deliveredtoken = 0;
       if ((rc = MQTTClient_publishMessage(client, M_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
       {
+         log_message("TankMonitor: Error == Failed to Publish Message. Return Code: %d\n", rc);
          printf("Failed to publish message, return code %d\n", rc);
          rc = EXIT_FAILURE;
       }
@@ -447,7 +455,7 @@ int main(int argc, char *argv[])
 
       sleep(1);
    }
-
+   log_message("TankMonitor: Exiting Main Loop\n") ;
    MQTTClient_unsubscribe(client, F_TOPIC);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);

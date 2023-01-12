@@ -176,6 +176,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named mylib
+
+# Build rule for target.
+mylib: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 mylib
+.PHONY : mylib
+
+# fast build rule for target.
+mylib/fast:
+	$(MAKE) $(MAKESILENT) -f mylib/CMakeFiles/mylib.dir/build.make mylib/CMakeFiles/mylib.dir/build
+.PHONY : mylib/fast
+
+#=============================================================================
 # Target rules for targets named flowmonitor
 
 # Build rule for target.
@@ -242,6 +255,7 @@ help:
 	@echo "... blynk"
 	@echo "... flowmonitor"
 	@echo "... monitor"
+	@echo "... mylib"
 	@echo "... subscriber"
 .PHONY : help
 
