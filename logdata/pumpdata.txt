@@ -1,1 +1,0 @@
-Well #, Start Gallons, Stop Gallons, Run Time (sec) Well #, Start Gallons, Stop Gallons, Run Time (sec) Well #, Start Gallons, Stop Gallons, Run Time (sec) Well #, Start Gallons, Stop Gallons, Run Time (sec) 
