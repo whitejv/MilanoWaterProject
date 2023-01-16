@@ -92,7 +92,7 @@
 
 - -> git clone https://github.com/whitejv/MilanoWaterProject.git
 - -> cd MilanoWaterProject
-- -> mkdir bin
+- -> mkdir /home/pi/MWPLogData (Create this on first time install on a new system)
 ### CMake Process
 - -> cmake -S . (to rebuild the Root Makefile
 - -> make clean
