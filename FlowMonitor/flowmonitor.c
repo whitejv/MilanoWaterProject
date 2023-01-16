@@ -57,9 +57,6 @@
  * payload[20] =    spare
  */
 
-#define flowfile "./flowfile.txt"
-#define flowdata "./flowdata.txt"
-
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
 

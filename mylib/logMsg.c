@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include <time.h>
 
-#define LOG_FILE "/home/pi/console-log.txt"
+#define LOG_FILE "/home/pi/MWPLogData/console-log.txt"
 
 void log_message(const char *format, ...) {
     va_list args;

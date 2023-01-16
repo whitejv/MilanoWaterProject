@@ -17,8 +17,10 @@
 #define QOS         1
 #define TIMEOUT     10000L
 
-#define datafile "/home/pi/datafile.txt"
-#define pumpdata "/home/pi/pumpdata.txt"
+#define datafile "/home/pi/MWPLogData/datafile.txt"
+#define pumpdata "/home/pi/MWPLogData/pumpdata.txt"
+#define flowdata "/home/pi/MWPLogData/flowdata.txt"
+#define flowfile "/home/pi/MWPLogData/flowfile.txt"
 
 /* Library function prototypes */
 
