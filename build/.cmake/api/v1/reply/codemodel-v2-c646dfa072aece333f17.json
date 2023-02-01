@@ -12,7 +12,9 @@
 						2,
 						3,
 						4,
-						5
+						5,
+						6,
+						7
 					],
 					"hasInstallRule" : true,
 					"minimumCMakeVersion" : 
@@ -33,7 +35,7 @@
 					"source" : "mylib",
 					"targetIndexes" : 
 					[
-						3
+						4
 					]
 				},
 				{
@@ -48,7 +50,7 @@
 					"source" : "FlowMonitor",
 					"targetIndexes" : 
 					[
-						1
+						2
 					]
 				},
 				{
@@ -63,7 +65,7 @@
 					"source" : "TankMonitor",
 					"targetIndexes" : 
 					[
-						2
+						3
 					]
 				},
 				{
@@ -78,7 +80,37 @@
 					"source" : "TankSubscriber",
 					"targetIndexes" : 
 					[
-						4
+						5
+					]
+				},
+				{
+					"build" : "TankAlert",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.2"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 5,
+					"source" : "TankAlert",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "TankTest",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.2"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 6,
+					"source" : "TankTest",
+					"targetIndexes" : 
+					[
+						6
 					]
 				},
 				{
@@ -89,11 +121,11 @@
 						"string" : "3.2"
 					},
 					"parentIndex" : 0,
-					"projectIndex" : 5,
+					"projectIndex" : 7,
 					"source" : "Blynk",
 					"targetIndexes" : 
 					[
-						0
+						1
 					]
 				}
 			],
@@ -107,7 +139,9 @@
 						2,
 						3,
 						4,
-						5
+						5,
+						6,
+						7
 					],
 					"directoryIndexes" : 
 					[
@@ -124,7 +158,7 @@
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
-						3
+						4
 					]
 				},
 				{
@@ -136,7 +170,7 @@
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
-						1
+						2
 					]
 				},
 				{
@@ -148,7 +182,7 @@
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
-						2
+						3
 					]
 				},
 				{
@@ -160,7 +194,7 @@
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
-						4
+						5
 					]
 				},
 				{
@@ -168,11 +202,35 @@
 					[
 						5
 					],
-					"name" : "blynk",
+					"name" : "alert",
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
 						0
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						6
+					],
+					"name" : "test",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						6
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						7
+					],
+					"name" : "blynk",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						1
 					]
 				}
 			],
@@ -180,10 +238,17 @@
 			[
 				{
 					"directoryIndex" : 5,
+					"id" : "alert::@bcbe81a63680b4a91cc0",
+					"jsonFile" : "target-alert-Debug-d78eef71b2f4c7b2d565.json",
+					"name" : "alert",
+					"projectIndex" : 5
+				},
+				{
+					"directoryIndex" : 7,
 					"id" : "blynk::@85d371cfb24311502f54",
 					"jsonFile" : "target-blynk-Debug-4352aa2c9cf2878875ed.json",
 					"name" : "blynk",
-					"projectIndex" : 5
+					"projectIndex" : 7
 				},
 				{
 					"directoryIndex" : 2,
@@ -212,6 +277,13 @@
 					"jsonFile" : "target-subscriber-Debug-23372b4b0edf7a57dd1b.json",
 					"name" : "subscriber",
 					"projectIndex" : 4
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "test::@8187007c803a48204724",
+					"jsonFile" : "target-test-Debug-9804efc9818031ec624c.json",
+					"name" : "test",
+					"projectIndex" : 6
 				}
 			]
 		}

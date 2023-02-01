@@ -144,6 +144,12 @@
 			"path" : "TankSubscriber/CMakeLists.txt"
 		},
 		{
+			"path" : "TankAlert/CMakeLists.txt"
+		},
+		{
+			"path" : "TankTest/CMakeLists.txt"
+		},
+		{
 			"path" : "Blynk/CMakeLists.txt"
 		}
 	],

@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.2)
+project (test)
+add_executable(test test.c)
+target_link_directories(test PRIVATE /home/pi/paho.mqtt.c/build/output/lib  ../mylib)
+target_link_libraries(test libpaho-mqtt3c.so libpaho-mqtt3a.so libpaho-mqtt3as.so libpaho-mqtt3cs.so libmylib.a)
+install(TARGETS test DESTINATION /home/pi/MilanoWaterProject/bin)

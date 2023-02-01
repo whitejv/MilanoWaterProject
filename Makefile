@@ -228,6 +228,32 @@ subscriber/fast:
 .PHONY : subscriber/fast
 
 #=============================================================================
+# Target rules for targets named alert
+
+# Build rule for target.
+alert: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 alert
+.PHONY : alert
+
+# fast build rule for target.
+alert/fast:
+	$(MAKE) $(MAKESILENT) -f TankAlert/CMakeFiles/alert.dir/build.make TankAlert/CMakeFiles/alert.dir/build
+.PHONY : alert/fast
+
+#=============================================================================
+# Target rules for targets named test
+
+# Build rule for target.
+test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test
+.PHONY : test
+
+# fast build rule for target.
+test/fast:
+	$(MAKE) $(MAKESILENT) -f TankTest/CMakeFiles/test.dir/build.make TankTest/CMakeFiles/test.dir/build
+.PHONY : test/fast
+
+#=============================================================================
 # Target rules for targets named blynk
 
 # Build rule for target.
@@ -252,11 +278,13 @@ help:
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
+	@echo "... alert"
 	@echo "... blynk"
 	@echo "... flowmonitor"
 	@echo "... monitor"
 	@echo "... mylib"
 	@echo "... subscriber"
+	@echo "... test"
 .PHONY : help
 
 

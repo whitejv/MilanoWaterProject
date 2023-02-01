@@ -39,10 +39,10 @@
  * payload[2] =    Water Height
  * payload[3] =    Tank Gallons
  * payload[4] =    Tank Percent Full
- * payload[5] =    Current Sensor  1 Value
- * payload[6] =    Current Sensor  2 Value
- * payload[7] =    Current Sensor  3 Value
- * payload[8] =    Current Sensor  4 Value
+ * payload[5] =    Current Sensor  1 Value (Well #1)
+ * payload[6] =    Current Sensor  2 Value (Well #2)
+ * payload[7] =    Current Sensor  3 Value (Well #3) 
+ * payload[8] =    Current Sensor  4 Value (Irrigation Pump)
  * payload[9] =    Firmware Version of ESP
  * payload[10] =    I2C Fault Count
  * payload[11] =    Cycle Count
@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
        * A/D to Water Height, Gallons & Percent Full
        */
 
-      PresSensorRawValue = data_payload[8] * PresSensorLSB;
+      PresSensorRawValue = well_data_payload[8] * PresSensorLSB;
 
       /*
        * Kalman Filter to smooth the hydrostatic sensor readings
@@ -261,44 +261,44 @@ int main(int argc, char *argv[])
       // printf("Percent Gallons in Tank = %f\n", TankPerFull);
 
       // Channel 2 Voltage Sensor 16 bit data
-      raw_voltage1_adc = (int16_t)data_payload[1];
+      raw_voltage1_adc = (int16_t)well_data_payload[1];
 
       // Channel 3 Voltage Sensor 16 bit data
-      raw_voltage2_adc = (int16_t)data_payload[2];
+      raw_voltage2_adc = (int16_t)well_data_payload[2];
       // printf("voltage ch 2: %d\n", raw_voltage2_adc);
 
       // Channel 4 Voltage Sensor 16 bit data
-      raw_voltage3_adc = (int16_t)data_payload[3];
+      raw_voltage3_adc = (int16_t)well_data_payload[3];
 
       // MCP3428 #2 Channel 4 Voltage Sensor 16 bit data
-      WaterPresSensorValue = (int16_t)data_payload[9] * .00275496;
-      // printf("Raw Water Pressure: 0%x  %d  %f\n", data_payload[9],data_payload[9], WaterPresSensorValue);
+      WaterPresSensorValue = (int16_t)well_data_payload[9] * .00275496;
+      // printf("Raw Water Pressure: 0%x  %d  %f\n", well_data_payload[9],well_data_payload[9], WaterPresSensorValue);
 
-      raw_voltage4_adc = (int16_t)data_payload[11];
+      raw_voltage4_adc = (int16_t)well_data_payload[11];
 
       /*
        * Convert the Discrete data
        */
 
-      Float100State = (data_payload[4] & 0x0001);
-      Float90State = (data_payload[4] & 0x0002) >> 1;
-      Float50State = (data_payload[4] & 0x0004) >> 2;
-      Float25State = (data_payload[4] & 0x0008) >> 3;
-      PressSwitState = (data_payload[4] & 0x0010) >> 4;
-      SepticAlert = (data_payload[4] & 0x0020) >> 5;
+      Float100State = (well_data_payload[4] & 0x0001);
+      Float90State = (well_data_payload[4] & 0x0002) >> 1;
+      Float50State = (well_data_payload[4] & 0x0004) >> 2;
+      Float25State = (well_data_payload[4] & 0x0008) >> 3;
+      PressSwitState = (well_data_payload[4] & 0x0010) >> 4;
+      SepticAlert = (well_data_payload[4] & 0x0020) >> 5;
 
       /*
        * Convert Raw Temp Sensor to degrees farenhiet
        */
 
-      raw_temp = data_payload[5];
+      raw_temp = well_data_payload[5];
       AmbientTempC = raw_temp * .0625; // LSB weight for 12 bit conversion is .0625
       AmbientTempF = (AmbientTempC * 1.8) + 32.0;
       // printf("Ambient Temp:%f  \n", AmbientTempF);
 
       /*
        * Set Firmware Version
-       * firmware = data_payload[20] & SubFirmware;
+       * firmware = well_data_payload[20] & SubFirmware;
        */
 
       /*
@@ -314,8 +314,8 @@ int main(int argc, char *argv[])
       formatted_sensor_payload[6] = raw_voltage3_adc;
       formatted_sensor_payload[7] = raw_voltage4_adc;
       formatted_sensor_payload[8] = firmware;
-      formatted_sensor_payload[9] = data_payload[16];  // I2C Faults
-      formatted_sensor_payload[10] = data_payload[12]; // Cycle Count
+      formatted_sensor_payload[9] = well_data_payload[16];  // I2C Faults
+      formatted_sensor_payload[10] = well_data_payload[12]; // Cycle Count
       formatted_sensor_payload[11] = AmbientTempF;
       formatted_sensor_payload[12] = Float100State;
       formatted_sensor_payload[13] = Float90State;

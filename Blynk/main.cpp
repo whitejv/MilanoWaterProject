@@ -59,6 +59,7 @@ void connlost(void *context, char *cause)
 
 void loop()
 {
+   static int OneTime = 0;
    u_int32_t BitPackedPayload = 0;
    int PumpRunCount[5];
    int floatState[5];
@@ -204,6 +205,16 @@ void loop()
 
     */
 
+   if (alert_sensor_payload[0] == 1 && OneTime == 0)
+   {
+      OneTime = 1;
+      Blynk.logEvent("pump_no_start");
+      printf("pump_no_start\n");
+   }
+
+
+
+
    Blynk.run();
    tmr.run();
 }
@@ -247,17 +258,21 @@ int main(int argc, char *argv[])
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", FL_TOPIC, FL_CLIENTID, QOS);
+   printf("Subscribing to topic: %s using QoS: %d\n\n", FL_TOPIC, QOS);
    //log_message("Blynk: Subscribing to topic: %s for client: %s\n", FL_TOPIC, FL_CLIENTID);
    MQTTClient_subscribe(client, FL_TOPIC, QOS);
    
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, F_CLIENTID, QOS);
+   printf("Subscribing to topic: %s using QoS: %d\n\n", F_TOPIC, QOS);
    //log_message("Blynk: Subscribing to topic: %s for client: %s\n", F_TOPIC, F_CLIENTID);
    MQTTClient_subscribe(client, F_TOPIC, QOS);
 
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", M_TOPIC, M_CLIENTID, QOS);
+   printf("Subscribing to topic: %s using QoS: %d\n\n", M_TOPIC, QOS);
    //log_message("Blynk: Subscribing to topic: %s for client: %s\n", M_TOPIC, M_CLIENTID);
    MQTTClient_subscribe(client, M_TOPIC, QOS);
+
+   printf("Subscribing to topic: %s using QoS: %d\n\n", A_TOPIC, QOS);
+   //log_message("Blynk: Subscribing to topic: %s for client: %s\n", A_TOPIC, M_CLIENTID);
+   MQTTClient_subscribe(client, A_TOPIC, QOS);
 
    printf("Connecting to Blynk: %s, %s, %d\n", serv, auth, port);
 

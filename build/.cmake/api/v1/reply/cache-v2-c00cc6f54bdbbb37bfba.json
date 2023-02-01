@@ -767,7 +767,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "6"
+			"value" : "8"
 		},
 		{
 			"name" : "CMAKE_OBJCOPY",
@@ -1154,6 +1154,30 @@
 			"value" : "/home/pi/MilanoWaterProject"
 		},
 		{
+			"name" : "alert_BINARY_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/pi/MilanoWaterProject/build/TankAlert"
+		},
+		{
+			"name" : "alert_SOURCE_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/pi/MilanoWaterProject/TankAlert"
+		},
+		{
 			"name" : "blynk_BINARY_DIR",
 			"properties" : 
 			[
@@ -1272,6 +1296,30 @@
 			],
 			"type" : "STATIC",
 			"value" : "/home/pi/MilanoWaterProject/TankSubscriber"
+		},
+		{
+			"name" : "test_BINARY_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/pi/MilanoWaterProject/build/TankTest"
+		},
+		{
+			"name" : "test_SOURCE_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/pi/MilanoWaterProject/TankTest"
 		}
 	],
 	"kind" : "cache",

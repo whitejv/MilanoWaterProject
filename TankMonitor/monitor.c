@@ -430,13 +430,13 @@ int main(int argc, char *argv[])
       monitor_sensor_payload[17] = SepticAlertColor;
       monitor_sensor_payload[18] = pressState;
       monitor_sensor_payload[19] = pressLedColor;
-
+/*
       for (i = 0; i <= M_LEN; i++)
       {
          printf("%0x ", monitor_sensor_payload[i]);
       }
       printf("%s", ctime(&t));
-
+*/
       pubmsg.payload = monitor_sensor_payload;
       pubmsg.payloadlen = M_LEN * 4;
       pubmsg.qos = QOS;

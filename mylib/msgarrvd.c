@@ -48,8 +48,8 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
       //for(i=0; i < FL_LEN; i++) {printf("%0f ", flow_sensor_payload[i]);}
       printf("^\n");
    }
-   else if ( strcmp(topicName, ESP_TOPIC) == 0) {
-      memcpy(data_payload, message->payload, message->payloadlen);
+   else if ( strcmp(topicName, WELL_TOPIC) == 0) {
+      memcpy(well_data_payload, message->payload, message->payloadlen);
       //for(i=0; i < ESP_LEN; i++) {printf("%0x ", data_payload[i]);}
       printf("-\n");
    }

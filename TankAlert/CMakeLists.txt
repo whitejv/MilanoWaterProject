@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.2)
+project (alert)
+add_executable(alert alert.c)
+target_link_directories(alert PRIVATE /home/pi/paho.mqtt.c/build/output/lib  ../mylib)
+target_link_libraries(alert libpaho-mqtt3c.so libpaho-mqtt3a.so libpaho-mqtt3as.so libpaho-mqtt3cs.so libmylib.a)
+install(TARGETS alert DESTINATION /home/pi/MilanoWaterProject/bin)
