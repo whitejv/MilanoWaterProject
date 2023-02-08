@@ -27,6 +27,8 @@
 
 void log_message(const char *format, ...);
 
+#define T_CLIENTID "Tank Test"
+
 /*
  * Data Block Interface Control
  */
