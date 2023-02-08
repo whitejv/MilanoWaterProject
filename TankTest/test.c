@@ -1,66 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
 #include "unistd.h"
 #include "MQTTClient.h"
 #include "../include/water.h"
-
-/*payload[0] =    Pressure Sensor Value
- * payload[1] =    Water Height
- * payload[2] =    Tank Gallons
- * payload[3] =    Tank Percent Full
- * payload[4] =    Current Sensor  1 Value
- * payload[5] =    Current Sensor  2 Value
- * payload[6] =    Current Sensor  3 Value
- * payload[7] =    Current Sensor  4 Value
- * payload[8] =    Firmware Version of ESP
- * payload[9] =    I2C Fault Count
- * payload[10] =    Cycle Count
- * payload[11] =    Ambient Temperature
- * payload[12] =    Float State 1
- * payload[13] =    Float State 2
- * payload[14] =    Float State 3
- * payload[15] =    Float State 4
- * payload[16] =    Pressure Switch State
- * payload[17] =    House Water Pressure Value
- * payload[18] =    Septic Alert
- * payload[19] =     spare
- * payload[20] =     spare
- */
-
-/* payload[0] =     PumpCurrentSense[1];
- * payload[1] =     PumpCurrentSense[2];
- * payload[2] =     PumpCurrentSense[3];
- * payload[3] =     PumpCurrentSense[4];
- * payload[4] =     PumpLedColor[1];
- * payload[5] =     PumpLedColor[2];
- * payload[6] =     PumpLedColor[3];
- * payload[7] =     PumpLedColor[4];
- * payload[8] =     PumpRunCount;  //byte4-pump4;byte3-pump3;byte2-pump2;byte1-pump1
- * payload[9] =    PumpRunTime{1] ; //Seconds
- * payload[10] =    PumpRunTime{2] ; //Seconds
- * payload[11] =    PumpRunTime{3] ; //Seconds
- * payload[12] =    PumpRunTime{4] ; //Seconds
- * payload[13] =     43floatState;  //byte34-float4;byte123-float3
- * payload[14] =     21floatState;  //bytes34-float2;byte12-float1
- * payload[15] =     AllfloatLedcolor;  //byte4-color4;byte3-color3;byte2-color2;byte1-color1
- * payload[16] =    Septic Relay Alert
- * payload[17] =    Septic Relay Alert Color
- * payload[18] =    Pressure Relay Sense
- * payload[19] =    Pressure LED Color
- * payload[20] =    spare
- */
-
-enum AlarmState
-{
-   inactive = 0,
-   trigger = 1,
-   active = 2,
-   reset = 3,
-   timeout = 4
-};
 
 MQTTClient_deliveryToken deliveredtoken;
 
@@ -83,10 +29,82 @@ void connlost(void *context, char *cause)
    printf("     cause: %s\n", cause);
 }
 
-int main(int argc, char *argv[])
-{
+/*
+ * Initialize the Buffer Pointer Array
+ */
+
+int *BufferPointerArray[7];
+
+void init_buffer_pointer_array() {
+
+   BufferPointerArray[0] = (int *)tank_data_payload;
+   BufferPointerArray[1] = (int *)well_data_payload;
+   BufferPointerArray[2] = (int *)flow_data_payload;
+   BufferPointerArray[3] = (int *)formatted_sensor_payload ;
+   BufferPointerArray[4] = (int *)monitor_sensor_payload;
+   BufferPointerArray[5] = (int *)alert_sensor_payload;
+   BufferPointerArray[6] = (int *)flow_sensor_payload;
+   return;
+}
+
+/*
+ * Initialize the Interface Name Array
+ */
+
+char *InterfaceNameArray[7][21] ;
+
+void init_interface_name_array() {
+
+   int i;
+   for (i = 0; i <= 20; i++) {
+     InterfaceNameArray[0][i] = TankClientData_var_names[i];
+     InterfaceNameArray[1][i] = WellClientData_var_names[i];
+     InterfaceNameArray[2][i] = FlowClientData_var_names[i];
+     InterfaceNameArray[3][i] = FormSensorData_var_names[i];
+     InterfaceNameArray[4][i] = MonSensorData_var_names[i];
+     InterfaceNameArray[5][i] = AlertSensorData_var_names[i];
+     InterfaceNameArray[6][i] = FlowMonSensorData_var_names[i];
+   }
+   return;
+}
+
+void search_string(char *arr[][21], char *target, int *row, int *col) {
+  for (int i = 0; i < 6; i++) {
+    for (int j = 0; j < 20; j++) {
+      if (strcmp(arr[i][j], target) == 0) {
+        *row = i;
+        *col = j;
+        return;
+      }
+    }
+  }
+}
+
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printf("Usage: %s [-v] [-r N] -l [1,2,3] [file_name]\n", argv[0]);
+        return 1;
+    }
+
+    char *file_name;
+    int repeat_count = 1;
+    bool verbose = false;
+    int log_level = 1;
+    char type;
+    char operation;
+    char block;
+    int offset;
+    union {
+        int decimal;
+        float floating;
+        unsigned int hex;
+    } value;
+    int repeat;
    int i = 0;
    int j = 0;
+   float fvalue = 0.0;
+   float * p_fvalue;
 
    time_t t;
    struct tm timenow;
@@ -95,19 +113,8 @@ int main(int argc, char *argv[])
    int SecondsFromMidnight = 0;
    int PriorSecondsFromMidnight = 0;
 
-   struct FormattedSensorData SensorData;
-   struct AlertSensorData AlertData;
 
-   static enum AlarmState Alarms[20] = {0};
-   static int TimeOuts[20] = {0};
-   static int Timers[20] = {0};
-
-   int Pump1State;
-   int Pump2State;
-   int Pump3State;
-   int Pump4State;
-
-   log_message("Alert: Started\n");
+   log_message("Test: Started\n");
 
    MQTTClient client;
    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -115,19 +122,19 @@ int main(int argc, char *argv[])
    MQTTClient_deliveryToken token;
    int rc;
 
-   if ((rc = MQTTClient_create(&client, ADDRESS, A_CLIENTID,
+   if ((rc = MQTTClient_create(&client, ADDRESS, T_CLIENTID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
-      log_message("Alert: Error == Failed to Create Client. Return Code: %d\n", rc);
-      printf("Failed to create client, return code %d\n", rc);
+      log_message("Test: Error == Failed to Create Client. Return Code: %d\n", rc);
+      if (verbose) {printf("Failed to create client, return code %d\n", rc);}
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
 
    if ((rc = MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, delivered)) != MQTTCLIENT_SUCCESS)
    {
-      log_message("Alert: Error == Failed to Set Callbacks. Return Code: %d\n", rc);
-      printf("Failed to set callbacks, return code %d\n", rc);
+      log_message("Test: Error == Failed to Set Callbacks. Return Code: %d\n", rc);
+      if (verbose) {printf("Failed to set callbacks, return code %d\n", rc);}
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
@@ -138,20 +145,107 @@ int main(int argc, char *argv[])
    // conn_opts.password = mqttPassword;   //only if req'd by MQTT Server
    if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
    {
-      log_message("Alert: Error == Failed to Connect. Return Code: %d\n", rc);
-      printf("Failed to connect, return code %d\n", rc);
+      log_message("Test: Error == Failed to Connect. Return Code: %d\n", rc);
+      if (verbose) {printf("Failed to connect, return code %d\n", rc);}
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, A_CLIENTID, QOS);
-   log_message("Alert: Subscribing to topic: %s for client: %s\n", F_TOPIC, A_CLIENTID);
+   
+   if (verbose) { printf ("Subscribing to topic: %s using QoS: %d\n\n", FL_TOPIC, QOS);}
+   //log_message("Test: Subscribing to topic: %s for client: %s\n", FL_TOPIC, FL_CLIENTID);
+   MQTTClient_subscribe(client, FL_TOPIC, QOS);
+   
+   if (verbose) { printf ("Subscribing to topic: %s using QoS: %d\n\n", F_TOPIC, QOS);}
+   //log_message("Test: Subscribing to topic: %s for client: %s\n", F_TOPIC, F_CLIENTID);
    MQTTClient_subscribe(client, F_TOPIC, QOS);
+
+   if (verbose) { printf ("Subscribing to topic: %s using QoS: %d\n\n", M_TOPIC, QOS);}
+   //log_message("Test: Subscribing to topic: %s for client: %s\n", M_TOPIC, M_CLIENTID);
+   MQTTClient_subscribe(client, M_TOPIC, QOS);
+
+   if (verbose) { printf ("Subscribing to topic: %s using QoS: %d\n\n", A_TOPIC, QOS);}
+   //log_message("Test: Subscribing to topic: %s for client: %s\n", A_TOPIC, A_CLIENTID);
+   MQTTClient_subscribe(client, A_TOPIC, QOS);
+
+/*
+ * Initialize the Buffer Pointer Array Before we Start 
+ */
+
+   init_buffer_pointer_array();
+
+/*
+ * Initialize the Interface Name Array Before we Start
+ */
+
+   init_interface_name_array();
+
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-v") == 0) {
+            verbose = true;
+        } else if (strcmp(argv[i], "-r") == 0) {
+            if (i + 1 < argc) {
+                repeat_count = atoi(argv[i + 1]);
+                i++;
+            } else {
+                if (verbose) { printf ("Error: -r option expects a numeric argument. Default is 2.\n");}
+                repeat_count = 2;
+            }
+        } else if (strcmp(argv[i], "-l") == 0) {
+            if (i + 1 < argc) {
+                log_level = atoi(argv[i + 1]);
+                i++;
+            } else {
+                if (verbose) { printf  ("Error: -l option expects 1, 2 or 3. Default is 1.\n");}
+                log_level = 1;
+            }
+        }  else {
+            file_name = argv[i];
+        }
+    }
+
+    FILE *fp;
+    int data;
+
+   fp = fopen(file_name, "r"); // open file in read mode
+    if (fp == NULL) {
+        if (verbose) { printf  ("Error opening file.\n");}
+        return 1;
+    }
+
+    while (fscanf(fp, " %c %c %c %d", &operation, &block, &type, &offset) != EOF) {
+        if (type == 'd') { // decimal
+            fscanf(fp, "%d", &value.decimal);
+            fscanf(fp, "%d", &repeat);
+            for(int i = 0; i < repeat; i++) {
+                if (verbose) { printf ("%c %c %d %d\n", operation, block, offset, value.decimal);}
+            }
+        } else if (type == 'x') { // hex
+            fscanf(fp, "%x", &value.hex);
+            fscanf(fp, "%d", &repeat);
+            for(int i = 0; i < repeat; i++) {
+                if (verbose) { printf ("%c %c %d 0x%x\n", operation, block, offset, value.hex);}
+            }
+        } else if (type == 'f') { // float
+            fscanf(fp, "%f", &value.floating);
+            fscanf(fp, "%d", &repeat);
+            for(int i = 0; i < repeat; i++) {
+                if (verbose) { printf ("%c %c %d %f\n", operation, block, offset, value.floating);}
+            }
+        } else {
+            if (verbose) { printf ("Invalid value type: %c\n", type);}
+        }
+    }
+
+   // fclose(fp); // close file
+
+   // return 0;
+
 
    /*
     * Main Loop
     */
 
-   log_message("Alert: Entering Main Loop\n");
+   log_message("Test: Entering Main Loop\n");
 
    while (1)
    {
@@ -171,177 +265,35 @@ int main(int argc, char *argv[])
       // printf("seconds since midnight: %d\n", SecondsFromMidnight);
       PriorSecondsFromMidnight = SecondsFromMidnight;
 
+   search_string( InterfaceNameArray, "tank_gallons", &i, &j );
+   printf("i = %d, j = %d \n", i, j);
+   
+   p_fvalue = (float *)(BufferPointerArray[i]+(j*4)) ;
+   fvalue = *p_fvalue;
+   printf ("The value of tank_gallons is %f\n", fvalue);
+
+      //pubmsg.payload = test_sensor_payload;
       /*
-       *  Populate the structure with the sensor array data
-       */
-
-      memcpy((void *)&SensorData, (void *)formatted_sensor_payload, sizeof(struct FormattedSensorData));
-
-      if (SensorData.well_pump_1 > 2500)
-      {
-         Pump1State = ON;
-      }
-      else
-      {
-         Pump1State = OFF;
-      }
-      if (SensorData.well_pump_2 > 2500)
-      {
-         Pump2State = ON;
-      }
-      else
-      {
-         Pump2State = OFF;
-      }
-      if (SensorData.well_pump_3 > 2500)
-      {
-         Pump3State = ON;
-      }
-      else
-      {
-         Pump3State = OFF;
-      }
-      if (SensorData.irrigation_pump > 2500)
-      {
-         Pump4State = ON;
-      }
-      else
-      {
-         Pump4State = OFF;
-      }
-
-      /**	1 -	Critical	Tank Critically Low	*/
-
-      /**	2- 	Critical	Irrigation Pump Temp Low/High	*/
-
-      /**	3 -	Critical	House Water Pressure Low	*/
-
-      /**	4 -	Critical	Septic System Alert	*/
-
-      /**	5 - 	Critical	Irrigation Pump Run Away	*/
-
-      /**	6 -	Critical	Well 3 Pump Run Away	*/
-
-      /**	7 -	Warn	Well Pumps Not Starting	*/
-
-      switch (Alarms[7])
-      {
-      case (timeout):
-         if (TimeOuts[7] == 0)
-         {
-            Alarms[7] = inactive;
-         }
-         else
-         {
-            TimeOuts[7]--;
-         }
-         break;
-      case (inactive):
-         if (SensorData.pressure_tank_switch == ON)
-         {
-            Alarms[7] = trigger;
-            Timers[7] = 0;
-         }
-         break;
-      case (trigger):
-         if (Timers[7] >= 10)
-         {
-            if ((Pump1State == OFF || Pump2State == OFF) && SensorData.pressure_tank_switch == ON)
-            {
-               Alarms[7] = active;
-               Timers[7] = 0;
-            }
-         }
-         else
-         {
-            Timers[7]++;
-         }
-         break;
-      case (active):
-         if ((Pump1State == OFF || Pump2State == OFF) && SensorData.pressure_tank_switch == ON)
-         {
-            AlertData.pump_no_start = 1;
-         }
-         else
-         {
-            Alarms[7] = reset;
-         }
-         break;
-      case (reset):
-         AlertData.pump_no_start = 0;
-         Timers[7] = 0;
-         TimeOuts[7] = 60;
-         Alarms[7] = timeout;
-         break;
-      default:
-         break;
-      }
-
-      /**	8 - 	Warn	Well Pumps Runtime Exceeded	*/
-
-      /**	9  -	Warn	Well Pumps Cycles Excessive	*/
-
-      /**	10 -	Info	Well Protect Circuit Active	*/
-
-      /**	11 - 	Warn	Tank Overfill Condition	*/
-
-      /*
-       * Load Up the Data
-       */
-
-      AlertData.spare1 = 1;
-      AlertData.spare2 = 2;
-      AlertData.spare3 = 3;
-      AlertData.spare4 = 4;
-      AlertData.spare5 = 5;
-      AlertData.spare6 = 6;
-      AlertData.spare7 = 7;
-      AlertData.spare8 = 8;
-      AlertData.spare9 = 9;
-      AlertData.spare10 = 10;
-      AlertData.spare11 = 11;
-      AlertData.spare12 = 12;
-      AlertData.spare13 = 13;
-      AlertData.spare14 = 14;
-      AlertData.spare15 = 15;
-      AlertData.spare16 = 16;
-      AlertData.spare17 = 17;
-      AlertData.spare18 = 18;
-      AlertData.spare19 = 19;
-      AlertData.spare20 = 20;
-
-      /*
-       * Publish the Data
-       */
-      memcpy((void *)&alert_sensor_payload, (void *)&AlertData, sizeof(struct AlertSensorData));
-
-      for (i = 0; i < A_LEN; i++)
-      {
-         printf("%d ", alert_sensor_payload[i]);
-      }
-      printf("%s", ctime(&t));
-
-      pubmsg.payload = alert_sensor_payload;
       pubmsg.payloadlen = A_LEN * 4;
       pubmsg.qos = QOS;
       pubmsg.retained = 0;
       deliveredtoken = 0;
       if ((rc = MQTTClient_publishMessage(client, A_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
       {
-         log_message("Alert: Error == Failed to Publish Message. Return Code: %d\n", rc);
-         printf("Failed to publish message, return code %d\n", rc);
+         log_message("Test: Error == Failed to Publish Message. Return Code: %d\n", rc);
+         if (verbose) {printf("Failed to publish message, return code %d\n", rc);}
          rc = EXIT_FAILURE;
       }
-
+      */
       /*
        * Run at this interval
        */
 
       sleep(1);
    }
-   log_message("Alert: Exiting Main Loop\n");
+   log_message("Test: Exiting Main Loop\n");
    MQTTClient_unsubscribe(client, F_TOPIC);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);
    return rc;
-}
+}  

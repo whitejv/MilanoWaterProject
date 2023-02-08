@@ -13,8 +13,8 @@
 #define ORANGE 2
 #define RED 3
 
-//#define ADDRESS "192.168.1.250:1883" // Local RaspberryPI as MQTT Server
-#define ADDRESS "192.168.87.114:1883" // at JPeezy's RaspberryPI 400 as MQTT Server
+#define ADDRESS "192.168.1.250:1883" // Local RaspberryPI as MQTT Server
+
 #define QOS 1
 #define TIMEOUT 10000L
 
@@ -26,6 +26,10 @@
 /* Library function prototypes */
 
 void log_message(const char *format, ...);
+
+/*
+ * Tank Test is for Automated Testing 
+ */
 
 #define T_CLIENTID "Tank Test"
 
@@ -83,7 +87,7 @@ float	septic_alert	;
 float	spare_1	;
 float	spare_2	;
 };	
-const char* formatted_sensor_data_strings[] = {
+char* FormSensorData_var_names[] = {
 "hydro_stat_pressure",
 "water_height",
 "tank_gallons",
@@ -160,7 +164,7 @@ int	press_led_color	;
 int	spare	;
 };	
 
-const char* monitor_sensor_data_strings[] = {
+char* MonSensorData_var_names[] = {
 "pump_current_sense_1",
 "pump_current_sense_2",
 "pump_current_sense_3",
@@ -236,7 +240,7 @@ int	spare19	;
 int	spare20	;
 };	
 
-const char *AlertSensorData_vars[] = {
+char *AlertSensorData_var_names[] = {
 "pump_no_start",
 "spare1",
 "spare2",
@@ -311,7 +315,7 @@ float	spare19	;
 float	spare20	;
 };		
 
-const char* flowMonSensorDataVars[] = {
+char* FlowMonSensorData_var_names[] = {
 "IrrigationFlowPerMin",
 "IrrigationTotalFlow",
 "IrrigationPressure",
@@ -391,7 +395,7 @@ unsigned short int	spare_15	;
 unsigned short int	spare_16	;
 }	;
 
-const char *field_names[] = {
+char *TankClientData_var_names[] = {
 "pulse_count", 
 "milliseconds", 
 "new_data_flag", 
@@ -466,7 +470,7 @@ unsigned short int	 MCP3428_I2C_error	;
 unsigned short int	 FW_version_4_hex 	;
 }	;
 
-const char *WellClientData_var_names[] = {
+char *WellClientData_var_names[] = {
 "raw_current_sense_1",
 "raw_current_sense_2",
 "raw_current_sense_3",
@@ -542,7 +546,7 @@ unsigned short int	spare_13	;
 unsigned short int	fw_version	;
 }	;
 
-const char *FlowClientDataVars[] = { 
+char *FlowClientData_var_names[] = { 
    "pulse_count", 
    "millisecnods", 
    "new_data_flag", 
