@@ -13,7 +13,8 @@
 #define ORANGE 2
 #define RED 3
 
-#define ADDRESS "192.168.1.250:1883" // Local RaspberryPI as MQTT Server
+//#define ADDRESS "192.168.1.250:1883" // Local RaspberryPI as MQTT Server
+#define ADDRESS "192.168.0.30:1883" // Local RaspberryPI as MQTT Server
 
 #define QOS 1
 #define TIMEOUT 10000L
@@ -336,7 +337,7 @@ char* FlowMonSensorData_var_names[] = {
 "spare17",
 "spare18",
 "spare19",
-"spare20"
+"delay"
 };
 
 /*************************************************
@@ -369,30 +370,30 @@ char* FlowMonSensorData_var_names[] = {
 * payload 20	 spare
 */	
 	
-unsigned short int 	tank_data_payload[TANK_LEN] ;
+int 	tank_data_payload[TANK_LEN] ;
 
 struct TankClientDatat {		
-unsigned short int	pulse_count	;
-unsigned short int	millisecnods	;
-unsigned short int	new_data_flag	;
-unsigned short int	tank_baro_pressure_sensor	;
-unsigned short int	gpio	;
-unsigned short int	spare_1	;
-unsigned short int	spare_2	;
-unsigned short int	spare_3	;
-unsigned short int	spare_4	;
-unsigned short int	spare_5	;
-unsigned short int	spare_6	;
-unsigned short int	spare_7	;
-unsigned short int	cycle_count	;
-unsigned short int	spare_9	;
-unsigned short int	spare_10	;
-unsigned short int	spare_11	;
-unsigned short int	spare_12	;
-unsigned short int	spare_13	;
-unsigned short int	spare_14	;
-unsigned short int	spare_15	;
-unsigned short int	spare_16	;
+int	pulse_count	;
+int	millisecnods	;
+int	new_data_flag	;
+int	tank_baro_pressure_sensor	;
+int	gpio	;
+int	spare_1	;
+int	spare_2	;
+int	spare_3	;
+int	spare_4	;
+int	spare_5	;
+int	spare_6	;
+int	spare_7	;
+int	cycle_count	;
+int	spare_9	;
+int	spare_10	;
+int	spare_11	;
+int	spare_12	;
+int	spare_13	;
+int	spare_14	;
+int	spare_15	;
+int	spare_16	;
 }	;
 
 char *TankClientData_var_names[] = {
@@ -444,30 +445,30 @@ char *TankClientData_var_names[] = {
  * payload 19    MCP3428 I2C Error
  * payload 20    FW Version 4 Hex
  */
-unsigned short int well_data_payload[WELL_LEN];
+int well_data_payload[WELL_LEN];
 
 struct WellClientDatat {		
-unsigned short int	raw_current_sense_1	;
-unsigned short int	raw_current_sense_2	;
-unsigned short int	raw_current_sense_3	;
-unsigned short int	raw_current_sense_4	;
-unsigned short int	gpio_alerts	;
-unsigned short int	raw_temp_celcius	;
-unsigned short int	spare_1	;
-unsigned short int	spare_2	;
-unsigned short int	raw_current_sense_5	;
-unsigned short int	raw_current_sense_6	;
-unsigned short int	raw_current_sense_7	;
-unsigned short int	raw_current_sense_8	;
-unsigned short int	cycle_count	;
-unsigned short int	spare_3	;
-unsigned short int	spare_4	;
-unsigned short int	spare_5	;
-unsigned short int	I2C_panic_count	;
-unsigned short int	 TMP100_I2C_error	;
-unsigned short int	 MCP23008_I2C_error	;
-unsigned short int	 MCP3428_I2C_error	;
-unsigned short int	 FW_version_4_hex 	;
+int	raw_current_sense_1	;
+int	raw_current_sense_2	;
+int	raw_current_sense_3	;
+int	raw_current_sense_4	;
+int	gpio_alerts	;
+int	raw_temp_celcius	;
+int	spare_1	;
+int	spare_2	;
+int	raw_current_sense_5	;
+int	raw_current_sense_6	;
+int	raw_current_sense_7	;
+int	raw_current_sense_8	;
+int	cycle_count	;
+int	spare_3	;
+int	spare_4	;
+int	spare_5	;
+int	I2C_panic_count	;
+int	 TMP100_I2C_error	;
+int	 MCP23008_I2C_error	;
+int	 MCP3428_I2C_error	;
+int	 FW_version_4_hex 	;
 }	;
 
 char *WellClientData_var_names[] = {
@@ -520,30 +521,30 @@ char *WellClientData_var_names[] = {
  * payload 19    unused
  * payload 20    FW Version 4 Hex
  */
-unsigned short int flow_data_payload[FLO_LEN];
+int flow_data_payload[FLO_LEN];
 
 struct FlowClientDatat {		
-unsigned short int	pulse_count	;
-unsigned short int	millisecnods	;
-unsigned short int	new_data_flag	;
-unsigned short int	irrigation_pressure_sensor	;
-unsigned short int	spare_1	;
-unsigned short int	spare_2	;
-unsigned short int	spare_3	;
-unsigned short int	spare_4	;
-unsigned short int	spare_5	;
-unsigned short int	spare_6	;
-unsigned short int	spare_7	;
-unsigned short int	spare_8	;
-unsigned short int	cycle_count	;
-unsigned short int	spare_9	;
-unsigned short int	spare_10	;
-unsigned short int	spare_11	;
-unsigned short int	spare_12	;
-unsigned short int	pump_temp_w1	;
-unsigned short int	pump_temp_w2	;
-unsigned short int	spare_13	;
-unsigned short int	fw_version	;
+int	pulse_count	;
+int	millisecnods	;
+int	new_data_flag	;
+int	irrigation_pressure_sensor	;
+int	spare_1	;
+int	spare_2	;
+int	spare_3	;
+int	spare_4	;
+int	spare_5	;
+int	spare_6	;
+int	spare_7	;
+int	spare_8	;
+int	cycle_count	;
+int	spare_9	;
+int	spare_10	;
+int	spare_11	;
+int	spare_12	;
+int	pump_temp_w1	;
+int	pump_temp_w2	;
+int	spare_13	;
+int	fw_version	;
 }	;
 
 char *FlowClientData_var_names[] = { 
@@ -572,7 +573,7 @@ char *FlowClientData_var_names[] = {
 
 
 
-unsigned short int ESP_payload[4];
+int ESP_payload[4];
 
 int firmware = 0;
 int SubFirmware = 0x80FF;

@@ -50,7 +50,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
    }
    else if ( strcmp(topicName, WELL_TOPIC) == 0) {
       memcpy(well_data_payload, message->payload, message->payloadlen);
-      //for(i=0; i < ESP_LEN; i++) {printf("%0x ", data_payload[i]);}
+      for(i=0; i < WELL_LEN; i++) {printf("%0x ", well_data_payload[i]);}
       printf("-\n");
    }
    

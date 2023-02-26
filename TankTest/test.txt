@@ -1,2 +1,9 @@
-s	0:gpio	x	1	5
-v	3:float_state_1	d	1	
+s	raw_temp_celcius	d	50
+r	raw_temp_celcius	d
+s	raw_temp_celcius	d	52
+r	raw_temp_celcius	d	
+s	raw_temp_celcius	d	80
+r	raw_temp_celcius	x
+r   ambient_temp        f
+v   ambient_temp        f   41.0  1.25
+*
