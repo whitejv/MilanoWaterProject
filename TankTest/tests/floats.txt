@@ -1,3 +1,7 @@
+**
+** Test the float LED indicators are set correclty"
+** and verify the LED colors are correct"
+**
 v   float_state_1       f   0
 v   float_state_2       f   0
 v   float_state_3       f   0

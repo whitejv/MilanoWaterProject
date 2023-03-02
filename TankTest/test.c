@@ -266,6 +266,12 @@ int main(int argc, char* argv[]) {
 
         int n = 0;
         if (sscanf(line, "%c %s %c%n", &operation, param, &type, &n) == 3) {
+            
+            if (operation == '*') {
+                log_test(verbose, log_level, 2, "%s\n", line);
+                continue;
+            }
+            
             if (type == 'f') {
                 value.floating = 0;
                 tol.floating = 0;
@@ -288,6 +294,7 @@ int main(int argc, char* argv[]) {
         }
         else {
             log_test(verbose, log_level, 1, "Failed to read line: %s\n", line);
+            continue;
         }
 
         switch (operation) {
