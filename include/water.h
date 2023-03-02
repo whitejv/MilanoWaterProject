@@ -13,8 +13,8 @@
 #define ORANGE 2
 #define RED 3
 
-//#define ADDRESS "192.168.1.250:1883" // Local RaspberryPI as MQTT Server
-#define ADDRESS "192.168.0.30:1883" // Local RaspberryPI as MQTT Server
+//#define ADDRESS "192.168.1.250:1883" // Local RaspberryPI RaspiCM4 Production MQTT Server
+#define ADDRESS "192.168.1.249:1883" // Local RaspberryPI 400 Development MQTT Server
 
 #define QOS 1
 #define TIMEOUT 10000L
@@ -27,6 +27,7 @@
 /* Library function prototypes */
 
 void log_message(const char *format, ...);
+void log_test(int verbose, int log_level, int msg_level, const char *format, ...);
 
 /*
  * Tank Test is for Automated Testing 
@@ -377,7 +378,7 @@ int	pulse_count	;
 int	millisecnods	;
 int	new_data_flag	;
 int	tank_baro_pressure_sensor	;
-int	gpio	;
+int	tank_gpio	;
 int	spare_1	;
 int	spare_2	;
 int	spare_3	;
@@ -401,7 +402,7 @@ char *TankClientData_var_names[] = {
 "milliseconds", 
 "new_data_flag", 
 "tank_baro_pressure_sensor", 
-"gpio", 
+"tank_gpio", 
 "spare_1", 
 "spare_2", 
 "spare_3", 
@@ -452,7 +453,7 @@ int	raw_current_sense_1	;
 int	raw_current_sense_2	;
 int	raw_current_sense_3	;
 int	raw_current_sense_4	;
-int	gpio_alerts	;
+int	well_gpio;
 int	raw_temp_celcius	;
 int	spare_1	;
 int	spare_2	;
@@ -476,7 +477,7 @@ char *WellClientData_var_names[] = {
 "raw_current_sense_2",
 "raw_current_sense_3",
 "raw_current_sense_4",
-"gpio_alerts",
+"well_gpio",
 "raw_temp_celcius",
 "spare_1",
 "spare_2",

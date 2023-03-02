@@ -217,6 +217,33 @@ logMsg.c.s:
 	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f mylib/CMakeFiles/mylib.dir/build.make mylib/CMakeFiles/mylib.dir/logMsg.c.s
 .PHONY : logMsg.c.s
 
+logTest.o: logTest.c.o
+
+.PHONY : logTest.o
+
+# target to build an object file
+logTest.c.o:
+	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f mylib/CMakeFiles/mylib.dir/build.make mylib/CMakeFiles/mylib.dir/logTest.c.o
+.PHONY : logTest.c.o
+
+logTest.i: logTest.c.i
+
+.PHONY : logTest.i
+
+# target to preprocess a source file
+logTest.c.i:
+	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f mylib/CMakeFiles/mylib.dir/build.make mylib/CMakeFiles/mylib.dir/logTest.c.i
+.PHONY : logTest.c.i
+
+logTest.s: logTest.c.s
+
+.PHONY : logTest.s
+
+# target to generate assembly for a file
+logTest.c.s:
+	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f mylib/CMakeFiles/mylib.dir/build.make mylib/CMakeFiles/mylib.dir/logTest.c.s
+.PHONY : logTest.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -233,6 +260,9 @@ help:
 	@echo "... logMsg.o"
 	@echo "... logMsg.i"
 	@echo "... logMsg.s"
+	@echo "... logTest.o"
+	@echo "... logTest.i"
+	@echo "... logTest.s"
 .PHONY : help
 
 

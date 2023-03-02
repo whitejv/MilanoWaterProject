@@ -289,26 +289,26 @@ int main(int argc, char *argv[])
        * Load Up the Data
        */
 
-      AlertData.spare1 = 1;
-      AlertData.spare2 = 2;
-      AlertData.spare3 = 3;
-      AlertData.spare4 = 4;
-      AlertData.spare5 = 5;
-      AlertData.spare6 = 6;
-      AlertData.spare7 = 7;
-      AlertData.spare8 = 8;
-      AlertData.spare9 = 9;
-      AlertData.spare10 = 10;
-      AlertData.spare11 = 11;
-      AlertData.spare12 = 12;
-      AlertData.spare13 = 13;
-      AlertData.spare14 = 14;
-      AlertData.spare15 = 15;
-      AlertData.spare16 = 16;
-      AlertData.spare17 = 17;
-      AlertData.spare18 = 18;
-      AlertData.spare19 = 19;
-      AlertData.spare20 = 20;
+      AlertData.spare1 = 0;
+      AlertData.spare2 = 0;
+      AlertData.spare3 = 0;
+      AlertData.spare4 = 0;
+      AlertData.spare5 = 0;
+      AlertData.spare6 = 0;
+      AlertData.spare7 = 0;
+      AlertData.spare8 = 0;
+      AlertData.spare9 = 0;
+      AlertData.spare10 = 0;
+      AlertData.spare11 = 0;
+      AlertData.spare12 = 0;
+      AlertData.spare13 = 0;
+      AlertData.spare14 = 0;
+      AlertData.spare15 = 0;
+      AlertData.spare16 = 0;
+      AlertData.spare17 = 0;
+      AlertData.spare18 = 0;
+      AlertData.spare19 = 0;
+      AlertData.spare20 = 0;
 
       /*
        * Publish the Data

@@ -1,9 +1,17 @@
-s	raw_temp_celcius	d	50
-r	raw_temp_celcius	d
-s	raw_temp_celcius	d	52
-r	raw_temp_celcius	d	
-s	raw_temp_celcius	d	80
+s   pump_temp_w1        x   255
+s   pump_temp_w1        x   255
+s   pump_temp_w2        x   16
+s   well_gpio           x   2
+s   tank_gpio           x   2
+r   float_state_1       f
+r   float_state_2       f
+r   float_state_3       f
+r   float_state_4       f
+s	raw_temp_celcius	d	91
 r	raw_temp_celcius	x
+v   raw_temp_celcius    x   91
 r   ambient_temp        f
-v   ambient_temp        f   41.0  1.25
-*
+v   ambient_temp        f   42.0  1.25
+v   pump_no_start       d   1     0
+v   pump_no_start       d   0     0
+**

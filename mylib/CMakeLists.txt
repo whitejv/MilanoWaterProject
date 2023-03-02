@@ -3,6 +3,7 @@ project(mylib)
 
 set(SOURCES
     logMsg.c
+    logTest.c
 )
 
 add_library(mylib STATIC ${SOURCES})
