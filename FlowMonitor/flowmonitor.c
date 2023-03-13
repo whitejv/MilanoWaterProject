@@ -57,9 +57,6 @@
  * payload[20] =    spare
  */
 
-#define flowfile "./flowfile.txt"
-#define flowdata "./flowdata.txt"
-
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
 
@@ -72,52 +69,13 @@ void delivered(void *context, MQTTClient_deliveryToken dt)
    deliveredtoken = dt;
 }
 
-iint msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message)
-{
-   
-   int i;
-   
-   printf("Message arrived:\n");
-   printf("          topic: %s  ", topicName);
-   printf("         length: %d  ", topicLen);
-   printf("     PayloadLen: %d\n", message->payloadlen);
-   printf("message: ");
-   
-   if ( strcmp(topicName, FLO_TOPIC) == 0) {
-      memcpy(flow_data_payload, message->payload, message->payloadlen);
-      for(i=0; i < FLO_LEN; i++) {printf("%0x ", flow_data_payload[i]);}
-      printf("|\n");
-   }
-   else if ( strcmp(topicName, F_TOPIC) == 0) {
-      memcpy(formatted_sensor_payload, message->payload, message->payloadlen);
-      for(i=0; i < F_LEN; i++) { printf("%0f ", formatted_sensor_payload[i]);}
-      printf("+\n");
-   }
-   else if ( strcmp(topicName, M_TOPIC) == 0) {
-      memcpy(monitor_sensor_payload, message->payload, message->payloadlen);
-      for(i=0; i < M_LEN; i++) { printf("%0x ", monitor_sensor_payload[i]);}
-      printf(".\n");
-   }
-   else if ( strcmp(topicName, A_TOPIC) == 0) {
-      memcpy(alert_sensor_payload, message->payload, message->payloadlen);
-      for(i=0; i < A_LEN; i++) {printf("%0x ", alert_sensor_payload[i]);}
-      printf("*\n");
-   }
-   else if ( strcmp(topicName, FL_TOPIC) == 0) {
-      memcpy(flow_sensor_payload, message->payload, message->payloadlen);
-      for(i=0; i < FL_LEN; i++) {printf("%0f ", flow_sensor_payload[i]);}
-      printf("^\n");
-   }
-   else if ( strcmp(topicName, ESP_TOPIC) == 0) {
-      memcpy(data_payload, message->payload, message->payloadlen);
-      for(i=0; i < ESP_LEN; i++) {printf("%0x ", data_payload[i]);}
-      printf("-\n");
-   }
-   
-   MQTTClient_freeMessage(&message);
-   MQTTClient_free(topicName);
-   return 1;
-}
+/* Using an include here to allow me to reuse a chunk of code that
+   would not work as a library file. So treating it like an include to 
+   copy and paste the same code into multiple programs. 
+*/
+
+#include "../mylib/msgarrvd.c"
+
 void connlost(void *context, char *cause)
 {
    printf("\nConnection lost\n");
@@ -164,10 +122,13 @@ int main(int argc, char* argv[])
    MQTTClient_deliveryToken token;
    int rc;
    
+   log_message("FlowMonitor: Started\n");
+
    if ((rc = MQTTClient_create(&client, ADDRESS, FLO_CLIENTID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to create client, return code %d\n", rc);
+      log_message("FlowMonitor: Error == Failed to Create Client. Return Code: %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
@@ -175,6 +136,7 @@ int main(int argc, char* argv[])
    if ((rc = MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, delivered)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to set callbacks, return code %d\n", rc);
+      log_message("FlowMonitor: Error == Failed to Set Callbacks. Return Code: %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
@@ -186,26 +148,23 @@ int main(int argc, char* argv[])
    if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to connect, return code %d\n", rc);
+      log_message("FlowMonitor: Error == Failed to Connect. Return Code: %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", FLO_TOPIC, FLO_CLIENTID, QOS);
-   
+   log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", FLO_TOPIC, FLO_CLIENTID);
    MQTTClient_subscribe(client, FLO_TOPIC, QOS);
    
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, F_CLIENTID, QOS);  
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, F_CLIENTID, QOS);
+   log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", F_TOPIC, F_CLIENTID);
    MQTTClient_subscribe(client, F_TOPIC, QOS);
-   
-   /*
-    * Initialize the data file with headers
-    */
-   //fptr = fopen(flowdata, "a");
-   //fprintf(fptr, "Hello World ");
-   //fclose(fptr);
    
    /*
     * Main Loop
     */
+
+   log_message("FlowMonitor: Entering Main Loop\n") ;
    
    while(1)
    {
@@ -315,12 +274,12 @@ int main(int argc, char* argv[])
       flow_sensor_payload[17] =   0;
       flow_sensor_payload[18] =   0;
       flow_sensor_payload[19] =   0;
-      
+      /*
       for (i=0; i<=FL_LEN; i++) {
-         // printf("%f ", flow_sensor_payload[i]);
+          printf("%f ", flow_sensor_payload[i]);
       }
-      // printf("%s", ctime(&t));
-      
+      printf("%s", ctime(&t));
+      */
       pubmsg.payload = flow_sensor_payload;
       pubmsg.payloadlen = FL_LEN * 4;
       pubmsg.qos = QOS;
@@ -329,6 +288,7 @@ int main(int argc, char* argv[])
       if ((rc = MQTTClient_publishMessage(client, FL_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
       {
          printf("Failed to publish message, return code %d\n", rc);
+         log_message("FlowMonitor: Error == Failed to Publish Message. Return Code: %d\n", rc);
          rc = EXIT_FAILURE;
       }
       
@@ -366,6 +326,7 @@ int main(int argc, char* argv[])
       sleep(1) ;
    }
    
+   log_message("FlowMonitor: Exited Main Loop\n");
    MQTTClient_unsubscribe(client, F_TOPIC);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);

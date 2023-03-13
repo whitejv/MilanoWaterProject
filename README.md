@@ -34,6 +34,10 @@
 - -> chmod a-w /home/<user>/FTP
 - -> sudo service vsftpd restart
 
+## Install CMake
+
+- -> sudo apt-get install cmake
+ 
 ## Install Mosquitto MQTT Service
 
 - -> sudo apt install -y mosquitto mosquitto-clients
@@ -88,7 +92,17 @@
 
 - -> git clone https://github.com/whitejv/MilanoWaterProject.git
 - -> cd MilanoWaterProject
-- -> mkdir bin
+- -> mkdir /home/pi/MWPLogData (Create this on first time install on a new system)
+### CMake Process
+- -> cmake -S . (to rebuild the Root Makefile
+- -> make clean
+- -> make depend
+- -> make
+- -> make install
+- -> cd bin
+- -> ls -al (check the dates)
+ 
+### Manual Build Process
 - -> cd TankSubscriber
 - -> make depend
 - -> make
@@ -110,3 +124,32 @@
 - -> cd MilanoWaterProject
 - -> chmod +x h2o.sh
 - -> reboot
+ 
+ ## Configuring VS Code for Debug
+- -> C++ extension for VS Code. Install the C/C++ extension by searching for 'c++' in the Extensions view (⇧⌘X).
+- -> CMake Tools extension for VS Code. Install the CMake Tools extension by searching for 'CMake tools' in the Extensions view (⇧⌘X).
+- -> sudo apt-get install build-essential gdb (Installs GDB Debugger if not already installed)
+ 
+### Select a kit
+- -> Before you can use the CMake Tools extension to build a project, you need to configure it to know about the compilers on your system. Do that by    scanning for 'kits'. A kit represents a toolchain, which is the compiler, linker, and other tools used to build your project. To scan for kits:
+
+- -> Open the Command Palette (⇧⌘P)
+- -> run CMake: Select a Kit. The extension will automatically scan for kits on your computer and create a list of compilers found on your system.
+ 
+### Select a variant
+- -> A variant contains instructions for how to build your project. By default, the CMake Tools extension provides four variants, each corresponding to a default build type: Debug, Release, MinRelSize, and RelWithDebInfo. These options do the following:
+
+- -> Debug: disables optimizations and includes debug info. Release : Includes optimizations but no debug info. MinRelSize : Optimizes for size. No debug info. RelWithDebInfo : Optimizes for speed and includes debug info
+ 
+### CMake: Configure
+- -> Now that you've selected a kit and a variant, open the Command Palette (⇧⌘P)
+- -> run the CMake: Configure command to configure your project. This generates build files in the project's build folder using the kit and variant you selected.
+
+### Build Program
+- -> After configuring your project, you're ready to build. Open the Command Palette (⇧⌘P)
+- -> run the CMake: Build command, or select the Build button from the Status bar.
+- -> You can select which targets you'd like to build by selecting CMake: Set Build Target from the Command Palette. By default, CMake Tools builds all targets. The selected target will appear in the Status bar next to the Build button.
+
+### Debug Program
+- -> To run and debug your project, open *.c and put a breakpoint in, then open the Command Palette (⇧⌘P)
+- -> run CMake: Debug. The debugger will stop on the std::cout line:

@@ -1,0 +1,35 @@
+**
+** Test the float LED indicators are set correclty"
+** and verify the LED colors are correct"
+**
+v   float_state_1       f   0
+v   float_state_2       f   0
+v   float_state_3       f   0
+v   float_state_4       f   0
+v   all_float_led_colors  x 03030303
+s   well_gpio           x   1
+v   float_state_1       f   1
+v   float_state_2       f   0
+v   float_state_3       f   0
+v   float_state_4       f   0
+s   well_gpio           x   2
+v   float_state_1       f   0
+v   float_state_2       f   1
+v   float_state_3       f   0
+v   float_state_4       f   0
+s   well_gpio           x   4
+v   float_state_1       f   0
+v   float_state_2       f   0
+v   float_state_3       f   1
+v   float_state_4       f   0
+s   well_gpio           x   8
+v   float_state_1       f   0
+v   float_state_2       f   0
+v   float_state_3       f   0
+v   float_state_4       f   1
+s   well_gpio           x   f
+v   float_state_1       f   1
+v   float_state_2       f   1
+v   float_state_3       f   1
+v   float_state_4       f   1
+v   all_float_led_colors x 0
