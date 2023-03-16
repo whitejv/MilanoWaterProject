@@ -15,7 +15,7 @@
 /* WEMOS D1R1 ESP8266 Board - Amazon 3/10/2023
  * in Arduino Board Manager 
  */
-#if defined (ARDUINO_ESP8266_WEMOS_D1R1)
+#if defined (ARDUINO_ESP8266_WEMOS_D1MINI)
    #include <ESP8266WiFi.h>
    #include <OneWire.h>
    #include <DallasTemperature.h>
