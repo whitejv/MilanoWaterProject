@@ -1,0 +1,47 @@
+Water Monitoring System Test Tool - Test File Syntax
+
+The test file provides a series of commands to perform tests on the Water Monitoring System. Each line in the test file represents a single test command with the following format:
+
+COMMAND_TYPE OPERATION PARAMETER VALUE [TOLERANCE]
+
+Command Types:
+
+s : Set a parameter to a specific value
+r : Read a parameter and print its value
+v : Verify a parameter against an expected value with an optional tolerance
+c : Compare a parameter to a specific value and report if they match
+d : Delay the test execution for a specified duration
+Operations:
+
+set : Set a parameter to a specific value
+read : Read a parameter and print its value
+verify : Verify a parameter against an expected value with an optional tolerance
+compare: Compare a parameter to a specific value and report if they match
+delay : Delay the test execution for a specified duration
+Parameters:
+
+parameter ID: The name of the parameter to test
+Value Types:
+
+d: Decimal (integer)
+f: Float
+x: Hexadecimal
+Values and Tolerances:
+
+value : The expected value or the value to set for the test
+tolerance: The acceptable tolerance for float tests (only applicable for float type and the 'verify' command)
+Example Test File:
+
+s set TankLevel d 50
+r read WellFlowRate f
+v verify AlertStatus x 0x1A 0
+c compare TankLevel d 50
+d delay d 5000
+
+In this example test file:
+
+Set the 'TankLevel' parameter to the integer value 50.
+Read the 'WellFlowRate' parameter and print its float value.
+Verify the 'AlertStatus' parameter against the hexadecimal value 0x1A with no tolerance.
+Compare the 'TankLevel' parameter to the integer value 50 and report if they match.
+Delay the test execution for 5000 milliseconds (5 seconds).
