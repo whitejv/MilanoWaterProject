@@ -1235,7 +1235,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/pi/MilanoWaterProject/build/TankMonitor"
+			"value" : "/home/pi/MilanoWaterProject/build/Monitor"
 		},
 		{
 			"name" : "monitor_SOURCE_DIR",
@@ -1247,7 +1247,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/pi/MilanoWaterProject/TankMonitor"
+			"value" : "/home/pi/MilanoWaterProject/Monitor"
 		},
 		{
 			"name" : "mylib_BINARY_DIR",

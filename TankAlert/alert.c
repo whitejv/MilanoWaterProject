@@ -7,51 +7,54 @@
 #include "MQTTClient.h"
 #include "../include/water.h"
 
-/*payload[0] =    Pressure Sensor Value
- * payload[1] =    Water Height
- * payload[2] =    Tank Gallons
- * payload[3] =    Tank Percent Full
- * payload[4] =    Current Sensor  1 Value
- * payload[5] =    Current Sensor  2 Value
- * payload[6] =    Current Sensor  3 Value
- * payload[7] =    Current Sensor  4 Value
- * payload[8] =    Firmware Version of ESP
- * payload[9] =    I2C Fault Count
- * payload[10] =    Cycle Count
- * payload[11] =    Ambient Temperature
- * payload[12] =    Float State 1
- * payload[13] =    Float State 2
- * payload[14] =    Float State 3
- * payload[15] =    Float State 4
- * payload[16] =    Pressure Switch State
- * payload[17] =    House Water Pressure Value
- * payload[18] =    Septic Alert
- * payload[19] =     spare
- * payload[20] =     spare
- */
-
-/* payload[0] =     PumpCurrentSense[1];
- * payload[1] =     PumpCurrentSense[2];
- * payload[2] =     PumpCurrentSense[3];
- * payload[3] =     PumpCurrentSense[4];
- * payload[4] =     PumpLedColor[1];
- * payload[5] =     PumpLedColor[2];
- * payload[6] =     PumpLedColor[3];
- * payload[7] =     PumpLedColor[4];
- * payload[8] =     PumpRunCount;  //byte4-pump4;byte3-pump3;byte2-pump2;byte1-pump1
- * payload[9] =    PumpRunTime{1] ; //Seconds
- * payload[10] =    PumpRunTime{2] ; //Seconds
- * payload[11] =    PumpRunTime{3] ; //Seconds
- * payload[12] =    PumpRunTime{4] ; //Seconds
- * payload[13] =     43floatState;  //byte34-float4;byte123-float3
- * payload[14] =     21floatState;  //bytes34-float2;byte12-float1
- * payload[15] =     AllfloatLedcolor;  //byte4-color4;byte3-color3;byte2-color2;byte1-color1
- * payload[16] =    Septic Relay Alert
- * payload[17] =    Septic Relay Alert Color
- * payload[18] =    Pressure Relay Sense
- * payload[19] =    Pressure LED Color
- * payload[20] =    spare
- */
+/* External Variables
+SensorData = {
+"hydro_stat_pressure",
+"water_height",
+"tank_gallons",
+"tank_per_full",
+"well_pump_1",
+"well_pump_2",
+"well_pump_3",
+"irrigation_pump",
+"fw_version",
+"i2c_fault_count",
+"cycle_count",
+"ambient_temp",
+"float_state_1",
+"float_state_2",
+"float_state_3",
+"float_state_4",
+"pressure_tank_switch",
+"house_water_pressure",
+"septic_alert",
+"spare_1",
+"spare_2"
+};
+AlertData = {
+"pump_no_start",
+"spare1",
+"spare2",
+"spare3",
+"spare4",
+"spare5",
+"spare6",
+"spare7",
+"spare8",
+"spare9",
+"spare10",
+"spare11",
+"spare12",
+"spare13",
+"spare14",
+"spare15",
+"spare16",
+"spare17",
+"spare18",
+"spare19",
+"spare20"
+};
+*/
 
 enum AlarmState
 {
@@ -88,13 +91,6 @@ int main(int argc, char *argv[])
    int i = 0;
    int j = 0;
 
-   time_t t;
-   struct tm timenow;
-   time(&t);
-
-   int SecondsFromMidnight = 0;
-   int PriorSecondsFromMidnight = 0;
-
    struct FormattedSensorData SensorData;
    struct AlertSensorData AlertData;
 
@@ -106,6 +102,9 @@ int main(int argc, char *argv[])
    int Pump2State;
    int Pump3State;
    int Pump4State;
+   
+   time_t t;
+   time(&t);
 
    log_message("Alert: Started\n");
 
@@ -155,21 +154,7 @@ int main(int argc, char *argv[])
 
    while (1)
    {
-      time(&t);
-      localtime_r(&t, &timenow);
 
-      /*
-       * Check the time and see if we passed midnight
-       * if we have then reset Alert Data
-       */
-
-      SecondsFromMidnight = (timenow.tm_hour * 60 * 60) + (timenow.tm_min * 60) + timenow.tm_sec;
-      if (SecondsFromMidnight < PriorSecondsFromMidnight)
-      {
-         /* Reset stuff here */
-      }
-      // printf("seconds since midnight: %d\n", SecondsFromMidnight);
-      PriorSecondsFromMidnight = SecondsFromMidnight;
 
       /*
        *  Populate the structure with the sensor array data

@@ -138,7 +138,7 @@
 			"path" : "FlowMonitor/CMakeLists.txt"
 		},
 		{
-			"path" : "TankMonitor/CMakeLists.txt"
+			"path" : "Monitor/CMakeLists.txt"
 		},
 		{
 			"path" : "TankSubscriber/CMakeLists.txt"

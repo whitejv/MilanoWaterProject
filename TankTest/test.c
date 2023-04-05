@@ -20,12 +20,11 @@ Options:
 file_name : Path to the file containing test data
 
 Example usage:
-./program_name -v -r 3 -l 2 tests.txt
+./program_name -v -l 2 tests.txt
 
 Note:
 
 All options are optional, but file_name is required.
-If no repeat value is specified, the test will only be run once.
 If no test log level is specified, all messages will be printed.
 If no verbose flag is provided, only critical messages will be printed.
 */
@@ -121,7 +120,7 @@ int main(int argc, char* argv[]) {
     int log_level = 3;
     char type;
     char operation;
-    char param[20];
+    char param[30];
     static union {
         int decimal;
         float floating;
@@ -169,9 +168,18 @@ int main(int argc, char* argv[]) {
 
     // Check if file name is provided
     if (file_name == NULL) {
-        log_test(verbose, log_level, 1, "Error: file name not provided.\n");
-        print_usage();
-        return EXIT_FAILURE;
+        if (argc < 2) {
+            log_test(verbose, log_level, 1, "Error: file name not provided.\n");
+            print_usage();
+            return EXIT_FAILURE;
+        }
+
+        if (argc > 2) {
+            log_test(verbose, log_level, 1, "Error: too many arguments.\n");
+            print_usage();
+            return EXIT_FAILURE;
+        }
+
     }
 
     // Make Sure that we can Open the file
@@ -266,12 +274,12 @@ int main(int argc, char* argv[]) {
 
         int n = 0;
         if (sscanf(line, "%c %s %c%n", &operation, param, &type, &n) == 3) {
-            
+
             if (operation == '*') {
                 log_test(verbose, log_level, 2, "%s\n", line);
                 continue;
             }
-            
+
             if (type == 'f') {
                 value.floating = 0;
                 tol.floating = 0;
@@ -446,7 +454,7 @@ int main(int argc, char* argv[]) {
         /*
          * Run at this interval
          */
-       sleep(2);
+        sleep(2);
 
     }
     log_test(verbose, log_level, 3, "Test: Ending Test:    %s  PASS COUNT:  %d   FAIL COUNT:  %d\n", file_name, pass_count, fail_count);

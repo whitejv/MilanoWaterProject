@@ -54,7 +54,7 @@
 					]
 				},
 				{
-					"build" : "TankMonitor",
+					"build" : "Monitor",
 					"hasInstallRule" : true,
 					"minimumCMakeVersion" : 
 					{
@@ -62,7 +62,7 @@
 					},
 					"parentIndex" : 0,
 					"projectIndex" : 3,
-					"source" : "TankMonitor",
+					"source" : "Monitor",
 					"targetIndexes" : 
 					[
 						3
@@ -259,8 +259,8 @@
 				},
 				{
 					"directoryIndex" : 3,
-					"id" : "monitor::@b78a041014b1f719d330",
-					"jsonFile" : "target-monitor-Debug-20b1ff32f26bbce0b62d.json",
+					"id" : "monitor::@3add924a82373c909690",
+					"jsonFile" : "target-monitor-Debug-e7061444b38ca8805cda.json",
 					"name" : "monitor",
 					"projectIndex" : 3
 				},

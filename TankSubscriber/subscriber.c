@@ -58,9 +58,6 @@
  * payload[21] =     spare
  */
 
-#define SUB_TOPIC "Well ESP"
-#define SUB_TOPIC_LEN 21
-
 /* Kalman Filter Setup */
 #define DT 0.1  // Time step
 #define A 1     // Matrix A
@@ -187,9 +184,14 @@ int main(int argc, char *argv[])
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", SUB_TOPIC, F_CLIENTID, QOS);
 
-   MQTTClient_subscribe(client, SUB_TOPIC, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TANK_TOPIC, TANK_CLIENTID, QOS);
+   log_message("TankSubscriber: Subscribing to topic: %s for client: %s\n", TANK_TOPIC, TANK_CLIENTID);
+   MQTTClient_subscribe(client, TANK_TOPIC, QOS);
+
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELL_TOPIC, WELL_CLIENTID, QOS);
+   log_message("TankSubscriber: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, WELL_CLIENTID);
+   MQTTClient_subscribe(client, WELL_TOPIC, QOS);
 
    /*
     * Main Loop
@@ -351,7 +353,7 @@ int main(int argc, char *argv[])
       sleep(1);
    }
    log_message("TankSubscriber: Exiting Main Loop\n") ;
-   MQTTClient_unsubscribe(client, SUB_TOPIC);
+   MQTTClient_unsubscribe(client, WELL_TOPIC);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);
    return rc;

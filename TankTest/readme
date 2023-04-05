@@ -1,0 +1,7 @@
+Test File syntax:										
+										
+s	set	    parameter ID		d,f,x		value				
+r	read	parameter ID		d,f,x       value     						
+v	verify	parameter ID		d,f,x		value	tolerance			
+c	compare	parameter ID		d,f,x		value				
+d	delay	delay		        d,f,x		value				

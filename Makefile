@@ -211,7 +211,7 @@ monitor: cmake_check_build_system
 
 # fast build rule for target.
 monitor/fast:
-	$(MAKE) $(MAKESILENT) -f TankMonitor/CMakeFiles/monitor.dir/build.make TankMonitor/CMakeFiles/monitor.dir/build
+	$(MAKE) $(MAKESILENT) -f Monitor/CMakeFiles/monitor.dir/build.make Monitor/CMakeFiles/monitor.dir/build
 .PHONY : monitor/fast
 
 #=============================================================================
