@@ -7,7 +7,7 @@
 /* NCD ESP8266 Board - Select GENERIC ESP8266 MODULE
  * in Arduino Board Manager
  */
-#if defined(ARDUINO_ESP8266_GENERIC)
+#if defined(ARDUINO_ESP8266_GENERIC) || defined(ARDUINO_ESP8266_WEMOS_D1MINI)
 #include <ESP8266WiFi.h>
 #endif
 /* NCD ESP32 Board - Select Adafruit ESP32 Feather
@@ -39,7 +39,7 @@ char password[] = "6jhz7ai7pqy5"; // local network password
 #define firmwareVer 0x8004
 #define ResolutionBits 10
 
-IPAddress MQTT_BrokerIP(192, 168, 1, 209);
+IPAddress MQTT_BrokerIP(192, 168, 1, 249);
 const char *mqttServer = "raspberrypi.local";
 const int mqttPort = 1883;
 
@@ -86,7 +86,7 @@ int I2CPanic = 0;
  * Data Word 20: FW Version 4 Hex
  */
 
-unsigned short int raw_sensor_data[22] = {0, 0, 0, 0, 0,
+int raw_sensor_data[22] = {0, 0, 0, 0, 0,
                                           0, 0, 0, 0, 0,
                                           0, 0, 0, 0, 0,
                                           0, 0, 0, 0, 0, firmwareVer,
@@ -141,7 +141,7 @@ void setup()
   Serial.printf("Complete\n");
   Wire.begin();
 #endif
-#if defined(ARDUINO_ESP8266_GENERIC)
+#if defined(ARDUINO_ESP8266_GENERIC) || defined(ARDUINO_ESP8266_WEMOS_D1MINI)
   Wire.begin(12, 14);
 #endif
 #if defined(ARDUINO_RASPBERRY_PI_PICO_W)
