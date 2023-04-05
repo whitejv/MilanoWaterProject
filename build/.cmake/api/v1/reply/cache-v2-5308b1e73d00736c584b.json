@@ -1283,7 +1283,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/pi/MilanoWaterProject/build/TankSubscriber"
+			"value" : "/home/pi/MilanoWaterProject/build/WellMonitor"
 		},
 		{
 			"name" : "subscriber_SOURCE_DIR",
@@ -1295,7 +1295,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/pi/MilanoWaterProject/TankSubscriber"
+			"value" : "/home/pi/MilanoWaterProject/WellMonitor"
 		},
 		{
 			"name" : "test_BINARY_DIR",

@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "TankSubscriber/subscriber"
+			"path" : "WellMonitor/subscriber"
 		}
 	],
 	"backtrace" : 1,
@@ -17,7 +17,7 @@
 		],
 		"files" : 
 		[
-			"TankSubscriber/CMakeLists.txt"
+			"WellMonitor/CMakeLists.txt"
 		],
 		"nodes" : 
 		[
@@ -66,7 +66,7 @@
 			]
 		}
 	],
-	"id" : "subscriber::@bb1454bd5390ba50da6d",
+	"id" : "subscriber::@b916f7d8a5bee551ed31",
 	"install" : 
 	{
 		"destinations" : 
@@ -100,11 +100,11 @@
 			},
 			{
 				"backtrace" : 3,
-				"fragment" : "-L/home/pi/MilanoWaterProject/TankSubscriber/../mylib",
+				"fragment" : "-L/home/pi/MilanoWaterProject/WellMonitor/../mylib",
 				"role" : "libraryPath"
 			},
 			{
-				"fragment" : "-Wl,-rpath,/home/pi/paho.mqtt.c/build/output/lib:/home/pi/MilanoWaterProject/TankSubscriber/../mylib:",
+				"fragment" : "-Wl,-rpath,/home/pi/paho.mqtt.c/build/output/lib:/home/pi/MilanoWaterProject/WellMonitor/../mylib:",
 				"role" : "libraries"
 			},
 			{
@@ -147,8 +147,8 @@
 	"nameOnDisk" : "subscriber",
 	"paths" : 
 	{
-		"build" : "TankSubscriber",
-		"source" : "TankSubscriber"
+		"build" : "WellMonitor",
+		"source" : "WellMonitor"
 	},
 	"sourceGroups" : 
 	[
@@ -165,7 +165,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "TankSubscriber/subscriber.c",
+			"path" : "WellMonitor/subscriber.c",
 			"sourceGroupIndex" : 0
 		}
 	],

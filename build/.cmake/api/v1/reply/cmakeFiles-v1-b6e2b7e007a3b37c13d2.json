@@ -141,7 +141,7 @@
 			"path" : "Monitor/CMakeLists.txt"
 		},
 		{
-			"path" : "TankSubscriber/CMakeLists.txt"
+			"path" : "WellMonitor/CMakeLists.txt"
 		},
 		{
 			"path" : "TankAlert/CMakeLists.txt"

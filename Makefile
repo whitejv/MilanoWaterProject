@@ -224,7 +224,7 @@ subscriber: cmake_check_build_system
 
 # fast build rule for target.
 subscriber/fast:
-	$(MAKE) $(MAKESILENT) -f TankSubscriber/CMakeFiles/subscriber.dir/build.make TankSubscriber/CMakeFiles/subscriber.dir/build
+	$(MAKE) $(MAKESILENT) -f WellMonitor/CMakeFiles/subscriber.dir/build.make WellMonitor/CMakeFiles/subscriber.dir/build
 .PHONY : subscriber/fast
 
 #=============================================================================
