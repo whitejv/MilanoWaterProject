@@ -1163,7 +1163,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/pi/MilanoWaterProject/build/TankAlert"
+			"value" : "/home/pi/MilanoWaterProject/build/SysAlert"
 		},
 		{
 			"name" : "alert_SOURCE_DIR",
@@ -1175,7 +1175,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/pi/MilanoWaterProject/TankAlert"
+			"value" : "/home/pi/MilanoWaterProject/SysAlert"
 		},
 		{
 			"name" : "blynk_BINARY_DIR",
@@ -1307,7 +1307,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/pi/MilanoWaterProject/build/TankTest"
+			"value" : "/home/pi/MilanoWaterProject/build/SysTest"
 		},
 		{
 			"name" : "test_SOURCE_DIR",
@@ -1319,7 +1319,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/pi/MilanoWaterProject/TankTest"
+			"value" : "/home/pi/MilanoWaterProject/SysTest"
 		}
 	],
 	"kind" : "cache",

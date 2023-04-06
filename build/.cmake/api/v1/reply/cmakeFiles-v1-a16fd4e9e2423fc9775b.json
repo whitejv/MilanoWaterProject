@@ -144,10 +144,10 @@
 			"path" : "WellMonitor/CMakeLists.txt"
 		},
 		{
-			"path" : "TankAlert/CMakeLists.txt"
+			"path" : "SysAlert/CMakeLists.txt"
 		},
 		{
-			"path" : "TankTest/CMakeLists.txt"
+			"path" : "SysTest/CMakeLists.txt"
 		},
 		{
 			"path" : "Blynk/CMakeLists.txt"

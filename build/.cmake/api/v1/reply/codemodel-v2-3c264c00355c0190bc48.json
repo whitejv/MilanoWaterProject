@@ -84,7 +84,7 @@
 					]
 				},
 				{
-					"build" : "TankAlert",
+					"build" : "SysAlert",
 					"hasInstallRule" : true,
 					"minimumCMakeVersion" : 
 					{
@@ -92,14 +92,14 @@
 					},
 					"parentIndex" : 0,
 					"projectIndex" : 5,
-					"source" : "TankAlert",
+					"source" : "SysAlert",
 					"targetIndexes" : 
 					[
 						0
 					]
 				},
 				{
-					"build" : "TankTest",
+					"build" : "SysTest",
 					"hasInstallRule" : true,
 					"minimumCMakeVersion" : 
 					{
@@ -107,7 +107,7 @@
 					},
 					"parentIndex" : 0,
 					"projectIndex" : 6,
-					"source" : "TankTest",
+					"source" : "SysTest",
 					"targetIndexes" : 
 					[
 						6
@@ -238,8 +238,8 @@
 			[
 				{
 					"directoryIndex" : 5,
-					"id" : "alert::@bcbe81a63680b4a91cc0",
-					"jsonFile" : "target-alert-Debug-d78eef71b2f4c7b2d565.json",
+					"id" : "alert::@a26940e6795c3495de2a",
+					"jsonFile" : "target-alert-Debug-50f8f8a19c33d228c867.json",
 					"name" : "alert",
 					"projectIndex" : 5
 				},
@@ -280,8 +280,8 @@
 				},
 				{
 					"directoryIndex" : 6,
-					"id" : "test::@8187007c803a48204724",
-					"jsonFile" : "target-test-Debug-9804efc9818031ec624c.json",
+					"id" : "test::@eca1a43536d1c841c5e7",
+					"jsonFile" : "target-test-Debug-fda1caedb293085fda0b.json",
 					"name" : "test",
 					"projectIndex" : 6
 				}

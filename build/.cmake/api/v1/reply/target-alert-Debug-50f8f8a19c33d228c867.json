@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "TankAlert/alert"
+			"path" : "SysAlert/alert"
 		}
 	],
 	"backtrace" : 1,
@@ -17,7 +17,7 @@
 		],
 		"files" : 
 		[
-			"TankAlert/CMakeLists.txt"
+			"SysAlert/CMakeLists.txt"
 		],
 		"nodes" : 
 		[
@@ -66,7 +66,7 @@
 			]
 		}
 	],
-	"id" : "alert::@bcbe81a63680b4a91cc0",
+	"id" : "alert::@a26940e6795c3495de2a",
 	"install" : 
 	{
 		"destinations" : 
@@ -100,11 +100,11 @@
 			},
 			{
 				"backtrace" : 3,
-				"fragment" : "-L/home/pi/MilanoWaterProject/TankAlert/../mylib",
+				"fragment" : "-L/home/pi/MilanoWaterProject/SysAlert/../mylib",
 				"role" : "libraryPath"
 			},
 			{
-				"fragment" : "-Wl,-rpath,/home/pi/paho.mqtt.c/build/output/lib:/home/pi/MilanoWaterProject/TankAlert/../mylib:",
+				"fragment" : "-Wl,-rpath,/home/pi/paho.mqtt.c/build/output/lib:/home/pi/MilanoWaterProject/SysAlert/../mylib:",
 				"role" : "libraries"
 			},
 			{
@@ -147,8 +147,8 @@
 	"nameOnDisk" : "alert",
 	"paths" : 
 	{
-		"build" : "TankAlert",
-		"source" : "TankAlert"
+		"build" : "SysAlert",
+		"source" : "SysAlert"
 	},
 	"sourceGroups" : 
 	[
@@ -165,7 +165,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "TankAlert/alert.c",
+			"path" : "SysAlert/alert.c",
 			"sourceGroupIndex" : 0
 		}
 	],

@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "TankTest/test"
+			"path" : "SysTest/test"
 		}
 	],
 	"backtrace" : 1,
@@ -17,7 +17,7 @@
 		],
 		"files" : 
 		[
-			"TankTest/CMakeLists.txt"
+			"SysTest/CMakeLists.txt"
 		],
 		"nodes" : 
 		[
@@ -66,7 +66,7 @@
 			]
 		}
 	],
-	"id" : "test::@8187007c803a48204724",
+	"id" : "test::@eca1a43536d1c841c5e7",
 	"install" : 
 	{
 		"destinations" : 
@@ -100,11 +100,11 @@
 			},
 			{
 				"backtrace" : 3,
-				"fragment" : "-L/home/pi/MilanoWaterProject/TankTest/../mylib",
+				"fragment" : "-L/home/pi/MilanoWaterProject/SysTest/../mylib",
 				"role" : "libraryPath"
 			},
 			{
-				"fragment" : "-Wl,-rpath,/home/pi/paho.mqtt.c/build/output/lib:/home/pi/MilanoWaterProject/TankTest/../mylib:",
+				"fragment" : "-Wl,-rpath,/home/pi/paho.mqtt.c/build/output/lib:/home/pi/MilanoWaterProject/SysTest/../mylib:",
 				"role" : "libraries"
 			},
 			{
@@ -147,8 +147,8 @@
 	"nameOnDisk" : "test",
 	"paths" : 
 	{
-		"build" : "TankTest",
-		"source" : "TankTest"
+		"build" : "SysTest",
+		"source" : "SysTest"
 	},
 	"sourceGroups" : 
 	[
@@ -165,7 +165,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "TankTest/test.c",
+			"path" : "SysTest/test.c",
 			"sourceGroupIndex" : 0
 		}
 	],
