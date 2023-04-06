@@ -237,7 +237,7 @@ alert: cmake_check_build_system
 
 # fast build rule for target.
 alert/fast:
-	$(MAKE) $(MAKESILENT) -f TankAlert/CMakeFiles/alert.dir/build.make TankAlert/CMakeFiles/alert.dir/build
+	$(MAKE) $(MAKESILENT) -f SysAlert/CMakeFiles/alert.dir/build.make SysAlert/CMakeFiles/alert.dir/build
 .PHONY : alert/fast
 
 #=============================================================================
@@ -250,7 +250,7 @@ test: cmake_check_build_system
 
 # fast build rule for target.
 test/fast:
-	$(MAKE) $(MAKESILENT) -f TankTest/CMakeFiles/test.dir/build.make TankTest/CMakeFiles/test.dir/build
+	$(MAKE) $(MAKESILENT) -f SysTest/CMakeFiles/test.dir/build.make SysTest/CMakeFiles/test.dir/build
 .PHONY : test/fast
 
 #=============================================================================
