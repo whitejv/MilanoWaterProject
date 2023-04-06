@@ -202,6 +202,19 @@ flowmonitor/fast:
 .PHONY : flowmonitor/fast
 
 #=============================================================================
+# Target rules for targets named tankmonitor
+
+# Build rule for target.
+tankmonitor: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tankmonitor
+.PHONY : tankmonitor
+
+# fast build rule for target.
+tankmonitor/fast:
+	$(MAKE) $(MAKESILENT) -f TankMonitor/CMakeFiles/tankmonitor.dir/build.make TankMonitor/CMakeFiles/tankmonitor.dir/build
+.PHONY : tankmonitor/fast
+
+#=============================================================================
 # Target rules for targets named monitor
 
 # Build rule for target.
@@ -284,6 +297,7 @@ help:
 	@echo "... monitor"
 	@echo "... mylib"
 	@echo "... subscriber"
+	@echo "... tankmonitor"
 	@echo "... test"
 .PHONY : help
 
