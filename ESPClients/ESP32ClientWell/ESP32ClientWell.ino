@@ -350,7 +350,7 @@ void loop()
 
   client.publish("Tank ESP", (byte *)raw_sensor_data, 42);
 
-  Serial.printf("ESP Data: ");
+  Serial.printf("Well Pump Data: ");
   for (i = 0; i <= 16; ++i)
   {
     Serial.printf("%x ", raw_sensor_data[i]);

@@ -250,7 +250,7 @@ void publishFlowData() {
 }
 
 void printFlowData() {
-  Serial.printf("Well #3 Data: ");
+  Serial.printf("Tank (Well#3) Data: ");
   for (int i = 0; i <= 16; ++i) {
     Serial.printf("%x ", raw_tank_data[i]);
   }

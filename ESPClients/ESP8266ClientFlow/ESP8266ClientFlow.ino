@@ -241,7 +241,7 @@ void loop() {
 
   client.publish("Flow ESP", (byte *)raw_flow_data, 42);
 
-  Serial.printf("FLow Data: ");
+  Serial.printf("Irrigation FLow Data: ");
   for (i = 0; i <= 16; ++i) {
     Serial.printf("%x ", raw_flow_data[i]);
   }
