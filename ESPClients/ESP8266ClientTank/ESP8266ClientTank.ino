@@ -3,6 +3,7 @@
 #include <Wire.h>
 #include <IPAddress.h>
 #include <PubSubClient.h>
+#include <water.h>
 
 #if defined(ARDUINO_ESP8266_GENERIC) || defined(ARDUINO_ESP8266_WEMOS_D1MINI)
 #include <ESP8266WiFi.h>
@@ -30,13 +31,11 @@ IPAddress MQTT_BrokerIP(192, 168, 1, 249);
 const char *mqttServer = "raspberrypi.local";
 const int mqttPort = 1883;
 
-WiFiClient espFlowClient;
-PubSubClient client(MQTT_BrokerIP, mqttPort, espFlowClient);
+WiFiClient espTankClient;
+PubSubClient client(MQTT_BrokerIP, mqttPort, espTankClient);
 
 int WDT_Interval = 0;
 unsigned int masterCounter = 0;
-
-int raw_tank_data[22] = { 0 };
 
 #define FLOWSENSOR 13
 #define float1 4
@@ -134,7 +133,7 @@ void setup() {
 
   while (!client.connected()) {
     Serial.printf("Connecting to MQTT.....");
-    if (client.connect("ESP8266TankClient")) {
+    if (client.connect(TANK_CLIENTID)) {
       Serial.printf("connected\n");
     } else {
       Serial.printf("failed with ");
@@ -143,7 +142,7 @@ void setup() {
     }
   }
 
-  client.subscribe("ESP Control");
+  //client.subscribe("ESP Control");
 
 #if defined(ARDUINO_FEATHER_ESP32)
   Serial.printf("Configuring WDT...");
@@ -201,6 +200,7 @@ void updateMasterCounter() {
   if (masterCounter > 28800) {  //Force a reboot every 8 hours
     while (1) {};
   }
+  tank_data_payload[12] = masterCounter;
 }
 
 void updateFlowData() {
@@ -208,24 +208,24 @@ void updateFlowData() {
   if (((currentMillis - previousMillis) > interval) && pulseCount > 0 ) {
     pulse1Sec = pulseCount;
     millisecond = millis() - previousMillis ;
-    raw_tank_data[0] = pulse1Sec ;
-    raw_tank_data[1] = millisecond ;
-    raw_tank_data[2] = 1;
+    tank_data_payload[0] = pulse1Sec ;
+    tank_data_payload[1] = millisecond ;
+    tank_data_payload[2] = 1;
     previousMillis = millis();
   } else {
-    raw_tank_data[2] = 0 ;
+    tank_data_payload[2] = 0 ;
   }
   pulseCount = 0;
 }
-
+ 
 void updateTemperatureData() {
   sensors.requestTemperatures(); 
   float temperatureF = sensors.getTempFByIndex(0);
-  raw_tank_data[17] = *((int *)&temperatureF);
+  tank_data_payload[17] = *((int *)&temperatureF);
 }
 
 void readAnalogInput() {
-  raw_tank_data[3] = analogRead(A0);
+  tank_data_payload[3] = analogRead(A0);
 }
 
 void readDigitalInput() {
@@ -234,11 +234,14 @@ void readDigitalInput() {
   int float50 = 0;
   int float25 = 0 ;
   
-  float100 = digitalRead(float1) ;
-  float75  = digitalRead(float2) ;
-  float50  = digitalRead(float3) ;
-  float25  = digitalRead(float4) ;
-  raw_tank_data[4] = (float100 << 3) | (float75 << 2) | (float50 << 1) | float25;
+  float100 = !digitalRead(float1) ;
+  float75  = !digitalRead(float3) ;
+  float50  = !digitalRead(float2) ;
+  float25  = !digitalRead(float4) ;
+  tank_data_payload[4] = float100;
+  tank_data_payload[5] = float75;
+  tank_data_payload[6] = float50;
+  tank_data_payload[7] = float25;
 }
 
 void processMqttClient() {
@@ -246,17 +249,17 @@ void processMqttClient() {
 }
 
 void publishFlowData() {
-  client.publish("Flow ESP", (byte *)raw_tank_data, 42);
+  client.publish(TANK_CLIENT, (byte *)tank_data_payload, TANK_LEN*4);
 }
 
 void printFlowData() {
   Serial.printf("Tank (Well#3) Data: ");
   for (int i = 0; i <= 16; ++i) {
-    Serial.printf("%x ", raw_tank_data[i]);
+    Serial.printf("%x ", tank_data_payload[i]);
   }
-  Serial.printf("%f ", *((float *)&raw_tank_data[17]));
+  Serial.printf("%f ", *((float *)&tank_data_payload[17]));
   for (int i = 19; i <= 20; ++i) {
-    Serial.printf("%x ", raw_tank_data[i]);
+    Serial.printf("%x ", tank_data_payload[i]);
   }
   Serial.printf("\n");
 }
