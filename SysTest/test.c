@@ -63,17 +63,19 @@ void connlost(void* context, char* cause)
  * Initialize the Buffer Pointer Array
  */
 
-int* BufferPointerArray[7];
+int* BufferPointerArray[8];
 
 void init_buffer_pointer_array() {
 
     BufferPointerArray[0] = (int*)tank_data_payload;
     BufferPointerArray[1] = (int*)well_data_payload;
     BufferPointerArray[2] = (int*)flow_data_payload;
-    BufferPointerArray[3] = (int*)formatted_sensor_payload;
-    BufferPointerArray[4] = (int*)monitor_sensor_payload;
-    BufferPointerArray[5] = (int*)alert_sensor_payload;
-    BufferPointerArray[6] = (int*)flow_sensor_payload;
+    BufferPointerArray[3] = (int*)tank_sensor_payload;
+    BufferPointerArray[4] = (int*)well_sensor_payload;
+    BufferPointerArray[5] = (int*)flow_sensor_payload;
+    BufferPointerArray[6] = (int*)monitor_payload;
+    BufferPointerArray[7] = (int*)alert_payload;
+   
     return;
 }
 
@@ -81,19 +83,20 @@ void init_buffer_pointer_array() {
  * Initialize the Interface Name Array
  */
 
-char* InterfaceNameArray[7][21];
+char* InterfaceNameArray[8][21];
 
 void init_interface_name_array() {
 
     int i;
     for (i = 0; i <= 20; i++) {
-        InterfaceNameArray[0][i] = TankClientData_var_names[i];
-        InterfaceNameArray[1][i] = WellClientData_var_names[i];
-        InterfaceNameArray[2][i] = FlowClientData_var_names[i];
-        InterfaceNameArray[3][i] = FormSensorData_var_names[i];
-        InterfaceNameArray[4][i] = MonSensorData_var_names[i];
-        InterfaceNameArray[5][i] = AlertSensorData_var_names[i];
-        InterfaceNameArray[6][i] = FlowMonSensorData_var_names[i];
+        InterfaceNameArray[0][i] = TankClientData_var_name[i];
+        InterfaceNameArray[1][i] = WellClientData_var_name[i];
+        InterfaceNameArray[2][i] = FlowClientData_var_name[i];
+        InterfaceNameArray[3][i] = TankMonitorData_var_name[i];
+        InterfaceNameArray[4][i] = WellMonitorData_var_name[i];
+        InterfaceNameArray[6][i] = FlowMonitorData_var_name[i];
+        InterfaceNameArray[5][i] = MonData_var_names[i];
+        InterfaceNameArray[5][i] = AlertData_var_names[i];
     }
     return;
 }
@@ -232,14 +235,18 @@ int main(int argc, char* argv[]) {
         rc = EXIT_FAILURE;
         exit(EXIT_FAILURE);
     }
+    
+    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", TANK_TOPIC, QOS); }
+    //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", TANK_TOPIC, FL_CLIENTID);
+    MQTTClient_subscribe(client, TANK_TOPIC, QOS);
 
-    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", FL_TOPIC, QOS); }
+    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", WELL_TOPIC, QOS); }
     //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", FL_TOPIC, FL_CLIENTID);
-    MQTTClient_subscribe(client, FL_TOPIC, QOS);
+    MQTTClient_subscribe(client, WELL_TOPIC, QOS);
 
-    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", F_TOPIC, QOS); }
+    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", FLOW_TOPIC, QOS); }
     //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", F_TOPIC, F_CLIENTID);
-    MQTTClient_subscribe(client, F_TOPIC, QOS);
+    MQTTClient_subscribe(client, FLOW_TOPIC, QOS);
 
     if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", M_TOPIC, QOS); }
     //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", M_TOPIC, M_CLIENTID);
@@ -332,21 +339,21 @@ int main(int argc, char* argv[]) {
                 pubmsg.payloadlen = sizeof(tank_data_payload);
                 pubmsg.qos = QOS;
                 pubmsg.retained = 0;
-                MQTTClient_publishMessage(client, TANK_TOPIC, &pubmsg, &token);
+                MQTTClient_publishMessage(client, TANK_CLIENT, &pubmsg, &token);
                 break;
             case 1:
                 pubmsg.payload = (void*)well_data_payload;
                 pubmsg.payloadlen = sizeof(well_data_payload);
                 pubmsg.qos = QOS;
                 pubmsg.retained = 0;
-                MQTTClient_publishMessage(client, WELL_TOPIC, &pubmsg, &token);
+                MQTTClient_publishMessage(client, WELL_CLIENT, &pubmsg, &token);
                 break;
             case 2:
                 pubmsg.payload = (void*)flow_data_payload;
                 pubmsg.payloadlen = sizeof(flow_data_payload);
                 pubmsg.qos = QOS;
                 pubmsg.retained = 0;
-                MQTTClient_publishMessage(client, FLO_TOPIC, &pubmsg, &token);
+                MQTTClient_publishMessage(client, FLOW_CLIENT, &pubmsg, &token);
                 break;
             }
             log_test(verbose, log_level, 1, "The set value of %s is %d\n", param, value.decimal);
@@ -467,12 +474,12 @@ int main(int argc, char* argv[]) {
     pubmsg.payloadlen = sizeof(cleanup);
     pubmsg.qos = QOS;
     pubmsg.retained = 0;
-    MQTTClient_publishMessage(client, TANK_TOPIC, &pubmsg, &token);
-    MQTTClient_publishMessage(client, WELL_TOPIC, &pubmsg, &token);
-    MQTTClient_publishMessage(client, FLO_TOPIC, &pubmsg, &token);
+    MQTTClient_publishMessage(client, TANK_CLIENT, &pubmsg, &token);
+    MQTTClient_publishMessage(client, WELL_CLIENT, &pubmsg, &token);
+    MQTTClient_publishMessage(client, FLOW_CLIENT, &pubmsg, &token);
 
 
-    MQTTClient_unsubscribe(client, F_TOPIC);
+    MQTTClient_unsubscribe(client, FLOW_TOPIC);
     MQTTClient_disconnect(client, 10000);
     MQTTClient_destroy(&client);
     return rc;

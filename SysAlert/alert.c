@@ -91,8 +91,8 @@ int main(int argc, char *argv[])
    int i = 0;
    int j = 0;
 
-   struct FormattedSensorData SensorData;
-   struct AlertSensorData AlertData;
+   struct WellMonitorData SensorData;
+   struct AlertData AlertData;
 
    static enum AlarmState Alarms[20] = {0};
    static int TimeOuts[20] = {0};
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
    MQTTClient_deliveryToken token;
    int rc;
 
-   if ((rc = MQTTClient_create(&client, ADDRESS, A_CLIENTID,
+   if ((rc = MQTTClient_create(&client, ADDRESS, ALERT_ID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       log_message("Alert: Error == Failed to Create Client. Return Code: %d\n", rc);
@@ -142,9 +142,9 @@ int main(int argc, char *argv[])
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, A_CLIENTID, QOS);
-   log_message("Alert: Subscribing to topic: %s for client: %s\n", F_TOPIC, A_CLIENTID);
-   MQTTClient_subscribe(client, F_TOPIC, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELL_TOPIC, ALERT_ID, QOS);
+   log_message("Alert: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, ALERT_ID);
+   MQTTClient_subscribe(client, WELL_TOPIC, QOS);
 
    /*
     * Main Loop
@@ -160,9 +160,9 @@ int main(int argc, char *argv[])
        *  Populate the structure with the sensor array data
        */
 
-      memcpy((void *)&SensorData, (void *)formatted_sensor_payload, sizeof(struct FormattedSensorData));
+      memcpy((void *)&SensorData, (void *)well_sensor_payload, sizeof(struct WellMonitorData));
 
-      if (SensorData.well_pump_1 > 2500)
+      if (SensorData.well_pump_1_on == 1)
       {
          Pump1State = ON;
       }
@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
       {
          Pump1State = OFF;
       }
-      if (SensorData.well_pump_2 > 2500)
+      if (SensorData.well_pump_2_on == 1)
       {
          Pump2State = ON;
       }
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
       {
          Pump2State = OFF;
       }
-      if (SensorData.well_pump_3 > 2500)
+      if (SensorData.well_pump_3_on == 1)
       {
          Pump3State = ON;
       }
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
       {
          Pump3State = OFF;
       }
-      if (SensorData.irrigation_pump > 2500)
+      if (SensorData.irrigation_pump_on == 1)
       {
          Pump4State = ON;
       }
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
          }
          break;
       case (inactive):
-         if (SensorData.pressure_tank_switch == ON)
+         if (SensorData.House_tank_pressure_switch_on == ON)
          {
             Alarms[7] = trigger;
             Timers[7] = 0;
@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
       case (trigger):
          if (Timers[7] >= 10)
          {
-            if ((Pump1State == OFF || Pump2State == OFF) && SensorData.pressure_tank_switch == ON)
+            if ((Pump1State == OFF || Pump2State == OFF) && SensorData.House_tank_pressure_switch_on == ON)
             {
                Alarms[7] = active;
                Timers[7] = 0;
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
          }
          break;
       case (active):
-         if ((Pump1State == OFF || Pump2State == OFF) && SensorData.pressure_tank_switch == ON)
+         if ((Pump1State == OFF || Pump2State == OFF) && SensorData.House_tank_pressure_switch_on == ON)
          {
             AlertData.pump_no_start = 1;
          }
@@ -298,15 +298,15 @@ int main(int argc, char *argv[])
       /*
        * Publish the Data
        */
-      memcpy((void *)&alert_sensor_payload, (void *)&AlertData, sizeof(struct AlertSensorData));
+      memcpy((void *)&alert_payload, (void *)&AlertData, sizeof(struct AlertData));
 
       for (i = 0; i < A_LEN; i++)
       {
-         printf("%d ", alert_sensor_payload[i]);
+         printf("%d ", alert_payload[i]);
       }
       printf("%s", ctime(&t));
 
-      pubmsg.payload = alert_sensor_payload;
+      pubmsg.payload = alert_payload;
       pubmsg.payloadlen = A_LEN * 4;
       pubmsg.qos = QOS;
       pubmsg.retained = 0;
@@ -325,7 +325,7 @@ int main(int argc, char *argv[])
       sleep(1);
    }
    log_message("Alert: Exiting Main Loop\n");
-   MQTTClient_unsubscribe(client, F_TOPIC);
+   MQTTClient_unsubscribe(client, WELL_TOPIC);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);
    return rc;
