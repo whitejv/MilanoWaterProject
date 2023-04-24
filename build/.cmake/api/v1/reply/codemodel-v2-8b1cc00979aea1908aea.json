@@ -14,7 +14,8 @@
 						4,
 						5,
 						6,
-						7
+						7,
+						8
 					],
 					"hasInstallRule" : true,
 					"minimumCMakeVersion" : 
@@ -54,7 +55,7 @@
 					]
 				},
 				{
-					"build" : "Monitor",
+					"build" : "TankMonitor",
 					"hasInstallRule" : true,
 					"minimumCMakeVersion" : 
 					{
@@ -62,6 +63,21 @@
 					},
 					"parentIndex" : 0,
 					"projectIndex" : 3,
+					"source" : "TankMonitor",
+					"targetIndexes" : 
+					[
+						6
+					]
+				},
+				{
+					"build" : "Monitor",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.2"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 4,
 					"source" : "Monitor",
 					"targetIndexes" : 
 					[
@@ -76,7 +92,7 @@
 						"string" : "3.2"
 					},
 					"parentIndex" : 0,
-					"projectIndex" : 4,
+					"projectIndex" : 5,
 					"source" : "WellMonitor",
 					"targetIndexes" : 
 					[
@@ -91,7 +107,7 @@
 						"string" : "3.2"
 					},
 					"parentIndex" : 0,
-					"projectIndex" : 5,
+					"projectIndex" : 6,
 					"source" : "SysAlert",
 					"targetIndexes" : 
 					[
@@ -106,11 +122,11 @@
 						"string" : "3.2"
 					},
 					"parentIndex" : 0,
-					"projectIndex" : 6,
+					"projectIndex" : 7,
 					"source" : "SysTest",
 					"targetIndexes" : 
 					[
-						6
+						7
 					]
 				},
 				{
@@ -121,7 +137,7 @@
 						"string" : "3.2"
 					},
 					"parentIndex" : 0,
-					"projectIndex" : 7,
+					"projectIndex" : 8,
 					"source" : "Blynk",
 					"targetIndexes" : 
 					[
@@ -141,7 +157,8 @@
 						4,
 						5,
 						6,
-						7
+						7,
+						8
 					],
 					"directoryIndexes" : 
 					[
@@ -178,6 +195,18 @@
 					[
 						3
 					],
+					"name" : "tankmonitor",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						6
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						4
+					],
 					"name" : "monitor",
 					"parentIndex" : 0,
 					"targetIndexes" : 
@@ -188,7 +217,7 @@
 				{
 					"directoryIndexes" : 
 					[
-						4
+						5
 					],
 					"name" : "subscriber",
 					"parentIndex" : 0,
@@ -200,7 +229,7 @@
 				{
 					"directoryIndexes" : 
 					[
-						5
+						6
 					],
 					"name" : "alert",
 					"parentIndex" : 0,
@@ -212,19 +241,19 @@
 				{
 					"directoryIndexes" : 
 					[
-						6
+						7
 					],
 					"name" : "test",
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
-						6
+						7
 					]
 				},
 				{
 					"directoryIndexes" : 
 					[
-						7
+						8
 					],
 					"name" : "blynk",
 					"parentIndex" : 0,
@@ -237,18 +266,18 @@
 			"targets" : 
 			[
 				{
-					"directoryIndex" : 5,
+					"directoryIndex" : 6,
 					"id" : "alert::@a26940e6795c3495de2a",
 					"jsonFile" : "target-alert-Debug-50f8f8a19c33d228c867.json",
 					"name" : "alert",
-					"projectIndex" : 5
+					"projectIndex" : 6
 				},
 				{
-					"directoryIndex" : 7,
+					"directoryIndex" : 8,
 					"id" : "blynk::@85d371cfb24311502f54",
 					"jsonFile" : "target-blynk-Debug-4352aa2c9cf2878875ed.json",
 					"name" : "blynk",
-					"projectIndex" : 7
+					"projectIndex" : 8
 				},
 				{
 					"directoryIndex" : 2,
@@ -258,11 +287,11 @@
 					"projectIndex" : 2
 				},
 				{
-					"directoryIndex" : 3,
+					"directoryIndex" : 4,
 					"id" : "monitor::@3add924a82373c909690",
 					"jsonFile" : "target-monitor-Debug-e7061444b38ca8805cda.json",
 					"name" : "monitor",
-					"projectIndex" : 3
+					"projectIndex" : 4
 				},
 				{
 					"directoryIndex" : 1,
@@ -272,18 +301,25 @@
 					"projectIndex" : 1
 				},
 				{
-					"directoryIndex" : 4,
+					"directoryIndex" : 5,
 					"id" : "subscriber::@b916f7d8a5bee551ed31",
 					"jsonFile" : "target-subscriber-Debug-83b1a82bdcdc265f3ab5.json",
 					"name" : "subscriber",
-					"projectIndex" : 4
+					"projectIndex" : 5
 				},
 				{
-					"directoryIndex" : 6,
+					"directoryIndex" : 3,
+					"id" : "tankmonitor::@b78a041014b1f719d330",
+					"jsonFile" : "target-tankmonitor-Debug-32753941ccaeb45b7be4.json",
+					"name" : "tankmonitor",
+					"projectIndex" : 3
+				},
+				{
+					"directoryIndex" : 7,
 					"id" : "test::@eca1a43536d1c841c5e7",
 					"jsonFile" : "target-test-Debug-fda1caedb293085fda0b.json",
 					"name" : "test",
-					"projectIndex" : 6
+					"projectIndex" : 7
 				}
 			]
 		}
