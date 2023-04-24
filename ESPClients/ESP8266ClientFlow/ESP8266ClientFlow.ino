@@ -3,6 +3,7 @@
 #include <Wire.h>
 #include <IPAddress.h>
 #include <PubSubClient.h>
+#include <water.h>
 
 /* NCD ESP8266 Board - Select GENERIC ESP8266 MODULE
  * in Arduino Board Manager 
@@ -26,6 +27,8 @@
 #if defined (ARDUINO_FEATHER_ESP32)
    #include <WiFi.h>
    #include <esp_task_wdt.h>
+   #include <OneWire.h>
+   #include <DallasTemperature.h>
 #endif
 /* RPI PICO W - Select ARDUINO_RASPBERRY_PI_PICO_W
  * in Arduino Board Manager 
@@ -86,15 +89,9 @@ unsigned int masterCounter = 0;
 * payload 20	 FW Version 4 Hex 
 */	
 /*	
-* payload 21	 Last payload is Control Word From User
+* Future:	 Last payload is Control Word From User
 */ 	
 
-
-int raw_flow_data[22] =   { 0, 0, 0, 0, 0,
-                                           0, 0, 0, 0, 0,
-                                           0, 0, 0, 0, 0,
-                                           0, 0, 0, 0, 0, 0,
-                                           0 };
 
 #define FLOWSENSOR  13
  
@@ -144,7 +141,7 @@ void setup() {
   while (!client.connected()) {
     Serial.printf("Connecting to MQTT.....");
     //if (client.connect("ESP8266FlowClient", mqttUser, mqttPassword))
-    if (client.connect("ESP8266FlowClient")) {
+    if (client.connect(FLOW_CLIENTID)) {
       Serial.printf("connected\n");
     } else {
       Serial.printf("failed with ");
@@ -152,7 +149,7 @@ void setup() {
       delay(2000);
     }
   }
-  client.subscribe("ESP Control");
+  //client.subscribe("ESP Control");
 
 #if defined (ARDUINO_FEATHER_ESP32)
   Serial.printf("Configuring WDT...");
@@ -160,6 +157,9 @@ void setup() {
   esp_task_wdt_add(NULL);                //add current thread to WDT watch
   Serial.printf("Complete\n");
   Wire.begin();
+  pinMode(FLOWSENSOR, INPUT_PULLUP);  
+  sensors.begin(); // Start the DS18B20 sensor
+  attachInterrupt(digitalPinToInterrupt(FLOWSENSOR), pulseCounter, FALLING);  
 #endif
 #if defined (ARDUINO_ESP8266_GENERIC)
   Wire.begin(12,14);
@@ -196,8 +196,6 @@ void loop() {
   esp_task_wdt_reset();
   #endif
 
-  //I2CComm();
-
   ++masterCounter;
 
   if (masterCounter > 28800) {  //Force a reboot every 8 hours
@@ -207,12 +205,12 @@ void loop() {
   if (((currentMillis - previousMillis) > interval) && pulseCount > 0 ) {
     pulse1Sec = pulseCount;
     millisecond = millis() - previousMillis ;
-    raw_flow_data[0] = pulse1Sec ;
-    raw_flow_data[1] = millisecond ;
-    raw_flow_data[2] = 1;
+    flow_data_payload[0] = pulse1Sec ;
+    flow_data_payload[1] = millisecond ;
+    flow_data_payload[2] = 1;
     previousMillis = millis();
   } else {
-    raw_flow_data[2] = 0 ;
+       flow_data_payload[2] = 0 ;
   }
   pulseCount =0 ;
 
@@ -220,7 +218,7 @@ void loop() {
   sensors.requestTemperatures(); 
   float temperatureF = sensors.getTempFByIndex(0);
   //printf("%f \n", temperatureF) ;
-  raw_flow_data[17] = *((int *)&temperatureF);
+  flow_data_payload[17] = *((int *)&temperatureF);
 // store first 2 bytes of float into i[0]
 // be careful here!!! endianness matters
 // for little endian, use
@@ -233,23 +231,23 @@ void loop() {
 // i[1] = *(((int16_t *)&f) + 0);
 
   
-  raw_flow_data[12] = masterCounter;
+  flow_data_payload[12] = masterCounter;
  // raw_sensor_data[16] = I2CPanicCount;
-  raw_flow_data[3] = analogRead(A0);  // This reads the analog in value
+  flow_data_payload[3] = analogRead(A0);  // This reads the analog in value
   
   client.loop();
 
-  client.publish("Flow ESP", (byte *)raw_flow_data, 42);
+  client.publish(FLOW_CLIENT, (byte *)flow_data_payload, FLOW_LEN*4 );
 
   Serial.printf("Irrigation FLow Data: ");
   for (i = 0; i <= 16; ++i) {
-    Serial.printf("%x ", raw_flow_data[i]);
+    Serial.printf("%x ", flow_data_payload[i]);
   }
   for (i = 17; i <= 17; ++i) {
-    Serial.printf("%f ", *((float *)&raw_flow_data[i]));
+    Serial.printf("%f ", *((float *)&flow_data_payload[i]));
   }
   for (i = 19; i <= 20; ++i) {
-    Serial.printf("%x ", raw_flow_data[i]);
+    Serial.printf("%x ", flow_data_payload[i]);
   }
   Serial.printf("\n");
 
