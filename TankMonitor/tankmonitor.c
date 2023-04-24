@@ -8,58 +8,32 @@
 #include "../include/water.h"
 
 
-/* payload 0    Pulses Counted in Time Window
- * payload 1    Number of milliseconds in Time Window
- * payload 2    Flag 1=new data 0=stale data
- * payload 3    Pressure Sensor Analog Value
- * payload 4     unused
- * payload 5     unused
- * payload 6     unused
- * payload 7     unused
- * payload 8     unused
- * payload 9     unused
- * payload 10     unused
- * payload 11     unused
- * payload 12     Cycle Counter 16bit Int
- * payload 13     unused
- * payload 14     unused
- * payload 15     unused
- * payload 16     unused
- * payload 17    Temperature in F
- * payload 18     unused
- * payload 19     unused
- * payload 20     FW Version 4 Hex
- */
-/*
- * payload 21     Last payload is Control Word From User
- */
-
-/* payload[0] =    Gallons Per Minute
- * payload[1] =    Total Gallons (24 Hrs)
- * payload[2] =    Irrigation Pressure
- * payload[3] =    Pump Temperature
- * payload[4] =    spare
- * payload[5] =    spare
- * payload[6] =    spare
- * payload[7] =    spare
- * payload[8] =    spare
- * payload[9] =    spare
- * payload[10] =    Cycle Count
- * payload[11] =    spare
- * payload[12] =    spare
- * payload[13] =    spare
- * payload[14] =    spare
- * payload[15] =    spare
- * payload[16] =    spare
- * payload[17] =    spare
- * payload[18] =    spare
- * payload[19] =    spare
- * payload[20] =    spare
- */
-
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
 
+/* Kalman Filter Setup */
+#define DT 0.1  // Time step
+#define A 1     // Matrix A
+#define H 1     // Matrix H
+#define Q 0.001 // Process noise covariance
+#define R 0.1   // Measurement noise covariance
+
+double x = 0; // Estimated state
+double P = 1; // Estimated state covariance
+double z = 0; // Measurement
+/* Kalman Filter Functions */
+void predict()
+{
+   x = A * x;         // Predict new state
+   P = A * P * A + Q; // Predict new state covariance
+}
+
+void update()
+{
+   double K = P * H / (H * P * H + R); // Kalman gain
+   x = x + K * (z - H * x);            // Update state
+   P = (1 - K * H) * P;                // Update state covariance
+}
 
 MQTTClient_deliveryToken deliveredtoken;
 
@@ -114,21 +88,42 @@ int main(int argc, char* argv[])
    int stopGallons = 0;
    int tankstartGallons = 0;
    int tankstopGallons = 0;
-   
-   
+     float WaterPresSensorValue;
+   float PresSensorLSB = .00322580645; // lsb voltage value from datasheet
+  
+   float PresSensorValue = 0;
+   float PresSensorRawValue = 0;
+
+   float ConstantX = .34; // Used Excel Polynomial Fitting to come up with equation
+   float Constant = .0962;
+  
+   float WaterHeight = 0;
+   float TankGallons = 0;
+   float TankPerFull = 0;
+   float Tank_Area = 0;
+
+   int Float100State = 0;
+   int Float90State = 0;
+   int Float50State = 0;
+   int Float25State = 0;
+
+   // Set initial state and state covariance for Kalman filter
+   x = 0;
+   P = 1;
+
    MQTTClient client;
    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
    MQTTClient_message pubmsg = MQTTClient_message_initializer;
    MQTTClient_deliveryToken token;
    int rc;
    
-   log_message("FlowMonitor: Started\n");
+   log_message("TankMonitor: Started\n");
 
-   if ((rc = MQTTClient_create(&client, ADDRESS, FLO_CLIENTID,
+   if ((rc = MQTTClient_create(&client, ADDRESS, TANK_MONID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to create client, return code %d\n", rc);
-      log_message("FlowMonitor: Error == Failed to Create Client. Return Code: %d\n", rc);
+      log_message("TankMonitor: Error == Failed to Create Client. Return Code: %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
@@ -136,7 +131,7 @@ int main(int argc, char* argv[])
    if ((rc = MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, delivered)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to set callbacks, return code %d\n", rc);
-      log_message("FlowMonitor: Error == Failed to Set Callbacks. Return Code: %d\n", rc);
+      log_message("TankMonitor: Error == Failed to Set Callbacks. Return Code: %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
@@ -148,23 +143,25 @@ int main(int argc, char* argv[])
    if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to connect, return code %d\n", rc);
-      log_message("FlowMonitor: Error == Failed to Connect. Return Code: %d\n", rc);
+      log_message("TankMonitor: Error == Failed to Connect. Return Code: %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", FLO_TOPIC, FLO_CLIENTID, QOS);
-   log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", FLO_TOPIC, FLO_CLIENTID);
-   MQTTClient_subscribe(client, FLO_TOPIC, QOS);
    
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, F_CLIENTID, QOS);
-   log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", F_TOPIC, F_CLIENTID);
-   MQTTClient_subscribe(client, F_TOPIC, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TANK_CLIENT, TANK_CLIENTID, QOS);
+   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", TANK_CLIENT, TANK_CLIENTID);
+   MQTTClient_subscribe(client, TANK_CLIENT, QOS);
+   
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELL_TOPIC, WELL_MONID, QOS);
+   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, WELL_MONID);
+   MQTTClient_subscribe(client, WELL_TOPIC, QOS);
+
    
    /*
     * Main Loop
     */
 
-   log_message("FlowMonitor: Entering Main Loop\n") ;
+   log_message("TankMonitor: Entering Main Loop\n") ;
    
    while(1)
    {
@@ -191,23 +188,65 @@ int main(int argc, char* argv[])
       //printf("seconds since midnight: %d\n", SecondsFromMidnight);
       PriorSecondsFromMidnight = SecondsFromMidnight ;
       
-      
-      
-      /*
-       * Compute Monitor Values Based on Inputs from
-       * Sensor Data and Format for easy use with Blynk
+       /*
+       * Convert Raw hydrostatic Pressure Sensor
+       * A/D to Water Height, Gallons & Percent Full
        */
+
+      PresSensorRawValue = tank_data_payload[3] * PresSensorLSB;
+    
+      /*
+       * Kalman Filter to smooth the hydrostatic sensor readings
+       */
+
+      z = PresSensorRawValue;
+      predict();
+      update();
+      printf("x: %f\n", x);  // Print updated state
+      PresSensorValue = x;
+   
+      /*
+       *** Use the Equation y=Constandx(x) + Constant solve for x to compute Water Height in tank
+       */
+
+      if (PresSensorValue <= Constant)
+      {
+         PresSensorValue = Constant;
+      }
+
+      WaterHeight = ((PresSensorValue - ConstantX) / Constant) + .1; // The .1 accounts for the sensor not sitting on the bottom
+      // printf("Water Height = %f\n", WaterHeight);
+
+      /*
+       * Use the Equation (PI*R^2*WaterHeight)*VoltoGal to compute Water Gallons in tank
+       */
+      Tank_Area = PI * Tank_Radius_sqd; // area of base of tank
+      TankGallons = ((Tank_Area)*WaterHeight) * VoltoGal;
+      // printf("Gallons in Tank = %f\n", TankGallons);
+
+      /*
+       *  Use the Equation Calculated Gallons/Max Gallons to compute Percent Gallons in tank
+       */
+
+      TankPerFull = TankGallons / MaxTankGal * 100;
+      // printf("Percent Gallons in Tank = %f\n", TankPerFull);
+
+      Float100State = tank_data_payload[6] ;
+      Float90State = tank_data_payload[7]  ;
+      Float50State = tank_data_payload[4]  ;
+      Float25State = tank_data_payload[5]  ;
+
       
       
-      newPulseData = flow_data_payload[2] ;
+      newPulseData = tank_data_payload[2] ;
       if ( newPulseData == 1){
          
-         millsElapsed = flow_data_payload[1] ;
-         pulseCount = flow_data_payload[0];
+         millsElapsed = tank_data_payload[1] ;
+         pulseCount = tank_data_payload[0];
          
          if ((millsElapsed < 5000) && (millsElapsed != 0)) {     //ignore the really long intervals
             //dailyPulseCount = dailyPulseCount + pulseCount ;
-            millsElapsed = flow_data_payload[1] ;
+            millsElapsed = tank_data_payload[1] ;
             //millsTotal = millsTotal + millsElapsed;
             flowRate = ((pulseCount / (millsElapsed/1000)) / .5) / calibrationFactor;
             flowRate = ((flowRate * .00026417)/(millsElapsed/1000)) * 60;  //GPM
@@ -237,12 +276,9 @@ int main(int argc, char* argv[])
          millsElapsed = 0 ;
       }
       
-      
-      irrigationPressure = (flow_data_payload[3] * .9756525)/10 ;
-      
       //temperatureF = *((float *)&flow_data_payload[17]);
       
-      memcpy(&temperatureF, &flow_data_payload[17], sizeof(float));
+      memcpy(&temperatureF, &tank_data_payload[17], sizeof(float));
       
       
       /*
@@ -254,41 +290,41 @@ int main(int argc, char* argv[])
        */
       
       /* CLIENTID     "Tank Subscriber", TOPIC "flow Data", flow_sensor_ */
-      flow_sensor_payload[0] =    avgflowRateGPM;
-      flow_sensor_payload[1] =    dailyGallons;
-      flow_sensor_payload[2] =    irrigationPressure;
-      flow_sensor_payload[3] =    temperatureF;
-      flow_sensor_payload[4] =    0;
-      flow_sensor_payload[5] =    0;
-      flow_sensor_payload[6] =    0;
-      flow_sensor_payload[7] =    0;
-      flow_sensor_payload[8] =    0;
-      flow_sensor_payload[9] =    0;
-      flow_sensor_payload[10] =   flow_data_payload[12];
-      flow_sensor_payload[11] =   0;
-      flow_sensor_payload[12] =   0;
-      flow_sensor_payload[13] =   0;
-      flow_sensor_payload[14] =   0;
-      flow_sensor_payload[15] =   0;
-      flow_sensor_payload[16] =   0;
-      flow_sensor_payload[17] =   0;
-      flow_sensor_payload[18] =   0;
-      flow_sensor_payload[19] =   0;
+      tank_sensor_payload[0] =    avgflowRateGPM;
+      tank_sensor_payload[1] =    WaterHeight;
+      tank_sensor_payload[2] =    TankGallons;
+      tank_sensor_payload[3] =    TankPerFull;
+      tank_sensor_payload[4] =    TotalDailyGallons;
+      tank_sensor_payload[5] =    0;
+      tank_sensor_payload[6] =    0;
+      tank_sensor_payload[7] =    0;
+      tank_sensor_payload[8] =    0;
+      tank_sensor_payload[9] =    0;
+      tank_sensor_payload[10] =   tank_data_payload[12];
+      tank_sensor_payload[11] =   temperatureF;
+      tank_sensor_payload[12] =   Float100State;
+      tank_sensor_payload[13] =   Float90State;
+      tank_sensor_payload[14] =   Float50State;
+      tank_sensor_payload[15] =   Float25State;
+      tank_sensor_payload[16] =   0;
+      tank_sensor_payload[17] =   0;
+      tank_sensor_payload[18] =   0;
+      tank_sensor_payload[19] =   0;
       /*
-      for (i=0; i<=FL_LEN; i++) {
-          printf("%f ", flow_sensor_payload[i]);
+      for (i=0; i<=TANK_DATA; i++) {
+          printf("%f ", tank_sensor_payload[i]);
       }
       printf("%s", ctime(&t));
       */
-      pubmsg.payload = flow_sensor_payload;
-      pubmsg.payloadlen = FL_LEN * 4;
+      pubmsg.payload = tank_sensor_payload;
+      pubmsg.payloadlen = TANK_DATA * 4;
       pubmsg.qos = QOS;
       pubmsg.retained = 0;
       deliveredtoken = 0;
-      if ((rc = MQTTClient_publishMessage(client, FL_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
+      if ((rc = MQTTClient_publishMessage(client, TANK_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
       {
          printf("Failed to publish message, return code %d\n", rc);
-         log_message("FlowMonitor: Error == Failed to Publish Message. Return Code: %d\n", rc);
+         log_message("TankMonitor: Error == Failed to Publish Message. Return Code: %d\n", rc);
          rc = EXIT_FAILURE;
       }
       
@@ -296,7 +332,7 @@ int main(int argc, char* argv[])
        * Run at this interval
        */
       
-      if (formatted_sensor_payload[7] > 500) {
+      if (well_sensor_payload[2] == 1) {
          pumpState = ON;
       }
       else {
@@ -305,14 +341,14 @@ int main(int argc, char* argv[])
       
       if ((pumpState == ON) && (lastpumpState == OFF)){
          startGallons = dailyGallons;
-         tankstartGallons = formatted_sensor_payload[2];
+         tankstartGallons = tank_sensor_payload[2];
          time(&start_t);
          lastpumpState = ON;
       }
       else if ((pumpState == OFF) && (lastpumpState == ON)){
          fptr = fopen(flowdata, "a");
          stopGallons = dailyGallons - startGallons ;
-         tankstopGallons = formatted_sensor_payload[2];
+         tankstopGallons = tank_sensor_payload[2];
          time(&end_t);
          diff_t = difftime(end_t, start_t);
          fprintf(fptr, "Last Pump Cycle Gallons Used: %d   ", stopGallons);
@@ -326,8 +362,8 @@ int main(int argc, char* argv[])
       sleep(1) ;
    }
    
-   log_message("FlowMonitor: Exited Main Loop\n");
-   MQTTClient_unsubscribe(client, F_TOPIC);
+   log_message("TankMonitor: Exited Main Loop\n");
+   MQTTClient_unsubscribe(client, TANK_TOPIC);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);
    return rc;

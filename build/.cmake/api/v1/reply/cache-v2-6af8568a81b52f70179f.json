@@ -1344,6 +1344,30 @@
 			],
 			"type" : "STATIC",
 			"value" : "/home/pi/MilanoWaterProject/SysTest"
+		},
+		{
+			"name" : "wellmonitor_BINARY_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/pi/MilanoWaterProject/build/WellMonitor"
+		},
+		{
+			"name" : "wellmonitor_SOURCE_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/pi/MilanoWaterProject/WellMonitor"
 		}
 	],
 	"kind" : "cache",

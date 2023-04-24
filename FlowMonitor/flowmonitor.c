@@ -7,55 +7,56 @@
 #include "MQTTClient.h"
 #include "../include/water.h"
 
-
-/* payload 0    Pulses Counted in Time Window
- * payload 1    Number of milliseconds in Time Window
- * payload 2    Flag 1=new data 0=stale data
- * payload 3    Pressure Sensor Analog Value
- * payload 4     unused
- * payload 5     unused
- * payload 6     unused
- * payload 7     unused
- * payload 8     unused
- * payload 9     unused
- * payload 10     unused
- * payload 11     unused
- * payload 12     Cycle Counter 16bit Int
- * payload 13     unused
- * payload 14     unused
- * payload 15     unused
- * payload 16     unused
- * payload 17    Temperature in F
- * payload 18     unused
- * payload 19     unused
- * payload 20     FW Version 4 Hex
- */
-/*
- * payload 21     Last payload is Control Word From User
- */
-
-/* payload[0] =    Gallons Per Minute
- * payload[1] =    Total Gallons (24 Hrs)
- * payload[2] =    Irrigation Pressure
- * payload[3] =    Pump Temperature
- * payload[4] =    spare
- * payload[5] =    spare
- * payload[6] =    spare
- * payload[7] =    spare
- * payload[8] =    spare
- * payload[9] =    spare
- * payload[10] =    Cycle Count
- * payload[11] =    spare
- * payload[12] =    spare
- * payload[13] =    spare
- * payload[14] =    spare
- * payload[15] =    spare
- * payload[16] =    spare
- * payload[17] =    spare
- * payload[18] =    spare
- * payload[19] =    spare
- * payload[20] =    spare
- */
+/* payload 0	Pulses Counted in Time Window
+* payload 1	Number of milliseconds in Time Window
+* payload 2	Flag 1=new data 0=stale data
+* payload 3	Pressure Sensor Analog Value
+* payload 4	 unused
+* payload 5	 unused
+* payload 6	 unused
+* payload 7	 unused
+* payload 8	 unused
+* payload 9	 unused
+* payload 10	 unused
+* payload 11	 unused
+* payload 12	 Cycle Counter 16bit Int
+* payload 13	 unused
+* payload 14	 unused
+* payload 15	 unused
+* payload 16	 unused
+* payload 17	Irrigation Pump Temperature in F Float Bytes 1&2
+* payload 18	Irrigation Pump Temperature in F Float Bytes 3&4
+* payload 19	 unused
+* payload 20	 FW Version 4 Hex 
+*/	
+/*	
+int	flow_data_payload[FLOW_LEN] ;
+*/ 	
+/* payload[0] =	Gallons Per Minute
+* payload[1] =	Total Gallons (24 Hrs)
+* payload[2] =	Irrigation Pressure
+* payload[3] =	Pump Temperature
+* payload[4] =	spare
+* payload[5] =	spare
+* payload[6] =	spare
+* payload[7] =	spare
+* payload[8] =	spare
+* payload[9] =	spare
+* payload[10] =	Cycle Count
+* payload[11] =	spare
+* payload[12] =	spare
+* payload[13] =	spare
+* payload[14] =	spare
+* payload[15] =	spare
+* payload[16] =	spare
+* payload[17] =	spare
+* payload[18] =	spare
+* payload[19] =	spare
+* payload[20] =	spare
+*/	
+/*	
+float	flow_sensor_payload[FLOW_DATA];
+*/	
 
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
@@ -124,7 +125,7 @@ int main(int argc, char* argv[])
    
    log_message("FlowMonitor: Started\n");
 
-   if ((rc = MQTTClient_create(&client, ADDRESS, FLO_CLIENTID,
+   if ((rc = MQTTClient_create(&client, ADDRESS, FLOW_MONID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to create client, return code %d\n", rc);
@@ -152,13 +153,13 @@ int main(int argc, char* argv[])
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", FLO_TOPIC, FLO_CLIENTID, QOS);
-   log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", FLO_TOPIC, FLO_CLIENTID);
-   MQTTClient_subscribe(client, FLO_TOPIC, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", FLOW_CLIENT, FLOW_CLIENTID, QOS);
+   log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", FLOW_CLIENT, FLOW_CLIENTID);
+   MQTTClient_subscribe(client, FLOW_CLIENT, QOS);
    
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, F_CLIENTID, QOS);
-   log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", F_TOPIC, F_CLIENTID);
-   MQTTClient_subscribe(client, F_TOPIC, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELL_TOPIC, WELL_MONID, QOS);
+   log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, WELL_MONID);
+   MQTTClient_subscribe(client, WELL_TOPIC, QOS);
    
    /*
     * Main Loop
@@ -274,18 +275,18 @@ int main(int argc, char* argv[])
       flow_sensor_payload[17] =   0;
       flow_sensor_payload[18] =   0;
       flow_sensor_payload[19] =   0;
-      /*
-      for (i=0; i<=FL_LEN; i++) {
+      
+      for (i=0; i<=FLOW_DATA; i++) {
           printf("%f ", flow_sensor_payload[i]);
       }
       printf("%s", ctime(&t));
-      */
+      
       pubmsg.payload = flow_sensor_payload;
-      pubmsg.payloadlen = FL_LEN * 4;
+      pubmsg.payloadlen = FLOW_DATA * 4;
       pubmsg.qos = QOS;
       pubmsg.retained = 0;
       deliveredtoken = 0;
-      if ((rc = MQTTClient_publishMessage(client, FL_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
+      if ((rc = MQTTClient_publishMessage(client, FLOW_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
       {
          printf("Failed to publish message, return code %d\n", rc);
          log_message("FlowMonitor: Error == Failed to Publish Message. Return Code: %d\n", rc);
@@ -296,7 +297,7 @@ int main(int argc, char* argv[])
        * Run at this interval
        */
       
-      if (formatted_sensor_payload[7] > 500) {
+      if (well_sensor_payload[3] == 1) {
          pumpState = ON;
       }
       else {
@@ -305,19 +306,16 @@ int main(int argc, char* argv[])
       
       if ((pumpState == ON) && (lastpumpState == OFF)){
          startGallons = dailyGallons;
-         tankstartGallons = formatted_sensor_payload[2];
          time(&start_t);
          lastpumpState = ON;
       }
       else if ((pumpState == OFF) && (lastpumpState == ON)){
          fptr = fopen(flowdata, "a");
          stopGallons = dailyGallons - startGallons ;
-         tankstopGallons = formatted_sensor_payload[2];
          time(&end_t);
          diff_t = difftime(end_t, start_t);
          fprintf(fptr, "Last Pump Cycle Gallons Used: %d   ", stopGallons);
          fprintf(fptr, "Run Time: %f  Min. ", (diff_t/60));
-         fprintf(fptr, "Tank Gallons Used: %d  ", (tankstartGallons-tankstopGallons));
          fprintf(fptr, "%s", ctime(&t));
          fclose(fptr);
          lastpumpState = OFF ;
@@ -327,7 +325,7 @@ int main(int argc, char* argv[])
    }
    
    log_message("FlowMonitor: Exited Main Loop\n");
-   MQTTClient_unsubscribe(client, F_TOPIC);
+   MQTTClient_unsubscribe(client, FLOW_TOPIC);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);
    return rc;
