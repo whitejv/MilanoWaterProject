@@ -6,10 +6,8 @@
 #include <IPAddress.h>
 #include <PubSubClient.h>
 #include <Arduino_LSM6DSOX.h>
+#include "hardware/watchdog.h" // Include the watchdog header
 #include <water.h>
-
-PROGMEM int LastErrCode;
-PROGMEM int LastErrCount;
 
 char ssid[] = "ATT9LCV8fL_2.4";   // local wifi network SSID
 char password[] = "6jhz7ai7pqy5"; // local network password
@@ -17,22 +15,23 @@ char password[] = "6jhz7ai7pqy5"; // local network password
 int InitiateReset = 0;
 int ErrState = 0 ;
 int ErrCount = 0 ;
+
+// Watchdog timeout period in milliseconds
+const int watchdogTimeoutMs = 3000; // 6 seconds, adjust as needed
+
 #define ERRMAX 10 
 #define firmwareVer 0x8004
 
-IPAddress MQTT_BrokerIP(192, 168, 1, 249);
-const char *mqttServer = "raspberrypi.local";
-const int mqttPort = 1883;
-
-// const char *mqttServer = "soldier.cloudmqtt.com";
-// const int mqttPort = 15599;
-// const char *mqttUser = "zerlcpdf";
-// const char *mqttPassword = "OyHBShF_g9ya";
-
 WiFiClient espWellClient;
 
-PubSubClient client(MQTT_BrokerIP, mqttPort, espWellClient);
+/* Define the IPs for Production and Development MQTT Servers */
+IPAddress prodMqttServerIP(192, 168, 1, 250);
+IPAddress devMqttServerIP(192, 168, 1, 249) ;
+PubSubClient P_client(espWellClient);
+PubSubClient D_client(espWellClient);
 
+
+PubSubClient client; // Declare the client object globally
 unsigned int masterCounter = 0;
 
 
@@ -44,26 +43,17 @@ unsigned int masterCounter = 0;
 void setup()
 {
   digitalWrite(LEDR, HIGH);
-  //Initialize //Serial and wait for port to open:
+  //Initialize Serial
   Serial.begin(115200);
-  /*
-  while (!//Serial) {
-    ; // wait for //Serial port to connect. Needed for native USB port only
-  }
-*/
-  
+
+ 
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE) {
     Serial.print("Communication with WiFi module failed!");
     digitalWrite(LEDR, HIGH);
     while (true);
   }
-/*
-  String fv = WiFi.firmwareVersion();
-  if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
-    //Serial.print("Please upgrade the firmware");
-  }
-*/
+
   // We start by connecting to a WiFi network
 
   Serial.print("Connecting to - ");
@@ -82,43 +72,77 @@ void setup()
   Serial.print(".");
   }
   Serial.println("");
-  Serial.print(" WiFi connected -- ");
+  Serial.print("WiFi connected -- ");
   Serial.print("Local IP address: ");
   Serial.println(WiFi.localIP());
-   digitalWrite(LEDG, HIGH);  
-  client.setServer(MQTT_BrokerIP, mqttPort);
-
-  while (!client.connected())
-  {
-    Serial.print("Connecting to MQTT Server.....");
+  digitalWrite(LEDG, HIGH);
   
-    if (client.connect(WELL_CLIENTID))
-    {
+unsigned long connectAttemptStart = millis();
+bool connected = false;
+
+//Try connecting to the production MQTT server first
+
+P_client.setServer(prodMqttServerIP, PROD_MQTT_PORT);
+
+// Connect to the MQTT server
+
+while (!P_client.connected() && millis() - connectAttemptStart < 5000) { // Adjust the timeout as needed
+  Serial.print("Connecting to Production MQTT Server: ...");
+  connected = P_client.connect(WELL_CLIENTID);
+  if (connected) {
+    client = P_client; // Assign the connected production client to the global client object
+    Serial.println("connected\n");
+    digitalWrite(LEDB, HIGH);
+  } else {
+    Serial.print("failed with client state: ");
+    printClientState(P_client.state());
+    Serial.println() ;
+    delay(2000);
+  }
+}
+
+// If connection to the production server failed, try connecting to the development server
+
+if (!connected) {
+  //PubSubClient client(devMqttServerIP, DEV_MQTT_PORT, espWellClient);
+  D_client.setServer(devMqttServerIP, DEV_MQTT_PORT);
+  while (!D_client.connected()) {
+    Serial.print("Connecting to Development MQTT Server...");
+    connected = D_client.connect(WELL_CLIENTID);
+    if (connected) {
+      client = D_client; // Assign the connected development client to the global client object
       Serial.println("connected\n");
       digitalWrite(LEDB, HIGH);
-    }
-    else
-    {
-      Serial.print("failed with ");
-      Serial.println("client state. ");
-      Serial.println(client.state());
+    } else {
+      Serial.print("failed with client state: ");
+      printClientState(D_client.state());
+      Serial.println();
       delay(2000);
     }
   }
+}
+
+
   //client.subscribe("ESP Control");
   
+  // Enable the watchdog timer
+  watchdog_enable(watchdogTimeoutMs, 1);
+  Serial.println("Watchdog Timer Enabled\n");
+
   if (!IMU.begin()) {  
     //Serial.println("Failed to initialize IMU!");
     while (1);
   }
   /*
-   * Setup Pin Modes for Discretes
+   * Setup Pin Modes for Discretes and increase analogs to 12bits
    */
 
   pinMode(2, INPUT_PULLUP);
-  pinMode(3, INPUT_PULLUP);   
+  pinMode(3, INPUT_PULLUP);
+
+  //analogReadResolution(12);   
 }
-void(* resetFunc) (void) = 0; //declare reset function @ address 0
+
 void loop()
 {
   int i;
@@ -129,16 +153,19 @@ void loop()
 
   if (masterCounter > 28000) {
     masterCounter = 0 ;
-    //resetFunc();  //call reset
+    while(1);
   }
-  
+    
+  // Regularly "kick" the watchdog to prevent a system reset
+  watchdog_update();
+
   if (IMU.temperatureAvailable())
   {
 
     IMU.readTemperature(temperature_deg);
-    Serial.print("LSM6DSOX Temperature = ");
-    Serial.print(temperature_deg);
-    Serial.println(" °C");
+    //Serial.print("LSM6DSOX Temperature = ");
+    //Serial.print(temperature_deg);
+    //Serial.println(" °C");
   }
 
   well_data_payload[0] = analogRead(A0);
@@ -152,8 +179,8 @@ void loop()
   well_data_payload[12] = masterCounter;
   well_data_payload[16] = ErrCount;
   well_data_payload[17] = ErrState;
-  well_data_payload[18] = LastErrCount;
-  well_data_payload[19] = LastErrCode;  
+  well_data_payload[18] = 0;
+  well_data_payload[19] = 0;  
 
   client.loop();
 
@@ -183,14 +210,45 @@ void loop()
   }
 
   if ( ErrCount > ERRMAX ) {
-    //Write Error State to Flash
-    LastErrCode = ErrState;
-    ++LastErrCount;
     //Initiate Reset
     Serial.println("Initiate board reset!!") ;
-    //resetFunc();  //call reset
+    while(1);
   }
     
-  delay(1200);
+  delay(1000);
 
+}
+void printClientState(int state) {
+  switch (state) {
+    case -4:
+      Serial.println("MQTT_CONNECTION_TIMEOUT");
+      break;
+    case -3:
+      Serial.println("MQTT_CONNECTION_LOST");
+      break;
+    case -2:
+      Serial.println("MQTT_CONNECT_FAILED");
+      break;
+    case -1:
+      Serial.println("MQTT_DISCONNECTED");
+      break;
+    case  0:
+      Serial.println("MQTT_CONNECTED");
+      break;
+    case  1:
+      Serial.println("MQTT_CONNECT_BAD_PROTOCOL");
+      break;
+    case  2:
+      Serial.println("MQTT_CONNECT_BAD_CLIENT_ID");
+      break;
+    case  3:
+      Serial.println("MQTT_CONNECT_UNAVAILABLE");
+      break;
+    case  4:
+      Serial.println("MQTT_CONNECT_BAD_CREDENTIALS");
+      break;
+    case  5:
+      Serial.println("MQTT_CONNECT_UNAUTHORIZED");
+      break;
+  }
 }

@@ -22,17 +22,25 @@
 #include "pico/binary_info.h"
 #endif
 
+int InitiateReset = 0;
+int ErrState = 0 ;
+int ErrCount = 0 ;
+#define ERRMAX 10 
 #define WDT_TIMEOUT 10  //10 seconds Watch Dog Timer (WDT)
 
 const char ssid[] = "ATT9LCV8fL_2.4";
 const char password[] = "6jhz7ai7pqy5";
 
-IPAddress MQTT_BrokerIP(192, 168, 1, 249);
-const char *mqttServer = "raspberrypi.local";
-const int mqttPort = 1883;
-
 WiFiClient espTankClient;
-PubSubClient client(MQTT_BrokerIP, mqttPort, espTankClient);
+
+/* Define the IPs for Production and Development MQTT Servers */
+IPAddress prodMqttServerIP(192, 168, 1, 250);
+IPAddress devMqttServerIP(192, 168, 1, 249) ;
+PubSubClient P_client(espTankClient);
+PubSubClient D_client(espTankClient);
+
+
+PubSubClient client; // Declare the client object globally
 
 int WDT_Interval = 0;
 unsigned int masterCounter = 0;
@@ -129,18 +137,50 @@ void setup() {
   });
   ArduinoOTA.begin();
   
-  client.setServer(MQTT_BrokerIP, mqttPort);
+unsigned long connectAttemptStart = millis();
+bool connected = false;
 
-  while (!client.connected()) {
-    Serial.printf("Connecting to MQTT.....");
-    if (client.connect(TANK_CLIENTID)) {
-      Serial.printf("connected\n");
+//Try connecting to the production MQTT server first
+
+P_client.setServer(prodMqttServerIP, PROD_MQTT_PORT);
+
+// Connect to the MQTT server
+
+while (!P_client.connected() && millis() - connectAttemptStart < 5000) { // Adjust the timeout as needed
+  Serial.print("Connecting to Production MQTT Server: ...");
+  connected = P_client.connect(WELL_CLIENTID);
+  if (connected) {
+    client = P_client; // Assign the connected production client to the global client object
+    Serial.println("connected\n");
+    //digitalWrite(LEDB, HIGH);
+  } else {
+    Serial.print("failed with client state: ");
+    printClientState(P_client.state());
+    Serial.println() ;
+    delay(2000);
+  }
+}
+
+// If connection to the production server failed, try connecting to the development server
+
+if (!connected) {
+  //PubSubClient client(devMqttServerIP, DEV_MQTT_PORT, espWellClient);
+  D_client.setServer(devMqttServerIP, DEV_MQTT_PORT);
+  while (!D_client.connected()) {
+    Serial.print("Connecting to Development MQTT Server...");
+    connected = D_client.connect(WELL_CLIENTID);
+    if (connected) {
+      client = D_client; // Assign the connected development client to the global client object
+      Serial.println("connected\n");
+      //digitalWrite(LEDB, HIGH);
     } else {
-      Serial.printf("failed with ");
-      Serial.printf("client state %d\n", client.state());
+      Serial.print("failed with client state: ");
+      printClientState(D_client.state());
+      Serial.println();
       delay(2000);
     }
   }
+}
 
   //client.subscribe("ESP Control");
 
@@ -186,6 +226,26 @@ void loop() {
      //delay(500);
      timerOTA = millis() ;
   }
+  /*
+ * Check Connection and Log State then Determine if a Reset is necessary
+ */
+
+  if (client.connected() == FALSE) {
+    ErrState = client.state() ;
+    ++ErrCount;
+    Serial.print("Well Monitor Disconnected from MQTT:");
+    Serial.print("Error Count:  ");
+    Serial.print(ErrCount);
+    Serial.print("Error Code:  ");
+    Serial.println(ErrState);
+  }
+
+  if ( ErrCount > ERRMAX ) {
+    //Initiate Reset
+    Serial.println("Initiate board reset!!") ;
+    while(1);
+  }
+  
 }
 
 void updateWatchdog() {
@@ -262,4 +322,38 @@ void printFlowData() {
     Serial.printf("%x ", tank_data_payload[i]);
   }
   Serial.printf("\n");
+}
+void printClientState(int state) {
+  switch (state) {
+    case -4:
+      Serial.println("MQTT_CONNECTION_TIMEOUT");
+      break;
+    case -3:
+      Serial.println("MQTT_CONNECTION_LOST");
+      break;
+    case -2:
+      Serial.println("MQTT_CONNECT_FAILED");
+      break;
+    case -1:
+      Serial.println("MQTT_DISCONNECTED");
+      break;
+    case  0:
+      Serial.println("MQTT_CONNECTED");
+      break;
+    case  1:
+      Serial.println("MQTT_CONNECT_BAD_PROTOCOL");
+      break;
+    case  2:
+      Serial.println("MQTT_CONNECT_BAD_CLIENT_ID");
+      break;
+    case  3:
+      Serial.println("MQTT_CONNECT_UNAVAILABLE");
+      break;
+    case  4:
+      Serial.println("MQTT_CONNECT_BAD_CREDENTIALS");
+      break;
+    case  5:
+      Serial.println("MQTT_CONNECT_UNAUTHORIZED");
+      break;
+  }
 }
