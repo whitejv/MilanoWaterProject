@@ -228,17 +228,17 @@ monitor/fast:
 .PHONY : monitor/fast
 
 #=============================================================================
-# Target rules for targets named subscriber
+# Target rules for targets named wellmonitor
 
 # Build rule for target.
-subscriber: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 subscriber
-.PHONY : subscriber
+wellmonitor: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 wellmonitor
+.PHONY : wellmonitor
 
 # fast build rule for target.
-subscriber/fast:
-	$(MAKE) $(MAKESILENT) -f WellMonitor/CMakeFiles/subscriber.dir/build.make WellMonitor/CMakeFiles/subscriber.dir/build
-.PHONY : subscriber/fast
+wellmonitor/fast:
+	$(MAKE) $(MAKESILENT) -f WellMonitor/CMakeFiles/wellmonitor.dir/build.make WellMonitor/CMakeFiles/wellmonitor.dir/build
+.PHONY : wellmonitor/fast
 
 #=============================================================================
 # Target rules for targets named alert
@@ -296,9 +296,9 @@ help:
 	@echo "... flowmonitor"
 	@echo "... monitor"
 	@echo "... mylib"
-	@echo "... subscriber"
 	@echo "... tankmonitor"
 	@echo "... test"
+	@echo "... wellmonitor"
 .PHONY : help
 
 

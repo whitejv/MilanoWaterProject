@@ -98,52 +98,52 @@ void loop()
     * Unpack the Data for Some Items
     */
 
-   BitPackedPayload = monitor_sensor_payload[8];
+   BitPackedPayload = monitor_payload[8];
    PumpRunCount[4] = (BitPackedPayload & 0xff000000) >> 24;
    PumpRunCount[3] = (BitPackedPayload & 0x00ff0000) >> 16;
    PumpRunCount[2] = (BitPackedPayload & 0x0000ff00) >> 8;
    PumpRunCount[1] = (BitPackedPayload & 0x000000ff);
 
-   BitPackedPayload = monitor_sensor_payload[13];
+   BitPackedPayload = monitor_payload[13];
    floatState[4] = (BitPackedPayload & 0xffff0000) >> 16;
    floatState[3] = (BitPackedPayload & 0x0000ffff);
-   BitPackedPayload = monitor_sensor_payload[14];
+   BitPackedPayload = monitor_payload[14];
    floatState[2] = (BitPackedPayload & 0xffff0000) >> 16;
    floatState[1] = (BitPackedPayload & 0x0000ffff);
 
-   BitPackedPayload = monitor_sensor_payload[15];
+   BitPackedPayload = monitor_payload[15];
    floatLedcolor[4] = (BitPackedPayload & 0xff000000) >> 24;
    floatLedcolor[3] = (BitPackedPayload & 0x00ff0000) >> 16;
    floatLedcolor[2] = (BitPackedPayload & 0x0000ff00) >> 8;
    floatLedcolor[1] = (BitPackedPayload & 0x000000ff);
 
-   Blynk.setProperty(5, "color", ledcolorPalette[monitor_sensor_payload[4]]);  // Set LED Label to HEX colour
-   Blynk.setProperty(6, "color", ledcolorPalette[monitor_sensor_payload[5]]);  // Set LED Label to HEX colour
-   Blynk.setProperty(7, "color", ledcolorPalette[monitor_sensor_payload[6]]);  // Set LED Label to HEX colour
-   Blynk.setProperty(20, "color", ledcolorPalette[monitor_sensor_payload[7]]); // Set LED Label to HEX colour
+   Blynk.setProperty(5, "color", ledcolorPalette[monitor_payload[4]]);  // Set LED Label to HEX colour
+   Blynk.setProperty(6, "color", ledcolorPalette[monitor_payload[5]]);  // Set LED Label to HEX colour
+   Blynk.setProperty(7, "color", ledcolorPalette[monitor_payload[6]]);  // Set LED Label to HEX colour
+   Blynk.setProperty(20, "color", ledcolorPalette[monitor_payload[7]]); // Set LED Label to HEX colour
 
    Blynk.setProperty(12, "color", ledcolorPalette[floatLedcolor[1]]); // Set LED Label to HEX colour
    Blynk.setProperty(13, "color", ledcolorPalette[floatLedcolor[2]]); // Set LED Label to HEX colour
    Blynk.setProperty(14, "color", ledcolorPalette[floatLedcolor[3]]); // Set LED Label to HEX colour
    Blynk.setProperty(15, "color", ledcolorPalette[floatLedcolor[4]]); // Set LED Label to HEX colour
 
-   Blynk.setProperty(35, "color", ledcolorPalette[monitor_sensor_payload[17]]);
-   Blynk.setProperty(21, "color", ledcolorPalette[monitor_sensor_payload[19]]); // Set LED Label to HEX colour
+   Blynk.setProperty(35, "color", ledcolorPalette[monitor_payload[17]]);
+   Blynk.setProperty(21, "color", ledcolorPalette[monitor_payload[19]]); // Set LED Label to HEX colour
 
    /***  SEND INFO TO BLYNK     ***/
 
    // Blynk.virtualWrite (V	0	, blynk_payload[0])	;   //Unused
-   Blynk.virtualWrite(V1, formatted_sensor_payload[1]);         // Level ft
-   Blynk.virtualWrite(V2, formatted_sensor_payload[2]);         // Gallons
-   Blynk.virtualWrite(V3, formatted_sensor_payload[3]);         // Level %
-   Blynk.virtualWrite(V4, monitor_sensor_payload[16]);          // Septic Alert
-   Blynk.virtualWrite(V5, monitor_sensor_payload[0]);           // Pump Current Sense P1
-   Blynk.virtualWrite(V6, monitor_sensor_payload[1]);           // Pump Current Sense P2
-   Blynk.virtualWrite(V7, monitor_sensor_payload[2]);           // Pump Current Sense P3
+   Blynk.virtualWrite(V1, tank_sensor_payload[1]);         // Level ft
+   Blynk.virtualWrite(V2, tank_sensor_payload[2]);         // Gallons
+   Blynk.virtualWrite(V3, tank_sensor_payload[3]);         // Level %
+   Blynk.virtualWrite(V4, monitor_payload[16]);          // Septic Alert
+   Blynk.virtualWrite(V5, monitor_payload[0]);           // Pump Current Sense P1
+   Blynk.virtualWrite(V6, monitor_payload[1]);           // Pump Current Sense P2
+   Blynk.virtualWrite(V7, monitor_payload[2]);           // Pump Current Sense P3
    Blynk.virtualWrite(V8, flow_sensor_payload[10]);             // irrigation pump temperature
-   Blynk.virtualWrite(V9, (int)formatted_sensor_payload[9]);    // Faults
-   Blynk.virtualWrite(V10, (int)formatted_sensor_payload[10]);  // Cycle Count
-   Blynk.virtualWrite(V11, formatted_sensor_payload[11]);       // System Temperature f
+   Blynk.virtualWrite(V9, (int)well_sensor_payload[12]);    // Faults
+   Blynk.virtualWrite(V10, (int)tank_sensor_payload[10]);  // Cycle Count
+   Blynk.virtualWrite(V11, tank_sensor_payload[11]);       // System Temperature f
    Blynk.virtualWrite(V12, floatState[4]);                      // Float 1 Hi
    Blynk.virtualWrite(V13, floatState[3]);                      // Float 2 90%
    Blynk.virtualWrite(V14, floatState[2]);                      // Float 3 50%
@@ -151,17 +151,17 @@ void loop()
    Blynk.virtualWrite(V16, flow_sensor_payload[0]);             // Gallons per Minute (Rolling Average)
    Blynk.virtualWrite(V17, flow_sensor_payload[1]);             // Daily Total Gallons
    Blynk.virtualWrite(V18, flow_sensor_payload[2]);             // irrigation System Pressure PSI
-   Blynk.virtualWrite(V19, formatted_sensor_payload[17]);       // House Water Press
-   Blynk.virtualWrite(V20, monitor_sensor_payload[3]);          // Pump Current Sense P4
-   Blynk.virtualWrite(V21, monitor_sensor_payload[18]);         // Home Tank Pressure Relay Sense
+   //Blynk.virtualWrite(V19, formatted_sensor_payload[17]);       // House Water Press
+   Blynk.virtualWrite(V20, monitor_payload[3]);          // Pump Current Sense P4
+   Blynk.virtualWrite(V21, monitor_payload[18]);         // Home Tank Pressure Relay Sense
    Blynk.virtualWrite(V22, PumpRunCount[1]);                    // Pump Run Count P1
    Blynk.virtualWrite(V23, PumpRunCount[2]);                    // Pump Run Count P2
    Blynk.virtualWrite(V24, PumpRunCount[3]);                    // Pump Run Count P3
    Blynk.virtualWrite(V25, PumpRunCount[4]);                    // Pump Run Count P4
-   Blynk.virtualWrite(V26, (monitor_sensor_payload[9] / 60.));  // PumpRunTime P1
-   Blynk.virtualWrite(V27, (monitor_sensor_payload[10] / 60.)); // PumpRunTime P2
-   Blynk.virtualWrite(V28, (monitor_sensor_payload[11] / 60.)); // PumpRunTime P3
-   Blynk.virtualWrite(V29, (monitor_sensor_payload[12] / 60.)); // PumpRunTime P4
+   Blynk.virtualWrite(V26, (monitor_payload[9] / 60.));  // PumpRunTime P1
+   Blynk.virtualWrite(V27, (monitor_payload[10] / 60.)); // PumpRunTime P2
+   Blynk.virtualWrite(V28, (monitor_payload[11] / 60.)); // PumpRunTime P3
+   Blynk.virtualWrite(V29, (monitor_payload[12] / 60.)); // PumpRunTime P4
    Blynk.virtualWrite(V30, (flow_sensor_payload[3]));           // irrigation pump temperature
 
    /*
@@ -205,7 +205,7 @@ void loop()
 
     */
 
-   if (alert_sensor_payload[0] == 1 && OneTime == 0)
+   if (alert_payload[0] == 1 && OneTime == 0)
    {
       OneTime = 1;
       Blynk.logEvent("pump_no_start");
@@ -258,13 +258,17 @@ int main(int argc, char *argv[])
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
-   printf("Subscribing to topic: %s using QoS: %d\n\n", FL_TOPIC, QOS);
-   //log_message("Blynk: Subscribing to topic: %s for client: %s\n", FL_TOPIC, FL_CLIENTID);
-   MQTTClient_subscribe(client, FL_TOPIC, QOS);
+   printf("Subscribing to topic: %s using QoS: %d\n\n", TANK_TOPIC, QOS);
+   //log_message("Blynk: Subscribing to topic: %s for client: %s\n", TANK_TOPIC, TANK_MONID);
+   MQTTClient_subscribe(client, TANK_TOPIC, QOS);
+
+   printf("Subscribing to topic: %s using QoS: %d\n\n", FLOW_TOPIC, QOS);
+   //log_message("Blynk: Subscribing to topic: %s for client: %s\n", FLOW_TOPIC, FLOW_MONID);
+   MQTTClient_subscribe(client, FLOW_TOPIC, QOS);
    
-   printf("Subscribing to topic: %s using QoS: %d\n\n", F_TOPIC, QOS);
-   //log_message("Blynk: Subscribing to topic: %s for client: %s\n", F_TOPIC, F_CLIENTID);
-   MQTTClient_subscribe(client, F_TOPIC, QOS);
+   printf("Subscribing to topic: %s using QoS: %d\n\n", WELL_TOPIC, QOS);
+   //log_message("Blynk: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, WELL_MONID);
+   MQTTClient_subscribe(client, WELL_TOPIC, QOS);
 
    printf("Subscribing to topic: %s using QoS: %d\n\n", M_TOPIC, QOS);
    //log_message("Blynk: Subscribing to topic: %s for client: %s\n", M_TOPIC, M_CLIENTID);
@@ -286,9 +290,11 @@ int main(int argc, char *argv[])
    }
 
    //log_message("Blynk: Exited Main Loop\n");
-   MQTTClient_unsubscribe(client, F_TOPIC);
+   MQTTClient_unsubscribe(client, FLOW_TOPIC);
+   MQTTClient_unsubscribe(client, TANK_TOPIC);
+   MQTTClient_unsubscribe(client, WELL_TOPIC);
    MQTTClient_unsubscribe(client, M_TOPIC);
-   MQTTClient_unsubscribe(client, FL_TOPIC);
+   MQTTClient_unsubscribe(client, A_TOPIC);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);
    return rc;

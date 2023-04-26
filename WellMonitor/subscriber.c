@@ -7,34 +7,34 @@
 #include "MQTTClient.h"
 #include "../include/water.h"
 
-/*CLIENTID     "ESP CLient", #define PUB_TOPIC   "Tank ESP", tank_esp_ , len=21
- * payload 0     CH1 Unused Damaged/Dead
- * payload 1     CH2 Raw Sensor Current Sense Well 1 16bit
- * payload 2     CH3 Raw Sensor Current Sense Well 2 16bit
- * payload 3     CH4 Raw Sensor Current Sense Well 3 16bit
- * payload 4     GPIO 8 bits Hex (8 bits 0-3 floats, 4 Pump Relay Command)
- * payload 5     Raw Temp Celcius
- * payload 6     unused
- * payload 7     unused
- * payload 8     CH1 4-20 mA Raw Sensor HydroStatic Pressure 16bit
- * payload 9     CH2 Raw Sensor House Water Pressure 16bit ADC 0-5v
- * payload 10     CH3 Unused 2 16bit
- * payload 11     CH4 Raw Sensor Current Sense Irrigation pump 4 (16bit)
- * payload 12     Cycle Counter 16bit Int
- * payload 13     spare
- * payload 14     spare
- * payload 15     spare
- * payload 16     I2C Panic Count 16bit Int
- * payload 17     TMP100 I2C Error
- * payload 18     MCP23008 I2C Error
- * payload 19     MCP3428 I2C Error
- * payload 20     FW Version 4 Hex
+/*#define  WELL_CLIENTID	 "Well Client", #define WELL_TOPIC   "Well ESP", well_esp_ , #define WELL_LEN 21
+* payload 0	 A0 Raw Sensor Current Sense Well 1 16bit
+* payload 1	 A1 Raw Sensor Current Sense Well 2 16bit
+* payload 2	 A2 Raw Sensor Current Sense Well 3 16bit
+* payload 3	 A3 Raw Sensor Current Sense Irrigation Pump 16bit
+* payload 4	 A7 Sensor House Water Pressure 16bit ADC 0-5v
+* payload 5	D2 House Tank Pressure Switch (0=active)
+* payload 6	D3 Septic Alert (0=active)
+* payload 7	 unused
+* payload 8	 unused
+* payload 9	 unused
+* payload 10	 Raw Temp Celcius
+* payload 11	 unused
+* payload 12	 Cycle Counter 16bit Int
+* payload 13	 spare
+* payload 14	 spare
+* payload 15	 spare
+* payload 16	 spare
+* payload 17	 spare
+* payload 18	 spare
+* payload 19	 spare
+* payload 20	 FW Version 4 Hex 
  */
 /*
  * payload 21     Last payload is Control Word From User
  */
 
-/* CLIENTID     "Tank Subscriber", #define PUB_TOPIC   "Formatted Sensor Data", formatted_sensor_, len=88
+/* CLIENTID     "Tank Monitor", #define PUB_TOPIC   "Formatted Sensor Data", formatted_sensor_, len=88
  * payload[0] =    Pressure Sensor Value
  * payload[2] =    Water Height
  * payload[3] =    Tank Gallons
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
    x = 0;
    P = 1;
 
-   log_message("TankSubscriber: Started\n");
+   log_message("WellMonitor: Started\n");
 
    MQTTClient client;
    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
    if ((rc = MQTTClient_create(&client, ADDRESS, F_CLIENTID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
-      log_message("TankSubscriber: Error == Failed to Create Client. Return Code: %d\n", rc);
+      log_message("WellMonitor: Error == Failed to Create Client. Return Code: %d\n", rc);
       printf("Failed to create client, return code %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
 
    if ((rc = MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, delivered)) != MQTTCLIENT_SUCCESS)
    {
-      log_message("TankSubscriber: Error == Failed to Set Callbacks. Return Code: %d\n", rc);
+      log_message("WellMonitor: Error == Failed to Set Callbacks. Return Code: %d\n", rc);
       printf("Failed to set callbacks, return code %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
@@ -179,25 +179,21 @@ int main(int argc, char *argv[])
    // conn_opts.password = mqttPassword;   //only if req'd by MQTT Server
    if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
    {
-      log_message("TankSubscriber: Error == Failed to Connect. Return Code: %d\n", rc);
+      log_message("WellMonitor: Error == Failed to Connect. Return Code: %d\n", rc);
       printf("Failed to connect, return code %d\n", rc);
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
 
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TANK_TOPIC, TANK_CLIENTID, QOS);
-   log_message("TankSubscriber: Subscribing to topic: %s for client: %s\n", TANK_TOPIC, TANK_CLIENTID);
-   MQTTClient_subscribe(client, TANK_TOPIC, QOS);
-
    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELL_TOPIC, WELL_CLIENTID, QOS);
-   log_message("TankSubscriber: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, WELL_CLIENTID);
+   log_message("WellMonitor: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, WELL_CLIENTID);
    MQTTClient_subscribe(client, WELL_TOPIC, QOS);
 
    /*
     * Main Loop
     */
 
-   log_message("TankSubscriber: Entering Main Loop\n");
+   log_message("WellMonitor: Entering Main Loop\n");
 
    while (1)
    {
@@ -329,10 +325,10 @@ int main(int argc, char *argv[])
       /*
        * Load Up the Payload
        */
-      // for (i=0; i<=F_LEN; i++) {
-      //    printf("%.3f ", formatted_sensor_payload[i]);
-      // }
-      // printf("%s", ctime(&t));
+       for (i=0; i<=F_LEN; i++) {
+          printf("%.3f ", formatted_sensor_payload[i]);
+       }
+       printf("%s", ctime(&t));
 
       pubmsg.payload = formatted_sensor_payload;
       pubmsg.payloadlen = F_LEN * 4;
@@ -341,7 +337,7 @@ int main(int argc, char *argv[])
       deliveredtoken = 0;
       if ((rc = MQTTClient_publishMessage(client, F_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
       {
-         log_message("TankSubscriber: Error == Failed to Publish Message. Return Code: %d\n", rc);
+         log_message("WellMonitor: Error == Failed to Publish Message. Return Code: %d\n", rc);
          printf("Failed to publish message, return code %d\n", rc);
          rc = EXIT_FAILURE;
       }
@@ -352,7 +348,7 @@ int main(int argc, char *argv[])
 
       sleep(1);
    }
-   log_message("TankSubscriber: Exiting Main Loop\n") ;
+   log_message("WellMonitor: Exiting Main Loop\n") ;
    MQTTClient_unsubscribe(client, WELL_TOPIC);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);

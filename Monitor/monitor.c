@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
    MQTTClient_deliveryToken token;
    int rc;
 
-   if ((rc = MQTTClient_create(&client, ADDRESS, M_CLIENTID,
+   if ((rc = MQTTClient_create(&client, ADDRESS, MON_ID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       log_message("TankMonitor: Error == Failed to Create Client. Return Code: %d\n", rc);
@@ -146,9 +146,13 @@ int main(int argc, char *argv[])
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", F_TOPIC, M_CLIENTID, QOS);
-   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", F_TOPIC, M_CLIENTID);
-   MQTTClient_subscribe(client, F_TOPIC, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TANK_TOPIC, MON_ID, QOS);
+   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", TANK_TOPIC, MON_ID);
+   MQTTClient_subscribe(client, TANK_TOPIC, QOS);
+   
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELL_TOPIC, MON_ID, QOS);
+   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, MON_ID);
+   MQTTClient_subscribe(client, WELL_TOPIC, QOS);
 
    /*
     * Initialize the data file with headers
@@ -202,8 +206,8 @@ int main(int argc, char *argv[])
        */
 
       // Channel 2 Voltage Sensor 16 bit data
-      raw_voltage1_adc = formatted_sensor_payload[4];
-      if (raw_voltage1_adc > 2500)
+      raw_voltage1_adc = well_sensor_payload[0];
+      if (raw_voltage1_adc == 1)
       {
          PumpCurrentSense[1] = 255;
          Pump[1].PumpPower = ON;
@@ -217,9 +221,9 @@ int main(int argc, char *argv[])
       }
 
       // Channel 3 Voltage Sensor 16 bit data
-      raw_voltage2_adc = formatted_sensor_payload[5];
-      // printf("voltage ch 2: %d\n", raw_voltage2_adc);
-      if (raw_voltage2_adc > 500)
+      raw_voltage2_adc = well_sensor_payload[1];
+      //printf("voltage ch 2: %d\n", raw_voltage2_adc);
+      if (raw_voltage2_adc == 1)
       {
          PumpCurrentSense[2] = 255;
          Pump[2].PumpPower = ON;
@@ -233,8 +237,8 @@ int main(int argc, char *argv[])
       }
 
       // Channel 4 Voltage Sensor 16 bit data
-      raw_voltage3_adc = formatted_sensor_payload[6];
-      if (raw_voltage3_adc > 500)
+      raw_voltage3_adc = well_sensor_payload[2];
+      if (raw_voltage3_adc == 1)
       {
          PumpCurrentSense[3] = 255;
          Pump[3].PumpPower = ON;
@@ -249,8 +253,9 @@ int main(int argc, char *argv[])
 
       // MCP3428 #2 Channel 4 Voltage Sensor 16 bit data
 
-      raw_voltage4_adc = formatted_sensor_payload[7];
-      if (raw_voltage4_adc > 500)
+      raw_voltage4_adc = well_sensor_payload[3];
+      //printf("voltage ch 4: %d\n", raw_voltage4_adc);
+      if (raw_voltage4_adc == 1)
       {
          PumpCurrentSense[4] = 255;
          Pump[4].PumpPower = ON;
@@ -267,12 +272,12 @@ int main(int argc, char *argv[])
        * Convert the Discrete data
        */
 
-      Float100State = formatted_sensor_payload[12];
-      Float90State = formatted_sensor_payload[13];
-      Float50State = formatted_sensor_payload[14];
-      Float25State = formatted_sensor_payload[15];
-      PressSwitState = formatted_sensor_payload[16];
-      SepticAlert = formatted_sensor_payload[18];
+      Float100State = tank_sensor_payload[12];
+      Float90State = tank_sensor_payload[13];
+      Float50State = tank_sensor_payload[14];
+      Float25State = tank_sensor_payload[15];
+      PressSwitState = well_sensor_payload[16];
+      SepticAlert = well_sensor_payload[18];
 
       if (Float100State == 1)
       {
@@ -353,12 +358,12 @@ int main(int argc, char *argv[])
          if (MyPumpStats[j].PumpOn == ON && MyPumpStats[j].PumpLastState == OFF)
          {
             MyPumpStats[j].PumpOnTimeStamp = SecondsFromMidnight;
-            MyPumpStats[j].StartGallons = formatted_sensor_payload[2];
+            MyPumpStats[j].StartGallons = tank_sensor_payload[2];
          }
          if (MyPumpStats[j].PumpOn == OFF && MyPumpStats[j].PumpLastState == ON)
          {
             MyPumpStats[j].RunTime += (SecondsFromMidnight - MyPumpStats[j].PumpOnTimeStamp);
-            MyPumpStats[j].StopGallons = formatted_sensor_payload[2];
+            MyPumpStats[j].StopGallons = tank_sensor_payload[2];
             ++MyPumpStats[j].RunCount;
             /* Write Individual record for Well #3 to monitor GPM*/
             if (j == 3 || j == 4)
@@ -410,34 +415,34 @@ int main(int argc, char *argv[])
        */
 
       /* CLIENTID     "Tank Subscriber", TOPIC "Monitor Data", monitor_sensor_ */
-      monitor_sensor_payload[0] = PumpCurrentSense[1];
-      monitor_sensor_payload[1] = PumpCurrentSense[2];
-      monitor_sensor_payload[2] = PumpCurrentSense[3];
-      monitor_sensor_payload[3] = PumpCurrentSense[4];
-      monitor_sensor_payload[4] = PumpLedColor[1];
-      monitor_sensor_payload[5] = PumpLedColor[2];
-      monitor_sensor_payload[6] = PumpLedColor[3];
-      monitor_sensor_payload[7] = PumpLedColor[4];
-      monitor_sensor_payload[8] = PumpRunCount;
-      monitor_sensor_payload[9] = MyPumpStats[1].RunTime;
-      monitor_sensor_payload[10] = MyPumpStats[2].RunTime;
-      monitor_sensor_payload[11] = MyPumpStats[3].RunTime;
-      monitor_sensor_payload[12] = MyPumpStats[4].RunTime;
-      monitor_sensor_payload[13] = A43floatState;
-      monitor_sensor_payload[14] = A21floatState;
-      monitor_sensor_payload[15] = AllfloatLedcolor;
-      monitor_sensor_payload[16] = SepticAlertState;
-      monitor_sensor_payload[17] = SepticAlertColor;
-      monitor_sensor_payload[18] = pressState;
-      monitor_sensor_payload[19] = pressLedColor;
-/*
+      monitor_payload[0] = PumpCurrentSense[1];
+      monitor_payload[1] = PumpCurrentSense[2];
+      monitor_payload[2] = PumpCurrentSense[3];
+      monitor_payload[3] = PumpCurrentSense[4];
+      monitor_payload[4] = PumpLedColor[1];
+      monitor_payload[5] = PumpLedColor[2];
+      monitor_payload[6] = PumpLedColor[3];
+      monitor_payload[7] = PumpLedColor[4];
+      monitor_payload[8] = PumpRunCount;
+      monitor_payload[9] = MyPumpStats[1].RunTime;
+      monitor_payload[10] = MyPumpStats[2].RunTime;
+      monitor_payload[11] = MyPumpStats[3].RunTime;
+      monitor_payload[12] = MyPumpStats[4].RunTime;
+      monitor_payload[13] = A43floatState;
+      monitor_payload[14] = A21floatState;
+      monitor_payload[15] = AllfloatLedcolor;
+      monitor_payload[16] = SepticAlertState;
+      monitor_payload[17] = SepticAlertColor;
+      monitor_payload[18] = pressState;
+      monitor_payload[19] = pressLedColor;
+      /*
       for (i = 0; i <= M_LEN; i++)
       {
-         printf("%0x ", monitor_sensor_payload[i]);
+         printf("%0x ", monitor_payload[i]);
       }
       printf("%s", ctime(&t));
-*/
-      pubmsg.payload = monitor_sensor_payload;
+      */
+      pubmsg.payload = monitor_payload;
       pubmsg.payloadlen = M_LEN * 4;
       pubmsg.qos = QOS;
       pubmsg.retained = 0;
@@ -456,7 +461,7 @@ int main(int argc, char *argv[])
       sleep(1);
    }
    log_message("TankMonitor: Exiting Main Loop\n") ;
-   MQTTClient_unsubscribe(client, F_TOPIC);
+   MQTTClient_unsubscribe(client, FLOW_TOPIC);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);
    return rc;
