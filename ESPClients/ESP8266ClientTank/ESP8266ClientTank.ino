@@ -3,6 +3,7 @@
 #include <Wire.h>
 #include <IPAddress.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 #include <water.h>
 
 #if defined(ARDUINO_ESP8266_GENERIC) || defined(ARDUINO_ESP8266_WEMOS_D1MINI)
@@ -148,7 +149,7 @@ P_client.setServer(prodMqttServerIP, PROD_MQTT_PORT);
 
 while (!P_client.connected() && millis() - connectAttemptStart < 5000) { // Adjust the timeout as needed
   Serial.print("Connecting to Production MQTT Server: ...");
-  connected = P_client.connect(WELL_CLIENTID);
+  connected = P_client.connect(TANK_CLIENTID);
   if (connected) {
     client = P_client; // Assign the connected production client to the global client object
     Serial.println("connected\n");
@@ -168,7 +169,7 @@ if (!connected) {
   D_client.setServer(devMqttServerIP, DEV_MQTT_PORT);
   while (!D_client.connected()) {
     Serial.print("Connecting to Development MQTT Server...");
-    connected = D_client.connect(WELL_CLIENTID);
+    connected = D_client.connect(TANK_CLIENTID);
     if (connected) {
       client = D_client; // Assign the connected development client to the global client object
       Serial.println("connected\n");
@@ -222,6 +223,7 @@ void loop() {
      readDigitalInput();
      processMqttClient();
      publishFlowData();
+     publishJsonData();
      printFlowData();
      //delay(500);
      timerOTA = millis() ;
@@ -277,10 +279,10 @@ void updateFlowData() {
   }
   pulseCount = 0;
 }
- 
+ float temperatureF ;
 void updateTemperatureData() {
   sensors.requestTemperatures(); 
-  float temperatureF = sensors.getTempFByIndex(0);
+  temperatureF = sensors.getTempFByIndex(0);
   tank_data_payload[17] = *((int *)&temperatureF);
 }
 
@@ -312,6 +314,27 @@ void publishFlowData() {
   client.publish(TANK_CLIENT, (byte *)tank_data_payload, TANK_LEN*4);
 }
 
+void publishJsonData() {
+  const size_t capacity = JSON_OBJECT_SIZE(10);
+  StaticJsonDocument<capacity> jsonDoc;
+
+  jsonDoc["Pulses Counted"] = tank_data_payload[0];
+  jsonDoc["Elapsed MilliSec"] = tank_data_payload[1];
+  jsonDoc["New Data Flag"] = tank_data_payload[2];
+  jsonDoc["Raw Hydrostatic Press"] = tank_data_payload[3];
+  jsonDoc["Float1"] = tank_data_payload[4];
+  jsonDoc["Float2"] = tank_data_payload[5];
+  jsonDoc["Float3"] = tank_data_payload[6];
+  jsonDoc["Float4"] = tank_data_payload[7];
+  jsonDoc["Counter"] = tank_data_payload[12];
+  jsonDoc["Air Temp"] = temperatureF;
+  
+
+  char jsonBuffer[256];
+  size_t n = serializeJson(jsonDoc, jsonBuffer);
+
+  client.publish("Tank JSON", jsonBuffer, n);
+}
 void printFlowData() {
   Serial.printf("Tank (Well#3) Data: ");
   for (int i = 0; i <= 16; ++i) {

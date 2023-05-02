@@ -3,6 +3,7 @@
 #include <Wire.h>
 #include <IPAddress.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 #include <water.h>
 
 /* NCD ESP8266 Board - Select GENERIC ESP8266 MODULE
@@ -45,18 +46,20 @@
 char ssid[] = "ATT9LCV8fL_2.4";    //local wifi network SSID
 char password[] = "6jhz7ai7pqy5";  //local network password
 
-IPAddress MQTT_BrokerIP(192, 168, 1, 249);
-const char *mqttServer = "raspberrypi.local";
-const int mqttPort = 1883;
-
-//const char *mqttServer = "soldier.cloudmqtt.com";
-//const int mqttPort = 15599;
-//const char *mqttUser = "zerlcpdf";
-//const char *mqttPassword = "OyHBShF_g9ya";
-
+int InitiateReset = 0;
+int ErrState = 0 ;
+int ErrCount = 0 ;
+#define ERRMAX 10 
 WiFiClient espFlowClient;
 
-PubSubClient client(MQTT_BrokerIP, mqttPort, espFlowClient);
+/* Define the IPs for Production and Development MQTT Servers */
+IPAddress prodMqttServerIP(192, 168, 1, 250);
+IPAddress devMqttServerIP(192, 168, 1, 249) ;
+PubSubClient P_client(espFlowClient);
+PubSubClient D_client(espFlowClient);
+
+
+PubSubClient client; // Declare the client object globally
 
 int WDT_Interval = 0;
 unsigned int masterCounter = 0;
@@ -136,19 +139,48 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-  client.setServer(MQTT_BrokerIP, mqttPort);
+unsigned long connectAttemptStart = millis();
+bool connected = false;
 
-  while (!client.connected()) {
-    Serial.printf("Connecting to MQTT.....");
-    //if (client.connect("ESP8266FlowClient", mqttUser, mqttPassword))
-    if (client.connect(FLOW_CLIENTID)) {
-      Serial.printf("connected\n");
+//Try connecting to the production MQTT server first
+
+P_client.setServer(prodMqttServerIP, PROD_MQTT_PORT);
+
+// Connect to the MQTT server
+
+while (!P_client.connected() && millis() - connectAttemptStart < 5000) { // Adjust the timeout as needed
+  Serial.print("Connecting to Production MQTT Server: ...");
+  connected = P_client.connect(FLOW_CLIENTID);
+  if (connected) {
+    client = P_client; // Assign the connected production client to the global client object
+    Serial.println("connected\n");
+  } else {
+    Serial.print("failed with client state: ");
+    printClientState(P_client.state());
+    Serial.println() ;
+    delay(2000);
+  }
+}
+
+// If connection to the production server failed, try connecting to the development server
+
+if (!connected) {
+  //PubSubClient client(devMqttServerIP, DEV_MQTT_PORT, espWellClient);
+  D_client.setServer(devMqttServerIP, DEV_MQTT_PORT);
+  while (!D_client.connected()) {
+    Serial.print("Connecting to Development MQTT Server...");
+    connected = D_client.connect(FLOW_CLIENTID);
+    if (connected) {
+      client = D_client; // Assign the connected development client to the global client object
+      Serial.println("connected\n");
     } else {
-      Serial.printf("failed with ");
-      Serial.printf("client state %d\n", client.state());
+      Serial.print("failed with client state: ");
+      printClientState(D_client.state());
+      Serial.println();
       delay(2000);
     }
   }
+}
   //client.subscribe("ESP Control");
 
 #if defined (ARDUINO_FEATHER_ESP32)
@@ -161,7 +193,7 @@ void setup() {
   sensors.begin(); // Start the DS18B20 sensor
   attachInterrupt(digitalPinToInterrupt(FLOWSENSOR), pulseCounter, FALLING);  
 #endif
-#if defined (ARDUINO_ESP8266_GENERIC)
+#if defined (ARDUINO_ESP8266_GENERIC)  || defined(ARDUINO_ESP8266_WEMOS_D1MINI)
   Wire.begin(12,14);
   pinMode(FLOWSENSOR, INPUT_PULLUP);  
   sensors.begin(); // Start the DS18B20 sensor
@@ -238,6 +270,20 @@ void loop() {
   client.loop();
 
   client.publish(FLOW_CLIENT, (byte *)flow_data_payload, FLOW_LEN*4 );
+  const size_t capacity = JSON_OBJECT_SIZE(10);
+  StaticJsonDocument<capacity> jsonDoc;
+
+  jsonDoc["Pulses Counted"] = flow_data_payload[0];
+  jsonDoc["Elapsed MilliSec"] = flow_data_payload[1];
+  jsonDoc["New Data Flag"] = flow_data_payload[2];
+  jsonDoc["Irrigation Pressure"] = flow_data_payload[3];
+  jsonDoc["Counter"] = masterCounter;
+  jsonDoc["Pump Temp"] = temperatureF;
+
+  char jsonBuffer[256];
+  size_t n = serializeJson(jsonDoc, jsonBuffer);
+
+  client.publish("Flow JSON", jsonBuffer, n);
 
   Serial.printf("Irrigation FLow Data: ");
   for (i = 0; i <= 16; ++i) {
@@ -251,5 +297,55 @@ void loop() {
   }
   Serial.printf("\n");
 
-  delay(500);
+  if (client.connected() == FALSE) {
+  ErrState = client.state() ;
+  ++ErrCount;
+  Serial.print("Flow Monitor Disconnected from MQTT:");
+  Serial.print("Error Count:  ");
+  Serial.print(ErrCount);
+  Serial.print("Error Code:  ");
+  Serial.println(ErrState);
+  }
+
+  if ( ErrCount > ERRMAX ) {
+    //Initiate Reset
+    Serial.println("Initiate board reset!!") ;
+    while(1);
+  }
+
+  delay(1000) ;
+}
+void printClientState(int state) {
+  switch (state) {
+    case -4:
+      Serial.println("MQTT_CONNECTION_TIMEOUT");
+      break;
+    case -3:
+      Serial.println("MQTT_CONNECTION_LOST");
+      break;
+    case -2:
+      Serial.println("MQTT_CONNECT_FAILED");
+      break;
+    case -1:
+      Serial.println("MQTT_DISCONNECTED");
+      break;
+    case  0:
+      Serial.println("MQTT_CONNECTED");
+      break;
+    case  1:
+      Serial.println("MQTT_CONNECT_BAD_PROTOCOL");
+      break;
+    case  2:
+      Serial.println("MQTT_CONNECT_BAD_CLIENT_ID");
+      break;
+    case  3:
+      Serial.println("MQTT_CONNECT_UNAVAILABLE");
+      break;
+    case  4:
+      Serial.println("MQTT_CONNECT_BAD_CREDENTIALS");
+      break;
+    case  5:
+      Serial.println("MQTT_CONNECT_UNAUTHORIZED");
+      break;
+  }
 }
