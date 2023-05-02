@@ -4,6 +4,7 @@
 #include <WiFiNINA.h>
 #include <Wire.h>
 #include <IPAddress.h>
+#include <ArduinoJson.h>
 #include <PubSubClient.h>
 #include <Arduino_LSM6DSOX.h>
 #include "hardware/watchdog.h" // Include the watchdog header
@@ -140,7 +141,7 @@ if (!connected) {
   pinMode(2, INPUT_PULLUP);
   pinMode(3, INPUT_PULLUP);
 
-  //analogReadResolution(12);   
+  analogReadResolution(12);   
 }
 
 void loop()
@@ -185,7 +186,27 @@ void loop()
   client.loop();
 
   client.publish(WELL_CLIENT, (byte *)well_data_payload, WELL_LEN*4);
-  
+
+const size_t capacity = JSON_OBJECT_SIZE(10);
+StaticJsonDocument<capacity> jsonDoc;
+
+jsonDoc["A0"] = analogRead(A0);
+jsonDoc["A1"] = analogRead(A1);
+jsonDoc["A2"] = analogRead(A2);
+jsonDoc["A3"] = analogRead(A3);
+jsonDoc["A7"] = analogRead(A7);
+jsonDoc["D2"] = digitalRead(2);
+jsonDoc["D3"] = digitalRead(3);
+jsonDoc["Temp"] = temperature_deg;
+jsonDoc["Counter"] = masterCounter;
+jsonDoc["ErrCount"] = ErrCount;
+jsonDoc["ErrState"] = ErrState;
+
+char jsonBuffer[256];
+size_t n = serializeJson(jsonDoc, jsonBuffer);
+
+client.publish("Well JSON", jsonBuffer, n);
+
   Serial.print("Well Pump Data: ");
   for (i = 0; i <= 20; ++i)
   {
