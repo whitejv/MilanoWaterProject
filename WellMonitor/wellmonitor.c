@@ -3,9 +3,12 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <json-c/json.h>
 #include "unistd.h"
 #include "MQTTClient.h"
 #include "../include/water.h"
+
+int verbose = FALSE;
 
 /*#define  WELL_CLIENTID	 "Well Client", #define WELL_TOPIC   "Well ESP", well_esp_ , #define WELL_LEN 21
 * payload 0	 A0 Raw Sensor Current Sense Well 1 16bit
@@ -114,8 +117,44 @@ int main(int argc, char *argv[])
    MQTTClient_message pubmsg = MQTTClient_message_initializer;
    MQTTClient_deliveryToken token;
    int rc;
+   int opt;
+   const char *mqtt_ip;
+   int mqtt_port;
 
-   if ((rc = MQTTClient_create(&client, ADDRESS, WELL_MONID,
+   while ((opt = getopt(argc, argv, "vPD")) != -1) {
+      switch (opt) {
+         case 'v':
+               verbose = TRUE;
+               break;
+         case 'P':
+               mqtt_ip = PROD_MQTT_IP;
+               mqtt_port = PROD_MQTT_PORT;
+               break;
+         case 'D':
+               mqtt_ip = DEV_MQTT_IP;
+               mqtt_port = DEV_MQTT_PORT;
+               break;
+         default:
+               fprintf(stderr, "Usage: %s [-v] [-P | -D]\n", argv[0]);
+               return 1;
+      }
+   }
+
+   if (verbose) {
+      printf("Verbose mode enabled\n");
+   }
+
+   if (mqtt_ip == NULL) {
+      fprintf(stderr, "Please specify either Production (-P) or Development (-D) server\n");
+      return 1;
+   }
+
+   char mqtt_address[256];
+   snprintf(mqtt_address, sizeof(mqtt_address), "tcp://%s:%d", mqtt_ip, mqtt_port);
+
+   printf("MQTT Address: %s\n", mqtt_address);
+
+   if ((rc = MQTTClient_create(&client, mqtt_address, WELL_MONID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       log_message("WellMonitor: Error == Failed to Create Client. Return Code: %d\n", rc);
@@ -211,7 +250,7 @@ int main(int argc, char *argv[])
       raw_temp = well_data_payload[10];
       AmbientTempC = raw_temp ;
       AmbientTempF = (AmbientTempC * 1.8) + 32.0;
-      printf("Ambient Temp:%f  \n", AmbientTempF);
+      //printf("Ambient Temp:%f  \n", AmbientTempF);
 
       /*
        * Set Firmware Version
@@ -244,12 +283,12 @@ int main(int argc, char *argv[])
       /*
        * Load Up the Payload
        */
-      /*
-       for (i=0; i<=WELL_DATA; i++) {
-          printf("%.3f ", well_sensor_payload[i]);
-       }
-       printf("%s", ctime(&t));
-      */
+       if (verbose) {
+         for (i=0; i<=WELL_DATA; i++) {
+            printf("%.3f ", well_sensor_payload[i]);
+         }
+         printf("%s", ctime(&t));
+      }
       pubmsg.payload = well_sensor_payload;
       pubmsg.payloadlen = WELL_DATA * 4;
       pubmsg.qos = QOS;
@@ -261,7 +300,34 @@ int main(int argc, char *argv[])
          printf("Failed to publish message, return code %d\n", rc);
          rc = EXIT_FAILURE;
       }
+      json_object *root = json_object_new_object();
 
+      json_object_object_add(root, "Pump 1 On", json_object_new_double(well_sensor_payload[0]));
+      json_object_object_add(root, "Pump 2 On", json_object_new_double(well_sensor_payload[1]));
+      json_object_object_add(root, "Pump 3 On", json_object_new_double(well_sensor_payload[2]));
+      json_object_object_add(root, "Irrigation Pump On", json_object_new_double(well_sensor_payload[3]));
+      json_object_object_add(root, "House Water Pressure", json_object_new_double(well_sensor_payload[4]));
+      json_object_object_add(root, "Pressure Switch On", json_object_new_double(well_sensor_payload[5]));
+      json_object_object_add(root, "Septic Alert On", json_object_new_double(well_sensor_payload[5]));
+      json_object_object_add(root, "System Temperatur", json_object_new_double(well_sensor_payload[10]));
+      json_object_object_add(root, "cycle_count", json_object_new_double(well_sensor_payload[12]));
+      json_object_object_add(root, "Raw ADC Pump 1 On", json_object_new_double(well_sensor_payload[14]));
+      json_object_object_add(root, "Raw ADC Pump 2 On", json_object_new_double(well_sensor_payload[15]));
+      json_object_object_add(root, "Raw ADC Pump 3 On", json_object_new_double(well_sensor_payload[16]));
+      json_object_object_add(root, "Raw ADC Irrigation Pump On", json_object_new_double(well_sensor_payload[17]));
+
+      const char *json_string = json_object_to_json_string(root);
+
+      pubmsg.payload = (void *)json_string; // Make sure to cast the const pointer to void pointer
+      pubmsg.payloadlen = strlen(json_string);
+      pubmsg.qos = QOS;
+      pubmsg.retained = 0;
+      MQTTClient_publishMessage(client, "Formatted Well Data", &pubmsg, &token);
+      //printf("Waiting for publication of %s\non topic %s for client with ClientID: %s\n", json_string, TANK_TOPIC, TANK_MONID);
+      MQTTClient_waitForCompletion(client, token, TIMEOUT);
+      //printf("Message with delivery token %d delivered\n", token);
+
+      json_object_put(root); // Free the memory allocated to the JSON object
       /*
        * Run at this interval
        */

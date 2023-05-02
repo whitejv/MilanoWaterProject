@@ -16,7 +16,15 @@
 //#define ADDRESS "192.168.1.250:1883" // Local RaspberryPI RaspiCM4 Production MQTT Server
 #define ADDRESS "192.168.1.249:1883" // Local RaspberryPI 400 Development MQTT Server
 
-#define QOS 1
+/* Define IP Address for MQTT for both
+ * a Production Server and a Development Server
+ */
+#define PROD_MQTT_IP "192.168.1.250"
+#define PROD_MQTT_PORT 1883
+#define DEV_MQTT_IP "192.168.1.249"
+#define DEV_MQTT_PORT 1883
+
+#define QOS 0
 #define TIMEOUT 10000L
 
 #define datafile "/home/pi/MWPLogData/datafile.txt"

@@ -7,6 +7,8 @@
 #include "MQTTClient.h"
 #include "../include/water.h"
 
+int verbose = FALSE;
+
 /*payload[0] =    Pressure Sensor Value
  * payload[1] =    Water Height
  * payload[2] =    Tank Gallons
@@ -117,8 +119,44 @@ int main(int argc, char *argv[])
    MQTTClient_message pubmsg = MQTTClient_message_initializer;
    MQTTClient_deliveryToken token;
    int rc;
+   int opt;
+   const char *mqtt_ip;
+   int mqtt_port;
 
-   if ((rc = MQTTClient_create(&client, ADDRESS, MON_ID,
+   while ((opt = getopt(argc, argv, "vPD")) != -1) {
+      switch (opt) {
+         case 'v':
+               verbose = TRUE;
+               break;
+         case 'P':
+               mqtt_ip = PROD_MQTT_IP;
+               mqtt_port = PROD_MQTT_PORT;
+               break;
+         case 'D':
+               mqtt_ip = DEV_MQTT_IP;
+               mqtt_port = DEV_MQTT_PORT;
+               break;
+         default:
+               fprintf(stderr, "Usage: %s [-v] [-P | -D]\n", argv[0]);
+               return 1;
+      }
+   }
+
+   if (verbose) {
+      printf("Verbose mode enabled\n");
+   }
+
+   if (mqtt_ip == NULL) {
+      fprintf(stderr, "Please specify either Production (-P) or Development (-D) server\n");
+      return 1;
+   }
+
+   char mqtt_address[256];
+   snprintf(mqtt_address, sizeof(mqtt_address), "tcp://%s:%d", mqtt_ip, mqtt_port);
+
+   printf("MQTT Address: %s\n", mqtt_address);
+
+   if ((rc = MQTTClient_create(&client, mqtt_address, MON_ID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       log_message("TankMonitor: Error == Failed to Create Client. Return Code: %d\n", rc);
@@ -435,13 +473,14 @@ int main(int argc, char *argv[])
       monitor_payload[17] = SepticAlertColor;
       monitor_payload[18] = pressState;
       monitor_payload[19] = pressLedColor;
-      /*
-      for (i = 0; i <= M_LEN; i++)
-      {
-         printf("%0x ", monitor_payload[i]);
+      
+      if (verbose) {
+         for (i = 0; i <= M_LEN; i++)
+         {
+            printf("%0x ", monitor_payload[i]);
+         }
+         printf("%s", ctime(&t));
       }
-      printf("%s", ctime(&t));
-      */
       pubmsg.payload = monitor_payload;
       pubmsg.payloadlen = M_LEN * 4;
       pubmsg.qos = QOS;

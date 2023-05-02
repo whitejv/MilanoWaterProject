@@ -163,7 +163,8 @@ void loop()
    Blynk.virtualWrite(V28, (monitor_payload[11] / 60.)); // PumpRunTime P3
    Blynk.virtualWrite(V29, (monitor_payload[12] / 60.)); // PumpRunTime P4
    Blynk.virtualWrite(V30, (flow_sensor_payload[3]));           // irrigation pump temperature
-
+   Blynk.virtualWrite(V31, (tank_sensor_payload[0])); // PumpRunTime P4
+   Blynk.virtualWrite(V32, (tank_sensor_payload[4]));           // irrigation pump temperature
    /*
 
     Blynk.virtualWrite(V0, blynk_payload[0]);  //Press Sensor Val

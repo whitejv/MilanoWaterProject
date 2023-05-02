@@ -25,42 +25,42 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
    */
    if ( strcmp(topicName, TANK_CLIENT) == 0) {
       memcpy(tank_data_payload, message->payload, message->payloadlen);
-      //for(i=0; i < TANK_LEN; i++) {printf("%0x ", tank_data_payload[i]);}
+      if (verbose) {for(i=0; i < TANK_LEN; i++) {printf("%0x ", tank_data_payload[i]);}}
       printf("|\n");
    }
    else if ( strcmp(topicName, WELL_CLIENT) == 0) {
       memcpy(well_data_payload, message->payload, message->payloadlen);
-      //for(i=0; i < WELL_LEN; i++) {printf("%0x ", well_data_payload[i]);}
+      if (verbose) {for(i=0; i < WELL_LEN; i++) {printf("%0x ", well_data_payload[i]);}}
       printf("-\n");
    }
    else if ( strcmp(topicName, FLOW_CLIENT) == 0) {
       memcpy(flow_data_payload, message->payload, message->payloadlen);
-      //for(i=0; i < FLOW_LEN; i++) {printf("%0x ", flow_data_payload[i]);}
+      if (verbose) {for(i=0; i < FLOW_LEN; i++) {printf("%0x ", flow_data_payload[i]);}}
       printf(":\n");
    }
    else if ( strcmp(topicName, TANK_TOPIC) == 0) {
       memcpy(tank_sensor_payload, message->payload, message->payloadlen);
-      //for(i=0; i < TANK_DATA; i++) { printf("%0f ", tank_sensor_payload[i]);}
+      if (verbose) {for(i=0; i < TANK_DATA; i++) { printf("%0f ", tank_sensor_payload[i]);}}
       printf("+\n");
    }
    else if ( strcmp(topicName, WELL_TOPIC) == 0) {
       memcpy(well_sensor_payload, message->payload, message->payloadlen);
-      //for(i=0; i < WELL_DATA; i++) {printf("%0x ", well_sensor_payload[i]);}
+      if (verbose) {for(i=0; i < WELL_DATA; i++) {printf("%0x ", well_sensor_payload[i]);}}
       printf(">\n");
    } 
    else if ( strcmp(topicName, FLOW_TOPIC) == 0) {
       memcpy(flow_sensor_payload, message->payload, message->payloadlen);
-      //for(i=0; i < FLOW_DATA; i++) {printf("%0f ", flow_sensor_payload[i]);}
+      if (verbose) {for(i=0; i < FLOW_DATA; i++) {printf("%0f ", flow_sensor_payload[i]);}}
       printf("^\n");
    }
    else if ( strcmp(topicName, M_TOPIC) == 0) {
       memcpy(monitor_payload, message->payload, message->payloadlen);
-      //for(i=0; i < M_LEN; i++) { printf("%0x ", monitor_payload[i]);}
+      if (verbose) {for(i=0; i < M_LEN; i++) { printf("%0x ", monitor_payload[i]);}}
       printf(".\n");
    }
    else if ( strcmp(topicName, A_TOPIC) == 0) {
       memcpy(alert_payload, message->payload, message->payloadlen);
-      //for(i=0; i < A_LEN; i++) {printf("%0x ", alert_payload[i]);}
+      if (verbose) {for(i=0; i < A_LEN; i++) {printf("%0x ", alert_payload[i]);}}
       printf("*\n");
    }
 
