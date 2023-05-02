@@ -314,8 +314,8 @@ int main(int argc, char *argv[])
       Float90State = tank_sensor_payload[13];
       Float50State = tank_sensor_payload[14];
       Float25State = tank_sensor_payload[15];
-      PressSwitState = well_sensor_payload[16];
-      SepticAlert = well_sensor_payload[18];
+      PressSwitState = well_sensor_payload[5];
+      SepticAlert = well_sensor_payload[6];
 
       if (Float100State == 1)
       {

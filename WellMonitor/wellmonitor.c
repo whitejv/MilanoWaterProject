@@ -240,8 +240,8 @@ int main(int argc, char *argv[])
        */
 
 
-      PressSwitState = well_data_payload[5];
-      SepticAlert = well_data_payload[6];
+      PressSwitState = !well_data_payload[5];
+      SepticAlert = !well_data_payload[6];
 
       /*
        * Convert Raw Temp Sensor to degrees farenhiet
@@ -308,7 +308,7 @@ int main(int argc, char *argv[])
       json_object_object_add(root, "Irrigation Pump On", json_object_new_double(well_sensor_payload[3]));
       json_object_object_add(root, "House Water Pressure", json_object_new_double(well_sensor_payload[4]));
       json_object_object_add(root, "Pressure Switch On", json_object_new_double(well_sensor_payload[5]));
-      json_object_object_add(root, "Septic Alert On", json_object_new_double(well_sensor_payload[5]));
+      json_object_object_add(root, "Septic Alert On", json_object_new_double(well_sensor_payload[6]));
       json_object_object_add(root, "System Temperatur", json_object_new_double(well_sensor_payload[10]));
       json_object_object_add(root, "cycle_count", json_object_new_double(well_sensor_payload[12]));
       json_object_object_add(root, "Raw ADC Pump 1 On", json_object_new_double(well_sensor_payload[14]));

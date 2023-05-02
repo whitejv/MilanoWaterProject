@@ -31,7 +31,7 @@ static uint16_t port = 80;
 #define CLIENTID "Tank Blynker"
 
 BlynkTimer tmr;
-
+int verbose = FALSE;
 int disc_finished = 0;
 int subscribed = 0;
 int finished = 0;
@@ -127,7 +127,7 @@ void loop()
    Blynk.setProperty(14, "color", ledcolorPalette[floatLedcolor[3]]); // Set LED Label to HEX colour
    Blynk.setProperty(15, "color", ledcolorPalette[floatLedcolor[4]]); // Set LED Label to HEX colour
 
-   Blynk.setProperty(35, "color", ledcolorPalette[monitor_payload[17]]);
+   Blynk.setProperty(4, "color", ledcolorPalette[monitor_payload[17]]);
    Blynk.setProperty(21, "color", ledcolorPalette[monitor_payload[19]]); // Set LED Label to HEX colour
 
    /***  SEND INFO TO BLYNK     ***/

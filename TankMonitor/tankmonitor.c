@@ -170,9 +170,9 @@ int main(int argc, char* argv[])
       GallonsInTank() ;
       GallonsPumped() ;
  
-      Float100State = tank_data_payload[4] ;
-      Float90State = tank_data_payload[6]  ;
-      Float50State = tank_data_payload[7]  ;
+      Float100State = tank_data_payload[6] ;
+      Float90State = tank_data_payload[7]  ;
+      Float50State = tank_data_payload[4]  ;
       Float25State = tank_data_payload[5]  ;
 
       //temperatureF = *((float *)&flow_data_payload[17]);
