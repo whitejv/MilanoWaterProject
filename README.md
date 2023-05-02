@@ -34,6 +34,10 @@
 - -> chmod a-w /home/<user>/FTP
 - -> sudo service vsftpd restart
 
+## Install JSON Lib
+
+- -> sudo apt install libjson-c-dev
+
 ## Install CMake
 
 - -> sudo apt-get install cmake

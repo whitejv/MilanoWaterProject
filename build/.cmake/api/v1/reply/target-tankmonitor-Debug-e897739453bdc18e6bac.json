@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "FlowMonitor/flowmonitor"
+			"path" : "TankMonitor/tankmonitor"
 		}
 	],
 	"backtrace" : 1,
@@ -13,11 +13,12 @@
 			"add_executable",
 			"install",
 			"target_link_directories",
-			"target_link_libraries"
+			"target_link_libraries",
+			"target_include_directories"
 		],
 		"files" : 
 		[
-			"FlowMonitor/CMakeLists.txt"
+			"TankMonitor/CMakeLists.txt"
 		],
 		"nodes" : 
 		[
@@ -27,25 +28,31 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 3,
+				"line" : 8,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 6,
+				"line" : 14,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 4,
+				"line" : 10,
 				"parent" : 0
 			},
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 5,
+				"line" : 12,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 11,
 				"parent" : 0
 			}
 		]
@@ -59,6 +66,13 @@
 					"fragment" : "-g"
 				}
 			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 5,
+					"path" : "/usr/include/json-c"
+				}
+			],
 			"language" : "C",
 			"sourceIndexes" : 
 			[
@@ -66,7 +80,7 @@
 			]
 		}
 	],
-	"id" : "flowmonitor::@a4111c1479804cd59e4a",
+	"id" : "tankmonitor::@b78a041014b1f719d330",
 	"install" : 
 	{
 		"destinations" : 
@@ -100,11 +114,11 @@
 			},
 			{
 				"backtrace" : 3,
-				"fragment" : "-L/home/pi/MilanoWaterProject/FlowMonitor/../mylib",
+				"fragment" : "-L/home/pi/MilanoWaterProject/TankMonitor/../mylib",
 				"role" : "libraryPath"
 			},
 			{
-				"fragment" : "-Wl,-rpath,/home/pi/paho.mqtt.c/build/output/lib:/home/pi/MilanoWaterProject/FlowMonitor/../mylib:",
+				"fragment" : "-Wl,-rpath,/home/pi/paho.mqtt.c/build/output/lib:/home/pi/MilanoWaterProject/TankMonitor/../mylib:",
 				"role" : "libraries"
 			},
 			{
@@ -139,16 +153,21 @@
 			{
 				"fragment" : "-Wl,-Bdynamic",
 				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "-ljson-c",
+				"role" : "libraries"
 			}
 		],
 		"language" : "C"
 	},
-	"name" : "flowmonitor",
-	"nameOnDisk" : "flowmonitor",
+	"name" : "tankmonitor",
+	"nameOnDisk" : "tankmonitor",
 	"paths" : 
 	{
-		"build" : "FlowMonitor",
-		"source" : "FlowMonitor"
+		"build" : "TankMonitor",
+		"source" : "TankMonitor"
 	},
 	"sourceGroups" : 
 	[
@@ -165,7 +184,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "FlowMonitor/flowmonitor.c",
+			"path" : "TankMonitor/tankmonitor.c",
 			"sourceGroupIndex" : 0
 		}
 	],
