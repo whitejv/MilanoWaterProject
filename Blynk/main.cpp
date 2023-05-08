@@ -228,10 +228,47 @@ int main(int argc, char *argv[])
    MQTTClient_message pubmsg = MQTTClient_message_initializer;
    MQTTClient_deliveryToken token;
    int rc;
+
+   int opt;
+   const char *mqtt_ip;
+   int mqtt_port;
+
+   while ((opt = getopt(argc, argv, "vPD")) != -1) {
+      switch (opt) {
+         case 'v':
+               verbose = TRUE;
+               break;
+         case 'P':
+               mqtt_ip = PROD_MQTT_IP;
+               mqtt_port = PROD_MQTT_PORT;
+               break;
+         case 'D':
+               mqtt_ip = DEV_MQTT_IP;
+               mqtt_port = DEV_MQTT_PORT;
+               break;
+         default:
+               fprintf(stderr, "Usage: %s [-v] [-P | -D]\n", argv[0]);
+               return 1;
+      }
+   }
+
+   if (verbose) {
+      printf("Verbose mode enabled\n");
+   }
+
+   if (mqtt_ip == NULL) {
+      fprintf(stderr, "Please specify either Production (-P) or Development (-D) server\n");
+      return 1;
+   }
+
+   char mqtt_address[256];
+   snprintf(mqtt_address, sizeof(mqtt_address), "tcp://%s:%d", mqtt_ip, mqtt_port);
+
+   printf("MQTT Address: %s\n", mqtt_address);
    
    //log_message("Blynk: Started\n");
 
-   if ((rc = MQTTClient_create(&client, ADDRESS, CLIENTID,
+   if ((rc = MQTTClient_create(&client, mqtt_address, CLIENTID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to create client, return code %d\n", rc);
