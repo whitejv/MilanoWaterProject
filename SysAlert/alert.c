@@ -7,6 +7,8 @@
 #include "MQTTClient.h"
 #include "../include/water.h"
 
+int verbose = FALSE;
+
 /* External Variables
 SensorData = {
 "hydro_stat_pressure",

@@ -8,6 +8,8 @@
 #include "MQTTClient.h"
 #include "../include/water.h"
 
+int verbose = FALSE;
+
 /*
 Usage: ./program_name [-v] [-r N] -l [1,2,3] [file_name]
 
