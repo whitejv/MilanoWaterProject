@@ -254,7 +254,7 @@ void GallonsInTank(void) {
    PresSensorValue = x;
            
    PresSensorValue = moving_average(x, samples, &sample_index, window_size);
-   printf("Sample: %f, Moving average: %f\n", x, PresSensorValue);
+   //printf("Sample: %f, Moving average: %f\n", x, PresSensorValue);
    /*
       *** Use the Equation y=Constandx(x) + Constant solve for x to compute Water Height in tank
       */

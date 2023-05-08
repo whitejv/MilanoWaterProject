@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
       }
       
       
-      irrigationPressure = (flow_data_payload[3] * .9756525)/10 ;
+      irrigationPressure = (flow_data_payload[3] * .00322581) * 2.45 ;
       
       //temperatureF = *((float *)&flow_data_payload[17]);
       
