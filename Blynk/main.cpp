@@ -5,7 +5,7 @@
 // #define BLYNK_AUTH_TOKEN "50z7wkVf3LuA1G8_5QGjVn54lllSnpG3";
 
 #define BLYNK_DEBUG
-// #define BLYNK_PRINT stdout
+//#define BLYNK_PRINT stdout
 #ifdef RASPBERRY
 #include <BlynkApiWiringPi.h>
 #else
@@ -97,7 +97,7 @@ void loop()
    /*
     * Unpack the Data for Some Items
     */
-
+   printf("~");
    BitPackedPayload = monitor_payload[8];
    PumpRunCount[4] = (BitPackedPayload & 0xff000000) >> 24;
    PumpRunCount[3] = (BitPackedPayload & 0x00ff0000) >> 16;
@@ -213,11 +213,6 @@ void loop()
       printf("pump_no_start\n");
    }
 
-
-
-
-   Blynk.run();
-   tmr.run();
 }
 
 int main(int argc, char *argv[])
@@ -285,7 +280,7 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
    }
    
-   conn_opts.keepAliveInterval = 20;
+   conn_opts.keepAliveInterval = 120;
    conn_opts.cleansession = 1;
    //conn_opts.username = mqttUser;       //only if req'd by MQTT Server
    //conn_opts.password = mqttPassword;   //only if req'd by MQTT Server
@@ -320,11 +315,16 @@ int main(int argc, char *argv[])
 
    // parse_options(argc, argv, auth, serv, port);
    Blynk.begin(auth, serv, port);
+   
+   tmr.setInterval(1000, loop);
+   
 
    while (true)
    {
 
-      loop();
+      //loop();
+      Blynk.run() ;
+      tmr.run();
    }
 
    //log_message("Blynk: Exited Main Loop\n");
