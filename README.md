@@ -2,6 +2,21 @@
 
 ## This project provides IOT control and monitoring of my home water system.
 
+## Compute Module 4 Installation 
+### On the CM4 (see Jeff Geerling How to flash Raspberry Pi OS onto the Compute Module 4 eMMC with usbboot)
+- -> Remove Cover, Place Jumper, Plug in USB to LINUX System, Power On
+
+### On a Linux System (RPI or Other)
+- ->sudo apt install libusb-1.0-0-dev
+- ->sudo git clone --depth=1 https://github.com/raspberrypi/usbboot
+- ->cd usbboot
+- ->sudo make
+- ->sudo ./rpiboot
+- ->{may take a few minutes but CM4 will eventually appear as an external drive.}
+
+### Back on the CM4
+
+
 ## To Use Remote Shell to Install
 
 - -> Open Terminal on Mac/Windows/Raspberry PI/Linus
