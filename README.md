@@ -13,8 +13,14 @@
 - ->sudo make
 - ->sudo ./rpiboot
 - ->{may take a few minutes but CM4 will eventually appear as an external drive.}
+- ->Use the RPI Loader to Load Preffered OS
+- ->Once OS is loaded then boot volume will appear
+- ->Modify config.txt to include the line dtoverlay=dwc2,dr_mode=host to enable USB
 
 ### Back on the CM4
+
+- ->Remove Jumper
+- ->Reboot
 
 
 ## To Use Remote Shell to Install
