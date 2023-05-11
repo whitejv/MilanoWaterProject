@@ -76,12 +76,10 @@
 - -> make
 - -> sudo make install
 - -> cd /etc/mosquitto
-- -> sudo vi mosquitto.conf
-- ->> press 'i' for insert mode
+- -> sudo nano mosquitto.conf
 - ->>> add: listener 1883
 - ->>> add: allow_anonymous true
-- >> press esc
-- ->> Shift+zz
+
 ![image](https://user-images.githubusercontent.com/41390348/167849852-2fd8cb29-3461-4562-9e7c-22be091cd4f3.png)
 
 ## Install Wiringpi (needed by Blynk)
