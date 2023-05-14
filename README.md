@@ -114,6 +114,7 @@
 ## Install the Project
 
 - -> git clone https://github.com/whitejv/MilanoWaterProject.git
+- -> mkdir MWPLogData
 - -> cd MilanoWaterProject
 - -> mkdir /home/pi/MWPLogData (Create this on first time install on a new system)
 ### CMake Process
