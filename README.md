@@ -2,6 +2,27 @@
 
 ## This project provides IOT control and monitoring of my home water system.
 
+## Compute Module 4 Installation 
+### On the CM4 (see Jeff Geerling How to flash Raspberry Pi OS onto the Compute Module 4 eMMC with usbboot)
+- -> Remove Cover, Place Jumper, Plug in USB to LINUX System, Power On
+
+### On a Linux System (RPI or Other)
+- ->sudo apt install libusb-1.0-0-dev
+- ->sudo git clone --depth=1 https://github.com/raspberrypi/usbboot
+- ->cd usbboot
+- ->sudo make
+- ->sudo ./rpiboot
+- ->{may take a few minutes but CM4 will eventually appear as an external drive.}
+- ->Use the RPI Loader to Load Preffered OS
+- ->Once OS is loaded then boot volume will appear
+- ->Modify config.txt to include the line dtoverlay=dwc2,dr_mode=host to enable USB
+
+### Back on the CM4
+
+- ->Remove Jumper
+- ->Reboot
+
+
 ## To Use Remote Shell to Install
 
 - -> Open Terminal on Mac/Windows/Raspberry PI/Linus
@@ -55,12 +76,10 @@
 - -> make
 - -> sudo make install
 - -> cd /etc/mosquitto
-- -> sudo vi mosquitto.conf
-- ->> press 'i' for insert mode
+- -> sudo nano mosquitto.conf
 - ->>> add: listener 1883
 - ->>> add: allow_anonymous true
-- >> press esc
-- ->> Shift+zz
+
 ![image](https://user-images.githubusercontent.com/41390348/167849852-2fd8cb29-3461-4562-9e7c-22be091cd4f3.png)
 
 ## Install Wiringpi (needed by Blynk)
@@ -95,6 +114,7 @@
 ## Install the Project
 
 - -> git clone https://github.com/whitejv/MilanoWaterProject.git
+- -> mkdir MWPLogData
 - -> cd MilanoWaterProject
 - -> mkdir /home/pi/MWPLogData (Create this on first time install on a new system)
 ### CMake Process
