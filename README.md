@@ -110,6 +110,14 @@
 - -> make clean all target=raspberry
 - -> make target=raspberry
 === clean build means succesful install
+ 
+## Install the Py Rainbird Project
+- -> git clone https://github.com/allenporter/pyrainbird.git
+- -> cd pyrainbird
+- -> python3 -m venv venv
+- -> source venv/bin/activate
+- -> pip install -r requirements_dev.txt
+- -> pip install .
 
 ## Install the Project
 
