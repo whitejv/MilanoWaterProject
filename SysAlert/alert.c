@@ -9,54 +9,7 @@
 
 int verbose = FALSE;
 
-/* External Variables
-SensorData = {
-"hydro_stat_pressure",
-"water_height",
-"tank_gallons",
-"tank_per_full",
-"well_pump_1",
-"well_pump_2",
-"well_pump_3",
-"irrigation_pump",
-"fw_version",
-"i2c_fault_count",
-"cycle_count",
-"ambient_temp",
-"float_state_1",
-"float_state_2",
-"float_state_3",
-"float_state_4",
-"pressure_tank_switch",
-"house_water_pressure",
-"septic_alert",
-"spare_1",
-"spare_2"
-};
-AlertData = {
-"pump_no_start",
-"spare1",
-"spare2",
-"spare3",
-"spare4",
-"spare5",
-"spare6",
-"spare7",
-"spare8",
-"spare9",
-"spare10",
-"spare11",
-"spare12",
-"spare13",
-"spare14",
-"spare15",
-"spare16",
-"spare17",
-"spare18",
-"spare19",
-"spare20"
-};
-*/
+
 
 enum AlarmState
 {
@@ -115,8 +68,44 @@ int main(int argc, char *argv[])
    MQTTClient_message pubmsg = MQTTClient_message_initializer;
    MQTTClient_deliveryToken token;
    int rc;
+   int opt;
+   const char *mqtt_ip;
+   int mqtt_port;
 
-   if ((rc = MQTTClient_create(&client, ADDRESS, ALERT_ID,
+   while ((opt = getopt(argc, argv, "vPD")) != -1) {
+      switch (opt) {
+         case 'v':
+               verbose = TRUE;
+               break;
+         case 'P':
+               mqtt_ip = PROD_MQTT_IP;
+               mqtt_port = PROD_MQTT_PORT;
+               break;
+         case 'D':
+               mqtt_ip = DEV_MQTT_IP;
+               mqtt_port = DEV_MQTT_PORT;
+               break;
+         default:
+               fprintf(stderr, "Usage: %s [-v] [-P | -D]\n", argv[0]);
+               return 1;
+      }
+   }
+
+   if (verbose) {
+      printf("Verbose mode enabled\n");
+   }
+
+   if (mqtt_ip == NULL) {
+      fprintf(stderr, "Please specify either Production (-P) or Development (-D) server\n");
+      return 1;
+   }
+
+   char mqtt_address[256];
+   snprintf(mqtt_address, sizeof(mqtt_address), "tcp://%s:%d", mqtt_ip, mqtt_port);
+
+   printf("MQTT Address: %s\n", mqtt_address);
+
+   if ((rc = MQTTClient_create(&client, mqtt_address, ALERT_ID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       log_message("Alert: Error == Failed to Create Client. Return Code: %d\n", rc);

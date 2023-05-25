@@ -64,6 +64,14 @@ float	flow_sensor_payload[FLOW_DATA];
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
 
+int find_active_station(Controller* controller) {
+    for (int i = 0; i < MAX_ZONES; i++) {
+        if (controller->states[i].status == 1) {
+            return controller->states[i].station;
+        }
+    }
+    return -1;  // return -1 if no active station is found
+}
 
 MQTTClient_deliveryToken deliveredtoken;
 
@@ -118,6 +126,8 @@ int main(int argc, char* argv[])
    int stopGallons = 0;
    int tankstartGallons = 0;
    int tankstopGallons = 0;
+   int rainbirdRequest = FALSE;
+   int rainbirdDelay = 10; //wait 10 seconds to query results
    
    
    MQTTClient client;
@@ -199,6 +209,10 @@ int main(int argc, char* argv[])
    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELL_TOPIC, WELL_MONID, QOS);
    log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, WELL_MONID);
    MQTTClient_subscribe(client, WELL_TOPIC, QOS);
+
+   printf("Subscribing to topic: active_zone for client: rainbird using QoS: 0\n");
+   log_message("FlowMonitor: Subscribing to topic: active_zone for client: rainbird\n");
+   MQTTClient_subscribe(client, "rainbird/+/active_zone", 0);
    
    /*
     * Main Loop
@@ -285,9 +299,38 @@ int main(int argc, char* argv[])
       
       
       /*
-       * Log the Data Based on Pump 4 on/off
+       * If irrigation pump is running try and determine what Controller & Zone is active
        */
-      
+      if (rainbirdRequest == TRUE) {
+         if (rainbirdDelay == 0) {
+            int active_station = find_active_station(&Front_Controller);
+            if (active_station != -1) {
+               printf("Active station for Front_Controller is: %d\n", active_station);
+               flow_data_payload[4] = 1;
+               flow_data_payload[5] = active_station;
+            } else {
+               printf("No active station for Front_Controller\n");
+               flow_data_payload[4] = 0;
+               flow_data_payload[5] = 0;
+            }
+
+            active_station = find_active_station(&Back_Controller);
+            if (active_station != -1) {
+               printf("Active station for Back_Controller is: %d\n", active_station);
+               flow_data_payload[6] = 1;
+               flow_data_payload[7] = active_station;
+            } else {
+               printf("No active station for Back_Controller\n");
+               flow_data_payload[6] = 0; 
+               flow_data_payload[7] = 0;
+            }
+
+            rainbirdRequest = FALSE;
+            rainbirdDelay = 10;
+         } else {
+            rainbirdDelay--;
+         }
+      }
       /*
        * Load Up the Data
        */
@@ -338,6 +381,10 @@ int main(int argc, char* argv[])
       json_object_object_add(root, "Daily Gallons", json_object_new_double(flow_sensor_payload[1]));
       json_object_object_add(root, "Irrigation Pressure", json_object_new_double(flow_sensor_payload[2]));
       json_object_object_add(root, "Pump Temperature", json_object_new_double(flow_sensor_payload[3]));
+      json_object_object_add(root, "Rainbird F Active", json_object_new_int(flow_sensor_payload[4]));
+      json_object_object_add(root, "Rainbird F Zone", json_object_new_int(flow_sensor_payload[5]));
+      json_object_object_add(root, "Rainbird B Active", json_object_new_int(flow_sensor_payload[6]));
+      json_object_object_add(root, "Rainbird B Zone", json_object_new_int(flow_sensor_payload[7]));
       json_object_object_add(root, "cycle_count", json_object_new_double(flow_sensor_payload[10]));
 
 
@@ -356,7 +403,9 @@ int main(int argc, char* argv[])
       /*
        * Run at this interval
        */
-      
+      /*
+       * Log the Data Based on Pump 4 on/off
+       */
       if (well_sensor_payload[3] == 1) {
          pumpState = ON;
       }
@@ -368,6 +417,35 @@ int main(int argc, char* argv[])
          startGallons = dailyGallons;
          time(&start_t);
          lastpumpState = ON;
+         
+         /*
+          * Command rainbird to send data
+          */
+
+         rainbirdRequest = TRUE;
+         pubmsg.payload = rainbird_command1;
+         pubmsg.payloadlen = strlen(rainbird_command1);
+         pubmsg.qos = 0;
+         pubmsg.retained = 0;
+         deliveredtoken = 0;
+         if ((rc = MQTTClient_publishMessage(client, "rainbird/command", &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
+         {
+            printf("Failed to publish rainbird command message for controller 1, return code %d\n", rc);
+            log_message("FlowMonitor: Error == Failed to Publish Rainbird Command Message for controller 1. Return Code: %d\n", rc);
+            rc = EXIT_FAILURE;
+         }
+         usleep(2000);
+         pubmsg.payload = rainbird_command2;
+         pubmsg.payloadlen = strlen(rainbird_command2);
+         pubmsg.qos = 0;
+         pubmsg.retained = 0;
+         deliveredtoken = 0;
+         if ((rc = MQTTClient_publishMessage(client, "rainbird/command", &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
+         {
+            printf("Failed to publish rainbird command message for controller 2, return code %d\n", rc);
+            log_message("FlowMonitor: Error == Failed to Publish Rainbird Command Message for controller 2. Return Code: %d\n", rc);
+            rc = EXIT_FAILURE;
+         }
       }
       else if ((pumpState == OFF) && (lastpumpState == ON)){
          fptr = fopen(flowdata, "a");

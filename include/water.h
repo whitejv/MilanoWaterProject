@@ -32,10 +32,33 @@
 #define flowdata "/home/pi/MWPLogData/flowdata.txt"
 #define flowfile "/home/pi/MWPLogData/flowfile.txt"
 
+/*
+ *  Rainbird command and response data
+ */
+#define MAX_ZONES 24
+
+typedef struct {
+    int station;
+    int status;
+} Station;
+
+typedef struct {
+    int controller;
+    Station states[MAX_ZONES];
+} Controller;
+
+Controller Front_Controller = {0};
+Controller Back_Controller = {0};
+
+char rainbird_payload[255];
+char rainbird_command1[] = "check1";
+char rainbird_command2[] = "check2";
+
 /* Library function prototypes */
 
 void log_message(const char *format, ...);
 void log_test(int verbose, int log_level, int msg_level, const char *format, ...);
+void parse_message(char* message, Controller* controller) ;
 
 /*
  * Tank Test is for Automated Testing 
@@ -206,10 +229,10 @@ char* WellMonitorData_var_name[] = {
 * payload[1] =	Total Gallons (24 Hrs)
 * payload[2] =	Irrigation Pressure
 * payload[3] =	Pump Temperature
-* payload[4] =	spare
-* payload[5] =	spare
-* payload[6] =	spare
-* payload[7] =	spare
+* payload[4] =	Front Rainbird On
+* payload[5] =	Front Active Zone
+* payload[6] =	Back Rainbird On
+* payload[7] =	Back Active Zone
 * payload[8] =	spare
 * payload[9] =	spare
 * payload[10] =	Cycle Count
@@ -233,10 +256,10 @@ float	irrigationFlowPerMin	;
 float	irrigationTotalFlow	;
 float	irrigationPressure	;
 float	irrigationPumpTemp	;
-float	spare4	;
-float	spare5	;
-float	spare6	;
-float	spare7	;
+float	frontRainbirdOn	;
+float	frontActiveZone	;
+float	backRainbirdOn	;
+float	backActiveZone	;
 float	spare8	;
 float	spare9	;
 float	cycle_count	;
@@ -257,10 +280,10 @@ char* FlowMonitorData_var_name[] = {
 "irrigationTotalFlow",
 "irrigationPressure",
 "irrigationPumpTemp",
-"spare4",
-"spare5",
-"spare6",
-"spare7",
+"frontRainbirdOn",
+"frontActiveZone",
+"backRainbirdOn",
+"backActiveZone",
 "spare8",
 "spare9",
 "cycle count",
