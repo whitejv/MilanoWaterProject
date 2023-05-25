@@ -118,6 +118,7 @@
 - -> source venv/bin/activate
 - -> pip install -r requirements_dev.txt
 - -> pip install .
+- -> pip install paho-mqtt
 
 ## Install the Project
 
