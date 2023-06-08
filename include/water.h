@@ -687,6 +687,82 @@ char* FlowClientData_var_name [] = {
 "fw_version"
 };
 
+#define TANKGAL_CLIENTID "TankGal Client"
+#define TANKGAL_CLIENT   "TankGal Payload"
+#define TANKGAL_LEN 25
+/* payload 0	Water Surface Dist (in.)
+* payload 1	Humidity
+* payload 2	Temperature
+* payload 3	 spare
+* payload 4	 spare
+* payload 5	 spare
+* payload 6	 spare
+* payload 7	 spare
+* payload 8	 spare
+* payload 9	 spare
+* payload 10	Raw System Temp Celsius
+* payload 11	 spare
+* payload 12	cycle count
+* payload 13	 spare
+* payload 14	 spare
+* payload 15	 spare
+* payload 16	 spare
+* payload 17	 spare
+* payload 18	 spare
+* payload 19	 spare
+* payload 20	 spare
+*/	
+
+int	tankgal_data_payload[TANKGAL_LEN] ;
+
+struct TankGalClientData {	
+    int water_surface_dist	;
+    int humidity	;
+    int temperature	;
+    int spare_1	;
+    int spare_2	;
+    int spare_3	;
+    int spare_4	;
+    int spare_5	;
+    int spare_6	;
+    int spare_7	;
+    int system_temp_celsius	;
+    int spare_9	;
+    int cycle_count	;
+    int spare_10	;
+    int spare_11	;
+    int spare_12	;
+    int spare_13	;
+    int spare_14	;
+    int spare_15	;
+    int spare_16	;
+    int spare_17	;
+    }	;
+  
+char* TankGalClientData_var_name [] = {	
+"water_surface_dist"	,
+"humidity"	,
+"temperature"	,
+"spare_1"	,
+"spare_2"	,
+"spare_3"	,
+"spare_4"	,
+"spare_5"	,
+"spare_6"	,
+"spare_7"	,
+"system_temp_celsius"	,
+"spare_9"	,
+"cycle_count"	,
+"spare_10"	,
+"spare_11"	,
+"spare_12"	,
+"spare_13"	,
+"spare_14"	,
+"spare_15"	,
+"spare_16"	,
+"spare_17"	
+};  
+
 int ESP_payload[4];
 
 int firmware = 0;
