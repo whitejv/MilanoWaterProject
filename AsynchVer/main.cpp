@@ -26,7 +26,8 @@ static uint16_t port = 80;
 #include <string.h>
 #include <time.h>
 #include "../include/water.h"
-#include "MQTTClient.h"
+//#include "MQTTClient.h"
+#include "MQTTAsync.h"
 
 #define CLIENTID "Tank Blynker"
 
@@ -36,27 +37,103 @@ int disc_finished = 0;
 int subscribed = 0;
 int finished = 0;
 
-MQTTClient_deliveryToken deliveredtoken;
-
-void delivered(void *context, MQTTClient_deliveryToken dt)
-{
-   //printf("Message with token value %d delivery confirmed\n", dt);
-   deliveredtoken = dt;
-}
-
+volatile MQTTAsync_token deliveredtoken;
+MQTTAsync client;
+MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
+MQTTAsync_disconnectOptions disc_opts = MQTTAsync_disconnectOptions_initializer;
+MQTTAsync_message pubmsg = MQTTAsync_message_initializer;
+MQTTAsync_token token;
 /* Using an include here to allow me to reuse a chunk of code that
    would not work as a library file. So treating it like an include to 
    copy and paste the same code into multiple programs. 
 */
 
-#include "../mylib/msgarrvd.c"
+#include "../mylib/msgarrvdAsync.c"
 
 void connlost(void *context, char *cause)
 {
-   printf("\nConnection lost\n");
-   printf("     cause: %s\n", cause);
+        MQTTAsync client = (MQTTAsync)context;
+        MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
+        int rc;
+        printf("\nConnection lost\n");
+        printf("     cause: %s\n", cause);
+        printf("Reconnecting\n");
+        conn_opts.keepAliveInterval = 120;
+        conn_opts.cleansession = 1;
+        if ((rc = MQTTAsync_connect(client, &conn_opts)) != MQTTASYNC_SUCCESS)
+        {
+                printf("Failed to start connect, return code %d\n", rc);
+            finished = 1;
+        }
 }
-
+void onDisconnect(void* context, MQTTAsync_successData* response)
+{
+        printf("Successful disconnection\n");
+        disc_finished = 1;
+}
+void onSubscribe(void* context, MQTTAsync_successData* response)
+{
+        printf("Subscribe succeeded\n");
+        subscribed = 1;
+}
+void onSubscribeFailure(void* context, MQTTAsync_failureData* response)
+{
+        printf("Subscribe failed, rc %d\n", response ? response->code : 0);
+        finished = 1;
+}
+void onConnectFailure(void* context, MQTTAsync_failureData* response)
+{
+        printf("Connect failed, rc %d\n", response ? response->code : 0);
+        finished = 1;
+}
+void onConnect(void* context, MQTTAsync_successData* response)
+{
+        MQTTAsync client = (MQTTAsync)context;
+        MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
+        MQTTAsync_message pubmsg = MQTTAsync_message_initializer;
+        int rc;
+        printf("Successful connection\n");
+        opts.onSuccess = onSubscribe;
+        opts.onFailure = onSubscribeFailure;
+        opts.context = client;
+        deliveredtoken = 0;
+        
+        printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
+           "Press Q<Enter> to quit\n\n", M_TOPIC, CLIENTID, QOS);
+        if ((rc = MQTTAsync_subscribe(client, M_TOPIC, QOS, &opts)) != MQTTASYNC_SUCCESS)
+        {
+                printf("Failed to start subscribe %s Topic, return code %d\n", M_TOPIC, rc);
+                exit(EXIT_FAILURE);
+        }
+        printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
+           "Press Q<Enter> to quit\n\n", TANK_TOPIC, CLIENTID, QOS);
+        if ((rc = MQTTAsync_subscribe(client, TANK_TOPIC, QOS, &opts)) != MQTTASYNC_SUCCESS)
+        {
+                printf("Failed to start subscribe %s Topic, return code %d\n", TANK_TOPIC, rc);
+                exit(EXIT_FAILURE);
+        }
+        printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
+        "Press Q<Enter> to quit\n\n", FLOW_TOPIC, CLIENTID, QOS);
+        if ((rc = MQTTAsync_subscribe(client, FLOW_TOPIC, QOS, &opts)) != MQTTASYNC_SUCCESS)
+        {
+                printf("Failed to start subscribe %s Topic, return code %d\n", FLOW_TOPIC, rc);
+                exit(EXIT_FAILURE);
+        }
+        printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
+        "Press Q<Enter> to quit\n\n", WELL_TOPIC, CLIENTID, QOS);
+        if ((rc = MQTTAsync_subscribe(client, WELL_TOPIC, QOS, &opts)) != MQTTASYNC_SUCCESS)
+        {
+                printf("Failed to start subscribe %s Topic, return code %d\n", WELL_TOPIC, rc);
+                exit(EXIT_FAILURE);
+        }
+        printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
+           "Press Q<Enter> to quit\n\n", A_TOPIC, CLIENTID, QOS);
+        if ((rc = MQTTAsync_subscribe(client, A_TOPIC, QOS, &opts)) != MQTTASYNC_SUCCESS)
+        {
+                printf("Failed to start subscribe %s Topic, return code %d\n", A_TOPIC, rc);
+                exit(EXIT_FAILURE);
+        }
+}
 void loop()
 {
    static int OneTime = 0;
@@ -217,13 +294,6 @@ void loop()
 
 int main(int argc, char *argv[])
 {
-   
-   MQTTClient client;
-   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-   MQTTClient_message pubmsg = MQTTClient_message_initializer;
-   MQTTClient_deliveryToken token;
-   int rc;
-
    int opt;
    const char *mqtt_ip;
    int mqtt_port;
@@ -261,55 +331,22 @@ int main(int argc, char *argv[])
 
    printf("MQTT Address: %s\n", mqtt_address);
    
-   //log_message("Blynk: Started\n");
-
-   if ((rc = MQTTClient_create(&client, mqtt_address, CLIENTID,
-                               MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
-   {
-      printf("Failed to create client, return code %d\n", rc);
-      //log_message("Blynk: Error == Failed to Create Client. Return Code: %d\n", rc);
-      rc = EXIT_FAILURE;
-      exit(EXIT_FAILURE);
-   }
-   
-   if ((rc = MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, delivered)) != MQTTCLIENT_SUCCESS)
-   {
-      printf("Failed to set callbacks, return code %d\n", rc);
-      //log_message("Blynk: Error == Failed to Set Callbacks. Return Code: %d\n", rc);
-      rc = EXIT_FAILURE;
-      exit(EXIT_FAILURE);
-   }
-   
+   int rc;
+   int ch;
+   MQTTAsync_create(&client, mqtt_address, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+   MQTTAsync_setCallbacks(client, NULL, connlost, msgarrvdAsync, NULL);
    conn_opts.keepAliveInterval = 120;
    conn_opts.cleansession = 1;
-   //conn_opts.username = mqttUser;       //only if req'd by MQTT Server
-   //conn_opts.password = mqttPassword;   //only if req'd by MQTT Server
-   if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
+   conn_opts.onSuccess = onConnect;
+   conn_opts.onFailure = onConnectFailure;
+   conn_opts.context = client;
+   if ((rc = MQTTAsync_connect(client, &conn_opts)) != MQTTASYNC_SUCCESS)
    {
-      printf("Failed to connect, return code %d\n", rc);
-      //log_message("Blynk: Error == Failed to Connect. Return Code: %d\n", rc);
-      rc = EXIT_FAILURE;
-      exit(EXIT_FAILURE);
+            printf("Failed to start connect, return code %d\n", rc);
+            exit(EXIT_FAILURE);
    }
-   printf("Subscribing to topic: %s using QoS: %d\n\n", TANK_TOPIC, QOS);
-   //log_message("Blynk: Subscribing to topic: %s for client: %s\n", TANK_TOPIC, TANK_MONID);
-   MQTTClient_subscribe(client, TANK_TOPIC, QOS);
 
-   printf("Subscribing to topic: %s using QoS: %d\n\n", FLOW_TOPIC, QOS);
-   //log_message("Blynk: Subscribing to topic: %s for client: %s\n", FLOW_TOPIC, FLOW_MONID);
-   MQTTClient_subscribe(client, FLOW_TOPIC, QOS);
-   
-   printf("Subscribing to topic: %s using QoS: %d\n\n", WELL_TOPIC, QOS);
-   //log_message("Blynk: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, WELL_MONID);
-   MQTTClient_subscribe(client, WELL_TOPIC, QOS);
-
-   printf("Subscribing to topic: %s using QoS: %d\n\n", M_TOPIC, QOS);
-   //log_message("Blynk: Subscribing to topic: %s for client: %s\n", M_TOPIC, M_CLIENTID);
-   MQTTClient_subscribe(client, M_TOPIC, QOS);
-
-   printf("Subscribing to topic: %s using QoS: %d\n\n", A_TOPIC, QOS);
-   //log_message("Blynk: Subscribing to topic: %s for client: %s\n", A_TOPIC, M_CLIENTID);
-   MQTTClient_subscribe(client, A_TOPIC, QOS);
+   //log_message("Blynk: Started\n");
 
    printf("Connecting to Blynk: %s, %s, %d\n", serv, auth, port);
 
@@ -328,12 +365,14 @@ int main(int argc, char *argv[])
    }
 
    //log_message("Blynk: Exited Main Loop\n");
-   MQTTClient_unsubscribe(client, FLOW_TOPIC);
-   MQTTClient_unsubscribe(client, TANK_TOPIC);
-   MQTTClient_unsubscribe(client, WELL_TOPIC);
-   MQTTClient_unsubscribe(client, M_TOPIC);
-   MQTTClient_unsubscribe(client, A_TOPIC);
-   MQTTClient_disconnect(client, 10000);
-   MQTTClient_destroy(&client);
+   disc_opts.onSuccess = onDisconnect;
+   if ((rc = MQTTAsync_disconnect(client, &disc_opts)) != MQTTASYNC_SUCCESS)
+   {
+            printf("Failed to start disconnect, return code %d\n", rc);
+            exit(EXIT_FAILURE);
+   }
+
+exit:
+   MQTTAsync_destroy(&client);
    return rc;
 }

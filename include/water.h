@@ -32,10 +32,33 @@
 #define flowdata "/home/pi/MWPLogData/flowdata.txt"
 #define flowfile "/home/pi/MWPLogData/flowfile.txt"
 
+/*
+ *  Rainbird command and response data
+ */
+#define MAX_ZONES 24
+
+typedef struct {
+    int station;
+    int status;
+} Station;
+
+typedef struct {
+    int controller;
+    Station states[MAX_ZONES];
+} Controller;
+
+Controller Front_Controller = {0};
+Controller Back_Controller = {0};
+
+char rainbird_payload[255];
+char rainbird_command1[] = "check1";
+char rainbird_command2[] = "check2";
+
 /* Library function prototypes */
 
 void log_message(const char *format, ...);
 void log_test(int verbose, int log_level, int msg_level, const char *format, ...);
+void parse_message(char* message, Controller* controller) ;
 
 /*
  * Tank Test is for Automated Testing 
@@ -206,10 +229,10 @@ char* WellMonitorData_var_name[] = {
 * payload[1] =	Total Gallons (24 Hrs)
 * payload[2] =	Irrigation Pressure
 * payload[3] =	Pump Temperature
-* payload[4] =	spare
-* payload[5] =	spare
-* payload[6] =	spare
-* payload[7] =	spare
+* payload[4] =	Front Rainbird On
+* payload[5] =	Front Active Zone
+* payload[6] =	Back Rainbird On
+* payload[7] =	Back Active Zone
 * payload[8] =	spare
 * payload[9] =	spare
 * payload[10] =	Cycle Count
@@ -233,10 +256,10 @@ float	irrigationFlowPerMin	;
 float	irrigationTotalFlow	;
 float	irrigationPressure	;
 float	irrigationPumpTemp	;
-float	spare4	;
-float	spare5	;
-float	spare6	;
-float	spare7	;
+float	frontRainbirdOn	;
+float	frontActiveZone	;
+float	backRainbirdOn	;
+float	backActiveZone	;
 float	spare8	;
 float	spare9	;
 float	cycle_count	;
@@ -257,10 +280,10 @@ char* FlowMonitorData_var_name[] = {
 "irrigationTotalFlow",
 "irrigationPressure",
 "irrigationPumpTemp",
-"spare4",
-"spare5",
-"spare6",
-"spare7",
+"frontRainbirdOn",
+"frontActiveZone",
+"backRainbirdOn",
+"backActiveZone",
 "spare8",
 "spare9",
 "cycle count",
@@ -663,6 +686,82 @@ char* FlowClientData_var_name [] = {
 "spare_13",
 "fw_version"
 };
+
+#define TANKGAL_CLIENTID "TankGal Client"
+#define TANKGAL_CLIENT   "TankGal Payload"
+#define TANKGAL_LEN 25
+/* payload 0	Water Surface Dist (in.)
+* payload 1	Humidity
+* payload 2	Temperature
+* payload 3	 spare
+* payload 4	 spare
+* payload 5	 spare
+* payload 6	 spare
+* payload 7	 spare
+* payload 8	 spare
+* payload 9	 spare
+* payload 10	Raw System Temp Celsius
+* payload 11	 spare
+* payload 12	cycle count
+* payload 13	 spare
+* payload 14	 spare
+* payload 15	 spare
+* payload 16	 spare
+* payload 17	 spare
+* payload 18	 spare
+* payload 19	 spare
+* payload 20	 spare
+*/	
+
+int	tankgal_data_payload[TANKGAL_LEN] ;
+
+struct TankGalClientData {	
+    int water_surface_dist	;
+    int humidity	;
+    int temperature	;
+    int spare_1	;
+    int spare_2	;
+    int spare_3	;
+    int spare_4	;
+    int spare_5	;
+    int spare_6	;
+    int spare_7	;
+    int system_temp_celsius	;
+    int spare_9	;
+    int cycle_count	;
+    int spare_10	;
+    int spare_11	;
+    int spare_12	;
+    int spare_13	;
+    int spare_14	;
+    int spare_15	;
+    int spare_16	;
+    int spare_17	;
+    }	;
+  
+char* TankGalClientData_var_name [] = {	
+"water_surface_dist"	,
+"humidity"	,
+"temperature"	,
+"spare_1"	,
+"spare_2"	,
+"spare_3"	,
+"spare_4"	,
+"spare_5"	,
+"spare_6"	,
+"spare_7"	,
+"system_temp_celsius"	,
+"spare_9"	,
+"cycle_count"	,
+"spare_10"	,
+"spare_11"	,
+"spare_12"	,
+"spare_13"	,
+"spare_14"	,
+"spare_15"	,
+"spare_16"	,
+"spare_17"	
+};  
 
 int ESP_payload[4];
 

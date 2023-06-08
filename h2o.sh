@@ -3,21 +3,21 @@ export LD_LIBRARY_PATH=/usr/local/lib:/home/pi/lib:/home/pi/CodeDev/paho.mqtt.c-
 echo "### Start the Processes  ###"
 echo "Starting Tank Monitor App"
 sleep 10
-nohup /home/pi/MilanoWaterProject/bin/tankmonitor > /dev/null 2>&1 &
+nohup /home/pi/MilanoWaterProject/bin/tankmonitor -D > /dev/null 2>&1 &
 echo "Done"
 echo "Starting Well Monitor App"
 sleep 10
-nohup /home/pi/MilanoWaterProject/bin/wellmonitor > /dev/null 2>&1 &
+nohup /home/pi/MilanoWaterProject/bin/wellmonitor -D > /dev/null 2>&1 &
 echo "Done"
 echo "Starting Flow Monitor App"
-nohup /home/pi/MilanoWaterProject/bin/flowmonitor > /dev/null 2>&1 &
+nohup /home/pi/MilanoWaterProject/bin/flowmonitor -D > /dev/null 2>&1 &
 echo "Done"
 sleep 10
 echo "Starting Monitor App"
 sleep 10
-nohup /home/pi/MilanoWaterProject/bin/monitor > /dev/null 2>&1 &
+nohup /home/pi/MilanoWaterProject/bin/monitor -D > /dev/null 2>&1 &
 sleep 10
 echo "Starting Blynk Interface App"
-nohup /home/pi/MilanoWaterProject/bin/blynk > /dev/null 2>&1 &
+nohup /home/pi/MilanoWaterProject/bin/blynk -D > /dev/null 2>&1 &
 echo "Done"
 sleep 30m
