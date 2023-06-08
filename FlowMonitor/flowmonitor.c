@@ -126,8 +126,13 @@ int main(int argc, char* argv[])
    int stopGallons = 0;
    int tankstartGallons = 0;
    int tankstopGallons = 0;
+
+   #define RAINBIRD_COMMAND_DELAY 60
+   #define RAINBIRD_REQUEST_DELAY 60
    int rainbirdRequest = FALSE;
-   int rainbirdDelay = 10; //wait 10 seconds to query results
+   int rainbirdRecvRequest = FALSE;
+   int rainbirdDelay = RAINBIRD_COMMAND_DELAY ; //wait 10 seconds to query results
+   int rainbirdReqDelay = RAINBIRD_REQUEST_DELAY  ; //wait 20 seconds to query results
    
    
    MQTTClient client;
@@ -301,7 +306,7 @@ int main(int argc, char* argv[])
       /*
        * If irrigation pump is running try and determine what Controller & Zone is active
        */
-      if (rainbirdRequest == TRUE) {
+      if (rainbirdRecvRequest == TRUE) {
          if (rainbirdDelay == 0) {
             int active_station = find_active_station(&Front_Controller);
             if (active_station != -1) {
@@ -325,8 +330,8 @@ int main(int argc, char* argv[])
                flow_data_payload[7] = 0;
             }
 
-            rainbirdRequest = FALSE;
-            rainbirdDelay = 10;
+            rainbirdRecvRequest = FALSE;
+            rainbirdDelay = RAINBIRD_COMMAND_DELAY;
          } else {
             rainbirdDelay--;
          }
@@ -340,10 +345,10 @@ int main(int argc, char* argv[])
       flow_sensor_payload[1] =    dailyGallons;
       flow_sensor_payload[2] =    irrigationPressure;
       flow_sensor_payload[3] =    temperatureF;
-      flow_sensor_payload[4] =    0;
-      flow_sensor_payload[5] =    0;
-      flow_sensor_payload[6] =    0;
-      flow_sensor_payload[7] =    0;
+      //flow_sensor_payload[4] =    0;  //filled in by the above code
+      //flow_sensor_payload[5] =    0;  //filled in by the above code
+      //flow_sensor_payload[6] =    0;  //filled in by the above code
+      //flow_sensor_payload[7] =    0;  //filled in by the above code
       flow_sensor_payload[8] =    0;
       flow_sensor_payload[9] =    0;
       flow_sensor_payload[10] =   flow_data_payload[12];
@@ -417,12 +422,39 @@ int main(int argc, char* argv[])
          startGallons = dailyGallons;
          time(&start_t);
          lastpumpState = ON;
-         
          /*
           * Command rainbird to send data
           */
-
          rainbirdRequest = TRUE;
+      }
+      else if ((pumpState == OFF) && (lastpumpState == ON)){
+         fptr = fopen(flowdata, "a");
+         stopGallons = dailyGallons - startGallons ;
+         time(&end_t);
+         diff_t = difftime(end_t, start_t);
+         if (flow_sensor_payload[4] == 1) {
+            fprintf(fptr, "Controller: Front ");
+            fprintf(fptr, "Zone: %d   ", flow_sensor_payload[5]);
+         }
+         else if (flow_sensor_payload[6] == 1) {
+            fprintf(fptr, "Controller: Back  ");
+            fprintf(fptr, "Zone: %d   ", flow_sensor_payload[7]);
+         }
+         else {
+            fprintf(fptr, "Controller: ??  ");
+            fprintf(fptr, "Zone: ??   ");
+         }
+         fprintf(fptr, "Gallons Used: %d   ", stopGallons);
+         fprintf(fptr, "Run Time: %f  Min. ", (diff_t/60));
+         fprintf(fptr, "%s", ctime(&t));
+         fclose(fptr);
+         lastpumpState = OFF ;
+         flow_sensor_payload[4] =    0;  
+         flow_sensor_payload[5] =    0;  
+         flow_sensor_payload[6] =    0;  
+         flow_sensor_payload[7] =    0;  
+      }
+      if ((rainbirdRequest == TRUE) && (rainbirdReqDelay == 0)){
          pubmsg.payload = rainbird_command1;
          pubmsg.payloadlen = strlen(rainbird_command1);
          pubmsg.qos = 0;
@@ -434,7 +466,6 @@ int main(int argc, char* argv[])
             log_message("FlowMonitor: Error == Failed to Publish Rainbird Command Message for controller 1. Return Code: %d\n", rc);
             rc = EXIT_FAILURE;
          }
-         usleep(2000);
          pubmsg.payload = rainbird_command2;
          pubmsg.payloadlen = strlen(rainbird_command2);
          pubmsg.qos = 0;
@@ -446,17 +477,11 @@ int main(int argc, char* argv[])
             log_message("FlowMonitor: Error == Failed to Publish Rainbird Command Message for controller 2. Return Code: %d\n", rc);
             rc = EXIT_FAILURE;
          }
-      }
-      else if ((pumpState == OFF) && (lastpumpState == ON)){
-         fptr = fopen(flowdata, "a");
-         stopGallons = dailyGallons - startGallons ;
-         time(&end_t);
-         diff_t = difftime(end_t, start_t);
-         fprintf(fptr, "Last Pump Cycle Gallons Used: %d   ", stopGallons);
-         fprintf(fptr, "Run Time: %f  Min. ", (diff_t/60));
-         fprintf(fptr, "%s", ctime(&t));
-         fclose(fptr);
-         lastpumpState = OFF ;
+         rainbirdRecvRequest = TRUE; 
+         rainbirdReqDelay = RAINBIRD_REQUEST_DELAY;
+         rainbirdRequest = FALSE;
+      } else if (rainbirdRequest == TRUE) {
+         rainbirdReqDelay--; 
       }
       
       sleep(1) ;
