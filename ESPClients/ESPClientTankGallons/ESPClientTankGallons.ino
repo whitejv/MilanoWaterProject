@@ -232,6 +232,7 @@ size_t n = serializeJson(jsonDoc, jsonBuffer);
 
 client.publish("TankGal JSON", jsonBuffer, n);
 */
+  
   Serial.print("Tank Gallon Data: ");
   for (i = 0; i <= 20; ++i)
   {
