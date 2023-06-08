@@ -8,6 +8,7 @@ from typing import Any
 
 import aiohttp
 from pyrainbird import async_client
+from pyrainbird.exceptions import RainbirdDeviceBusyException
 
 import paho.mqtt.client as mqtt
 
@@ -43,7 +44,13 @@ async def check_zones(mqtt_server, controller_id):
 
         while True:
             if userdata['check_flag']:
-                states = await controller.get_zone_states()
+                try:
+                    states = await controller.get_zone_states()
+                except RainbirdDeviceBusyException:
+                    print("Device is busy, waiting for 2 seconds before retrying.")
+                    await asyncio.sleep(2)
+                    continue
+                
                 print(f"States: {states}")  # debugging line
                 mqtt_client.publish(f"rainbird/controller{controller_id}/active_zone", str(states))  
                 userdata['check_flag'] = False
