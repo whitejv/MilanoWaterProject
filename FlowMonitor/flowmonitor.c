@@ -127,8 +127,8 @@ int main(int argc, char* argv[])
    int tankstartGallons = 0;
    int tankstopGallons = 0;
 
-   #define RAINBIRD_COMMAND_DELAY 60
-   #define RAINBIRD_REQUEST_DELAY 60
+   #define RAINBIRD_COMMAND_DELAY 20
+   #define RAINBIRD_REQUEST_DELAY 20
    int rainbirdRequest = FALSE;
    int rainbirdRecvRequest = FALSE;
    int rainbirdDelay = RAINBIRD_COMMAND_DELAY ; //wait 10 seconds to query results
@@ -311,23 +311,23 @@ int main(int argc, char* argv[])
             int active_station = find_active_station(&Front_Controller);
             if (active_station != -1) {
                printf("Active station for Front_Controller is: %d\n", active_station);
-               flow_data_payload[4] = 1;
-               flow_data_payload[5] = active_station;
+               flow_sensor_payload[4] = 1;
+               flow_sensor_payload[5] = active_station;
             } else {
                printf("No active station for Front_Controller\n");
-               flow_data_payload[4] = 0;
-               flow_data_payload[5] = 0;
+               flow_sensor_payload[4] = 0;
+               flow_sensor_payload[5] = 0;
             }
 
             active_station = find_active_station(&Back_Controller);
             if (active_station != -1) {
                printf("Active station for Back_Controller is: %d\n", active_station);
-               flow_data_payload[6] = 1;
-               flow_data_payload[7] = active_station;
+               flow_sensor_payload[6] = 1;
+               flow_sensor_payload[7] = active_station;
             } else {
                printf("No active station for Back_Controller\n");
-               flow_data_payload[6] = 0; 
-               flow_data_payload[7] = 0;
+               flow_sensor_payload[6] = 0; 
+               flow_sensor_payload[7] = 0;
             }
 
             rainbirdRecvRequest = FALSE;
@@ -364,7 +364,7 @@ int main(int argc, char* argv[])
       
       if (verbose) {
          for (i=0; i<=FLOW_DATA; i++) {
-            printf("%f ", flow_sensor_payload[i]);
+            printf("%.3f ", flow_sensor_payload[i]);
          }
          printf("%s", ctime(&t));
       }
@@ -434,11 +434,11 @@ int main(int argc, char* argv[])
          diff_t = difftime(end_t, start_t);
          if (flow_sensor_payload[4] == 1) {
             fprintf(fptr, "Controller: Front ");
-            fprintf(fptr, "Zone: %d   ", flow_sensor_payload[5]);
+            fprintf(fptr, "Zone: %d   ", (int)flow_sensor_payload[5]);
          }
          else if (flow_sensor_payload[6] == 1) {
             fprintf(fptr, "Controller: Back  ");
-            fprintf(fptr, "Zone: %d   ", flow_sensor_payload[7]);
+            fprintf(fptr, "Zone: %d   ", (int)flow_sensor_payload[7]);
          }
          else {
             fprintf(fptr, "Controller: ??  ");
@@ -449,6 +449,7 @@ int main(int argc, char* argv[])
          fprintf(fptr, "%s", ctime(&t));
          fclose(fptr);
          lastpumpState = OFF ;
+         sleep(1);
          flow_sensor_payload[4] =    0;  
          flow_sensor_payload[5] =    0;  
          flow_sensor_payload[6] =    0;  
