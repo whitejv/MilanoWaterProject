@@ -3,21 +3,30 @@ export LD_LIBRARY_PATH=/usr/local/lib:/home/pi/lib:/home/pi/CodeDev/paho.mqtt.c-
 echo "### Start the Processes  ###"
 echo "Starting Tank Monitor App"
 sleep 10
-nohup /home/pi/MilanoWaterProject/bin/tankmonitor -D > /dev/null 2>&1 &
+nohup /home/pi/MilanoWaterProject/bin/tankmonitor -P > /dev/null 2>&1 &
 echo "Done"
 echo "Starting Well Monitor App"
 sleep 10
-nohup /home/pi/MilanoWaterProject/bin/wellmonitor -D > /dev/null 2>&1 &
+nohup /home/pi/MilanoWaterProject/bin/wellmonitor -P > /dev/null 2>&1 &
 echo "Done"
 echo "Starting Flow Monitor App"
-nohup /home/pi/MilanoWaterProject/bin/flowmonitor -D > /dev/null 2>&1 &
+nohup /home/pi/MilanoWaterProject/bin/flowmonitor -P > /dev/null 2>&1 &
 echo "Done"
 sleep 10
 echo "Starting Monitor App"
 sleep 10
-nohup /home/pi/MilanoWaterProject/bin/monitor -D > /dev/null 2>&1 &
+nohup /home/pi/MilanoWaterProject/bin/monitor -P > /dev/null 2>&1 &
 sleep 10
 echo "Starting Blynk Interface App"
-nohup /home/pi/MilanoWaterProject/bin/blynk -D > /dev/null 2>&1 &
+nohup /home/pi/MilanoWaterProject/bin/blynk -P > /dev/null 2>&1 &
+echo "Done"
+echo "Starting RainbirdSync for Controller 1"
+sleep 10
+nohup python3 /home/pi/MilanoWaterProject/pyrainbird/RainbirdSync.py -P -C 1 > /dev/null 2>&1 &
+echo "Done"
+sleep 10
+echo "Starting RainbirdSync for Controller 2"
+sleep 10
+nohup python3 /home/pi/MilanoWaterProject/pyrainbird/RainbirdSync.py -P -C 2 > /dev/null 2>&1 &
 echo "Done"
 sleep 30m
