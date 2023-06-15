@@ -15,8 +15,8 @@
 
 - -> sudo apt install vsftpd
 - -> sudo cp /home/MilanoWaterProject/misc/vsftpd.conf /etc/.
-*- -> sudo nano /etc/vsftpd.conf (if doing it manually)
-*- ->>anonymous_enable=NO
+* -> sudo nano /etc/vsftpd.conf (if doing it manually)
+* ->>anonymous_enable=NO
 - ->>local_enable=YES
 - ->>write_enable=YES
 - ->>local_umask=022
