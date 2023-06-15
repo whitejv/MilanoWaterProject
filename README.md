@@ -15,16 +15,16 @@
 
 - -> sudo apt install vsftpd
 - -> sudo cp /home/MilanoWaterProject/misc/vsftpd.conf /etc/.
--- -> sudo nano /etc/vsftpd.conf (if doing it manually)
--- ->>anonymous_enable=NO
--- ->>local_enable=YES
--- ->>write_enable=YES
--- ->>local_umask=022
--- ->>chroot_local_user=YES
--- ->>user_sub_token=$USER
--- ->>local_root=/home/$USER/FTP
--- -> mkdir -p /home/<user>/FTP/files
--- -> chmod a-w /home/<user>/FTP
+*- -> sudo nano /etc/vsftpd.conf (if doing it manually)
+*- ->>anonymous_enable=NO
+- ->>local_enable=YES
+- ->>write_enable=YES
+- ->>local_umask=022
+- ->>chroot_local_user=YES
+- ->>user_sub_token=$USER
+- ->>local_root=/home/$USER/FTP
+- -> mkdir -p /home/<user>/FTP/files
+- -> chmod a-w /home/<user>/FTP
 - -> sudo service vsftpd restart
 
 ## Install JSON Lib
