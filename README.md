@@ -86,8 +86,6 @@
 ## Install the Py Rainbird Project
 - -> git clone https://github.com/allenporter/pyrainbird.git
 - -> cd pyrainbird
-- -> python3 -m venv venv
-- -> source venv/bin/activate
 - -> pip install -r requirements_dev.txt
 - -> pip install .
 - -> pip install paho-mqtt
