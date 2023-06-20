@@ -192,6 +192,7 @@ if ((millis() - lastMsec) > 1000) {
         Serial.print(temperature_deg);
         Serial.println(" °C");
     }
+    
     dht.temperature().getEvent(&event);
     Serial.print(F("Temperature: "));
     Serial.print(event.temperature);
