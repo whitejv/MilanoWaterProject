@@ -14,9 +14,9 @@ import paho.mqtt.client as mqtt
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
-        print("Connected to MQTT broker")
+        logger.info("Connected to MQTT broker")
     else:
-        print(f"Connection to MQTT broker failed: {rc}")
+        logger.info(f"Connection to MQTT broker failed: {rc}")
 
 def on_message(client, userdata, msg):
     if msg.payload.decode() == f"check{userdata['controller_id']}":
@@ -47,11 +47,11 @@ async def check_zones(mqtt_server, controller_id):
                 try:
                     states = await controller.get_zone_states()
                 except RainbirdDeviceBusyException:
-                    print("Device is busy, waiting for 2 seconds before retrying.")
+                    logger.info("Device is busy, waiting for 2 seconds before retrying.")
                     await asyncio.sleep(2)
                     continue
                 
-                print(f"States: {states}")  # debugging line
+                logger.info(f"States: {states}")  # debugging line
                 mqtt_client.publish(f"rainbird/controller{controller_id}/active_zone", str(states))  
                 userdata['check_flag'] = False
 
@@ -76,14 +76,39 @@ if __name__ == "__main__":
         required=True,
         help="Controller number (1 or 2)"
     )
+    parser.add_argument(
+        "-v", "--verbose", action='store_true',
+        help="Enable verbose mode to print output to the console as well as to the file"
+    )
     args = parser.parse_args()
+
+    # Create a logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+
+    # Create a file handler
+    handler = logging.FileHandler('output.log')
+    handler.setLevel(logging.INFO)
+
+    # Create a logging format
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+
+    # Add the handler to the logger
+    logger.addHandler(handler)
+
+    # Check if verbose mode is enabled, if yes, print to console as well
+    if args.verbose:
+        consoleHandler = logging.StreamHandler()
+        consoleHandler.setFormatter(formatter)
+        logger.addHandler(consoleHandler)
 
     if args.production:
         mqtt_server = "192.168.1.250"  # replace with your production MQTT server
     elif args.development:
         mqtt_server = "192.168.1.249"  # replace with your development MQTT server
     else:
-        print("You must specify either -P for production or -D for development.")
+        logger.info("You must specify either -P for production or -D for development.")
         exit(1)
 
     # To run the function

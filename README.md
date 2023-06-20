@@ -2,38 +2,9 @@
 
 ## This project provides IOT control and monitoring of my home water system.
 
-## Compute Module 4 Installation 
-### On the CM4 (see Jeff Geerling How to flash Raspberry Pi OS onto the Compute Module 4 eMMC with usbboot)
-- -> Remove Cover, Place Jumper, Plug in USB to LINUX System, Power On
-
-### On a Linux System (RPI or Other)
-- ->sudo apt install libusb-1.0-0-dev
-- ->sudo git clone --depth=1 https://github.com/raspberrypi/usbboot
-- ->cd usbboot
-- ->sudo make
-- ->sudo ./rpiboot
-- ->{may take a few minutes but CM4 will eventually appear as an external drive.}
-- ->Use the RPI Loader to Load Preffered OS
-- ->Once OS is loaded then boot volume will appear
-- ->Modify config.txt to include the line dtoverlay=dwc2,dr_mode=host to enable USB
-
-### Back on the CM4
-
-- ->Remove Jumper
-- ->Reboot
-
-
-## To Use Remote Shell to Install
-
-- -> Open Terminal on Mac/Windows/Raspberry PI/Linus
-- -> Login to Target:  ssh pi@raspi.local
-- -> Password: raspberry
-
-
 ## Intsall Git (if using Rapi-Lite)
 
 - -> sudo apt install git
-
 
 ## Install OpenSSL for C/C++ programs
 
@@ -43,16 +14,17 @@
 ## Install FTP Daemon
 
 - -> sudo apt install vsftpd
-- -> sudo nano /etc/vsftpd.conf
-- ->>anonymous_enable=NO
-- ->>local_enable=YES
-- ->>write_enable=YES
-- ->>local_umask=022
-- ->>chroot_local_user=YES
-- ->>user_sub_token=$USER
-- ->>local_root=/home/$USER/FTP
-- -> mkdir -p /home/<user>/FTP/files
-- -> chmod a-w /home/<user>/FTP
+- -> sudo cp /home/MilanoWaterProject/misc/vsftpd.conf /etc/.
+-   -> sudo nano /etc/vsftpd.conf (if doing it manually)
+-    ->>anonymous_enable=NO
+-    ->>local_enable=YES
+-    ->>write_enable=YES
+-    ->>local_umask=022
+-    ->>chroot_local_user=YES
+-    ->>user_sub_token=$USER
+-    ->>local_root=/home/$USER/FTP
+-    -> mkdir -p /home/<user>/FTP/files
+-    -> chmod a-w /home/<user>/FTP
 - -> sudo service vsftpd restart
 
 ## Install JSON Lib
@@ -114,8 +86,6 @@
 ## Install the Py Rainbird Project
 - -> git clone https://github.com/allenporter/pyrainbird.git
 - -> cd pyrainbird
-- -> python3 -m venv venv
-- -> source venv/bin/activate
 - -> pip install -r requirements_dev.txt
 - -> pip install .
 - -> pip install paho-mqtt
@@ -158,7 +128,14 @@
 - -> chmod +x h2o.sh
 - -> reboot
  
- ## Configuring VS Code for Debug
+# Configuring the Dev Environment
+ 
+## To Use Remote Shell to Install
+- -> Open Terminal on Mac/Windows/Raspberry PI/Linus
+- -> Login to Target:  ssh pi@raspi.local
+- -> Password: raspberry
+ 
+# Configuring VS Code for Debug
 - -> C++ extension for VS Code. Install the C/C++ extension by searching for 'c++' in the Extensions view (⇧⌘X).
 - -> CMake Tools extension for VS Code. Install the CMake Tools extension by searching for 'CMake tools' in the Extensions view (⇧⌘X).
 - -> sudo apt-get install build-essential gdb (Installs GDB Debugger if not already installed)
@@ -177,6 +154,28 @@
 ### CMake: Configure
 - -> Now that you've selected a kit and a variant, open the Command Palette (⇧⌘P)
 - -> run the CMake: Configure command to configure your project. This generates build files in the project's build folder using the kit and variant you selected.
+ 
+# Compute Module 4 Installation 
+## On the CM4 (see Jeff Geerling How to flash Raspberry Pi OS onto the Compute Module 4 eMMC with usbboot)
+- -> Remove Cover, Place Jumper, Plug in USB to LINUX System, Power On
+
+### On a Linux System (RPI or Other)
+- ->sudo apt install libusb-1.0-0-dev
+- ->sudo git clone --depth=1 https://github.com/raspberrypi/usbboot
+- ->cd usbboot
+- ->sudo make
+- ->sudo ./rpiboot
+- ->{may take a few minutes but CM4 will eventually appear as an external drive.}
+- ->Use the RPI Loader to Load Preffered OS
+- ->Once OS is loaded then boot volume will appear
+- ->Modify config.txt to include the line dtoverlay=dwc2,dr_mode=host to enable USB
+
+### Back on the CM4
+
+- ->Remove Jumper
+- ->Reboot
+
+
 
 ### Build Program
 - -> After configuring your project, you're ready to build. Open the Command Palette (⇧⌘P)
