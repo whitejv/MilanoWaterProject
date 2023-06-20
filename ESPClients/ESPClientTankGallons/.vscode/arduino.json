@@ -1,4 +1,5 @@
 {
     "board": "arduino:mbed_nano:nanorp2040connect",
+    "output": "../build",
     "sketch": "ESPClientTankGallons.ino"
 }

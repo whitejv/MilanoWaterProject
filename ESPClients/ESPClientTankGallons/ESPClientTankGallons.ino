@@ -50,8 +50,9 @@ PubSubClient D_client(esptankgalClient);
 
 PubSubClient client; // Declare the client object globally
 unsigned int masterCounter = 0;
-
-
+float temp, hum;
+double speedOfSound, distance, duration;
+static int lastMsec = 0;
 /*
  * Data Block Interface Control
  */
@@ -139,6 +140,7 @@ if (!connected) {
   }
 }
 
+client.setKeepAlive(45);
 
   //client.subscribe("ESP Control");
   
@@ -156,114 +158,130 @@ if (!connected) {
 
   dht.begin();
   sensor_t sensor;
-
+  lastMsec = millis() ;
   analogReadResolution(12);   
 }
 
 void loop()
 {
-  int i;
-  int decimal;
-  int temperature_deg = 0;
-  int distance; 
-  sensors_event_t event;
+int i;
+int decimal;
+int temperature_deg = 0;
+int rawdistance; 
+sensors_event_t event;
 
-  ++masterCounter;
 
-  if (masterCounter > 28000) {
-    masterCounter = 0 ;
-    while(1);
-  }
+if ((millis() - lastMsec) > 1000) {
+    lastMsec = millis() ;
+
+    ++masterCounter;
+
+    if (masterCounter > 28000) {
+      masterCounter = 0 ;
+      while(1);
+    }
+      
+    // Regularly "kick" the watchdog to prevent a system reset
+    watchdog_update();
+    // Regularly check in with Mqtt server
+    client.loop();
     
-  // Regularly "kick" the watchdog to prevent a system reset
-  watchdog_update();
+    if (IMU.temperatureAvailable()) {
+        IMU.readTemperature(temperature_deg);
+        Serial.print("LSM6DSOX Temperature = ");
+        Serial.print(temperature_deg);
+        Serial.println(" °C");
+    }
+    dht.temperature().getEvent(&event);
+    Serial.print(F("Temperature: "));
+    Serial.print(event.temperature);
+    Serial.println(F("°C"));
+    temp = event.temperature; // Gets the values of the temperature
+    dht.humidity().getEvent(&event);
+    Serial.print(F("Humidity: "));
+    Serial.print(event.relative_humidity);
+    Serial.println(F("%"));
+    hum = event.relative_humidity; // Gets the values of the humidity
+    duration = (sonar.ping_median(20, 275));  // returns duration in microseconds
+    Serial.print("Duration: ");
+    Serial.print(duration);
+    Serial.println(" uSeconds");
+    rawdistance = sonar.convert_cm(duration); // Send ping, get distance in cm and print result (0 = outside set distance range)
+    Serial.print("Ping: ");
+    Serial.print(rawdistance); // Send ping, get distance in cm and print result (0 = outside set distance range)
+    Serial.println(" cm (raw)");
+  
+    speedOfSound = 331.4 + (0.6 * temp) + (0.0124 * hum); // Calculate speed of sound in m/s
+    Serial.print("Speed of Sound: ");
+    Serial.print(speedOfSound);
+    Serial.println("m/s");
 
-  if (IMU.temperatureAvailable())
-  {
+    distance = (speedOfSound * (duration/2));
+    distance = distance/10000. ; // meters to centimeters
+    Serial.print("Distance: ");
+    Serial.print(distance);
+    Serial.println(" cm");
 
-    IMU.readTemperature(temperature_deg);
-    //Serial.print("LSM6DSOX Temperature = ");
-    //Serial.print(temperature_deg);
-    //Serial.println(" °C");
-  }
+    memcpy(&tankgal_data_payload[0], &distance, sizeof(float));
+    memcpy(&tankgal_data_payload[2], &hum, sizeof(float));
+    memcpy(&tankgal_data_payload[4], &temp, sizeof(float));
+
+    tankgal_data_payload[10] = temperature_deg ;  
+    tankgal_data_payload[12] = masterCounter;
+    tankgal_data_payload[16] = ErrCount;
+    tankgal_data_payload[17] = ErrState;
+    tankgal_data_payload[18] = 0;
+    tankgal_data_payload[19] = 0;  
+
+    client.publish(TANKGAL_CLIENT, (byte *)tankgal_data_payload, TANKGAL_LEN*4);
+
+
+  const size_t capacity = JSON_OBJECT_SIZE(10);
+  StaticJsonDocument<capacity> jsonDoc;
+
+  jsonDoc["Distance to Water"] = distance;
+  jsonDoc["Tank Humidity"] = hum;
+  jsonDoc["Tank Temperature C"] = temp;
+  jsonDoc["System Temp"] = temperature_deg;
+  jsonDoc["Counter"] = masterCounter;
+  jsonDoc["ErrCount"] = ErrCount;
+  jsonDoc["ErrState"] = ErrState;
+
+  char jsonBuffer[256];
+  size_t n = serializeJson(jsonDoc, jsonBuffer);
+
+  client.publish("TankGal JSON", jsonBuffer, n);
+
+    
+    Serial.print("Tank Gallon Data: ");
+    for (i = 0; i <= 20; ++i)
+    {
+      Serial.print(tankgal_data_payload[i]);
+      Serial.print(" ");
+    }
+    
+    Serial.println();
+
   /*
-  distance = sonar.convert_cm((sonar.ping_median(10))); // Send ping, get distance in cm and print result (0 = outside set distance range)
-  Serial.print("Ping: ");
-  Serial.print(distance); // Send ping, get distance in cm and print result (0 = outside set distance range)
-  Serial.println("cm");
-  
-  
-  dht.temperature().getEvent(&event);
-  Serial.print(F("Temperature: "));
-  Serial.print(event.temperature);
-  Serial.println(F("°C"));
-  tankgal_data_payload[2] = event.temperature;
-  dht.humidity().getEvent(&event);
-  Serial.print(F("Humidity: "));
-  Serial.print(event.relative_humidity);
-  Serial.println(F("%"));
-  tankgal_data_payload[1] = event.relative_humidity;
-*/
-  tankgal_data_payload[0] = distance;
-  tankgal_data_payload[10] = temperature_deg ;  
-  tankgal_data_payload[12] = masterCounter;
-  tankgal_data_payload[16] = ErrCount;
-  tankgal_data_payload[17] = ErrState;
-  tankgal_data_payload[18] = 0;
-  tankgal_data_payload[19] = 0;  
+  * Check Connection and Log State then Determine if a Reset is necessary
+  */
 
-  client.loop();
+    if (client.connected() == FALSE) {
+      ErrState = client.state() ;
+      ++ErrCount;
+      Serial.print("Tank Gallon Monitor Disconnected from MQTT:");
+      Serial.print("Error Count:  ");
+      Serial.print(ErrCount);
+      Serial.print("Error Code:  ");
+      Serial.println(ErrState);
+    }
 
-  client.publish(TANKGAL_CLIENT, (byte *)tankgal_data_payload, TANKGAL_LEN*4);
-/*
-const size_t capacity = JSON_OBJECT_SIZE(10);
-StaticJsonDocument<capacity> jsonDoc;
-
-jsonDoc["Distance to Water"] = tankgal_data_payload[0];
-jsonDoc["Tank Humidity"] = tankgal_data_payload[1];
-jsonDoc["Tank Temperature C"] = tankgal_data_payload[2];
-jsonDoc["System Temp"] = temperature_deg;
-jsonDoc["Counter"] = masterCounter;
-jsonDoc["ErrCount"] = ErrCount;
-jsonDoc["ErrState"] = ErrState;
-
-char jsonBuffer[256];
-size_t n = serializeJson(jsonDoc, jsonBuffer);
-
-client.publish("TankGal JSON", jsonBuffer, n);
-*/
-  
-  Serial.print("Tank Gallon Data: ");
-  for (i = 0; i <= 20; ++i)
-  {
-    Serial.print(tankgal_data_payload[i]);
-    Serial.print(" ");
-  }
-  
-  Serial.println();
-
-/*
- * Check Connection and Log State then Determine if a Reset is necessary
- */
-
-  if (client.connected() == FALSE) {
-    ErrState = client.state() ;
-    ++ErrCount;
-    Serial.print("Tank Gallon Monitor Disconnected from MQTT:");
-    Serial.print("Error Count:  ");
-    Serial.print(ErrCount);
-    Serial.print("Error Code:  ");
-    Serial.println(ErrState);
-  }
-
-  if ( ErrCount > ERRMAX ) {
-    //Initiate Reset
-    Serial.println("Initiate board reset!!") ;
-    while(1);
-  }
-    
-  delay(1000);
-
+    if ( ErrCount > ERRMAX ) {
+      //Initiate Reset
+      Serial.println("Initiate board reset!!") ;
+      while(1);
+    }
+  }  
 }
 void printClientState(int state) {
   switch (state) {
