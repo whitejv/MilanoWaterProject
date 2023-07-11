@@ -192,7 +192,7 @@ if ((millis() - lastMsec) > 1000) {
         Serial.print(temperature_deg);
         Serial.println(" °C");
     }
-    
+
     dht.temperature().getEvent(&event);
     Serial.print(F("Temperature: "));
     Serial.print(event.temperature);
@@ -223,9 +223,22 @@ if ((millis() - lastMsec) > 1000) {
     Serial.print(distance);
     Serial.println(" cm");
 
-    memcpy(&tankgal_data_payload[0], &distance, sizeof(float));
-    memcpy(&tankgal_data_payload[2], &hum, sizeof(float));
-    memcpy(&tankgal_data_payload[4], &temp, sizeof(float));
+union {
+  float floatValue;
+  uint8_t byteValue[sizeof(float)];
+} data;
+
+// Copy distance value to the payload buffer
+data.floatValue = distance;
+memcpy(&tankgal_data_payload[0], data.byteValue, sizeof(float));
+
+// Copy humidity value to the payload buffer
+data.floatValue = hum;
+memcpy(&tankgal_data_payload[2], data.byteValue, sizeof(float));
+
+// Copy temperature value to the payload buffer
+data.floatValue = temp;
+memcpy(&tankgal_data_payload[4], data.byteValue, sizeof(float));
 
     tankgal_data_payload[10] = temperature_deg ;  
     tankgal_data_payload[12] = masterCounter;
