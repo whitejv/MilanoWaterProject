@@ -187,7 +187,7 @@ if (!connected) {
   esp_task_wdt_add(NULL);
   Serial.printf("Complete\n");
   Wire.begin();
-#elif defined(ARDUINO_ESP8266_GENERIC) || defined(ARDUINO_ESP8266_WEMOS_D1MINI)
+#elif defined(ARDUINO_ESP8266_GENERIC) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_ESP8266_THING_DEV)
   //Wire.begin(12, 14); //only if you are using I2C
   pinMode(FLOWSENSOR, INPUT_PULLUP);
   sensors.begin();// Start the DS18B20 sensor
