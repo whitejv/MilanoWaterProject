@@ -316,7 +316,7 @@ float GallonsInTankUltra(void) {
    float UltraSensorValue = 0;
 
    memcpy(&UltraSensorRawValue, &tankgal_data_payload[0], sizeof(float)) ;
-   printf("UltraSensorRawValue: %f\n", UltraSensorRawValue);
+   //printf("UltraSensorRawValue: %f\n", UltraSensorRawValue);
  
    UltraSensorValue = UltraSensorRawValue ;;
 
