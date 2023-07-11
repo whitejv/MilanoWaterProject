@@ -4,7 +4,7 @@
 #define OFF 0
 #define AUTO 2
 #define VoltoGal 7.048052
-#define MaxTankGal 2290. // based on current float height
+#define MaxTankGal 2240. // based on current float height
 #define PI 3.1415926535897932384626433832795
 #define Tank_Radius_sqd 16 // radius of tank in Feet Squared - Example my tank is 8ft diameter so 4ft radius = 16 when sqd
 

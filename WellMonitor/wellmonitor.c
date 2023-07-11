@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
          pump3_on = 0;
       }
       raw_voltage4_adc = well_data_payload[3];
-      if (raw_voltage4_adc > 250) {
+      if (raw_voltage4_adc > 750) {
          pump4_on = 1 ;
       }
       else {
