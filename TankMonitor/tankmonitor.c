@@ -14,9 +14,23 @@ float dailyGallons = 0;
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
 
+typedef struct {
+    double value;  // Fused measurement value
+    double error;  // Measurement error
+} FusedMeasurement;
+
+typedef struct {
+    double gain;   // Kalman gain
+    double value;  // Estimated measurement value
+    double error;  // Estimation error
+} KalmanFilter;
+
+FusedMeasurement fused;
 /* Function Declarations */
 
-void GallonsInTank(void) ;
+float GallonsInTankPress(void) ;
+float GallonsInTankUltra(void) ;
+FusedMeasurement fuseMeasurements(double measurement1, double measurement2, double measurementError1, double measurementError2);
 void GallonsPumped(void) ;
 void PumpStats(void) ;
 void MyMQTTSetup(char *mqtt_address) ;
@@ -84,8 +98,13 @@ int main(int argc, char* argv[])
    int SecondsFromMidnight = 0 ;
    int PriorSecondsFromMidnight =0;
  
+   float waterHeightPress = 0;
+   float waterHeightUltra = 0;
    float temperatureF;
-   
+   float waterHeight = 0;
+   float TankGallons = 0;
+   float TankPerFull = 0;
+   float Tank_Area = 0;
    int Float100State = 0;
    int Float90State = 0;
    int Float50State = 0;
@@ -167,7 +186,31 @@ int main(int argc, char* argv[])
       //printf("seconds since midnight: %d\n", SecondsFromMidnight);
       PriorSecondsFromMidnight = SecondsFromMidnight ;
       
-      GallonsInTank() ;
+      waterHeightPress = GallonsInTankPress() ;
+      //waterHeightUltra = GallonsInTankUltra() ;
+      //printf("Water Height Press: %f\n", waterHeightPress);
+      //printf("Water Height Ultra: %f\n", waterHeightUltra);
+
+      //use Kalman filter to fuse the two measurments into one measurement
+      //fused = fuseMeasurements(waterHeightPress, waterHeightUltra, .05, .05);
+
+      //printf("Fused Measurement: %f\n", fused.value);
+      //printf("Fused Measurement Error: %f\n", fused.error);
+      //waterHeight = fused.value;
+      waterHeight = waterHeightPress;
+      /*
+       * Use the Equation (PI*R^2*WaterHeight)*VoltoGal to compute Water Gallons in tank
+      */
+      Tank_Area = PI * Tank_Radius_sqd; // area of base of tank
+      TankGallons = ((Tank_Area)*waterHeight) * VoltoGal;
+      // printf("Gallons in Tank = %f\n", TankGallons);
+      TankPerFull = TankGallons / MaxTankGal * 100;
+      // printf("Percent Gallons in Tank = %f\n", TankPerFull);
+
+      tank_sensor_payload[1] =    waterHeight;
+      tank_sensor_payload[2] =    TankGallons;
+      tank_sensor_payload[3] =    TankPerFull;
+
       GallonsPumped() ;
  
       Float100State = tank_data_payload[6] ;
@@ -217,20 +260,15 @@ float samples[SAMPLES_COUNT] = {0};
 uint8_t sample_index = 0;
 uint8_t window_size = 40; // Change this value to the desired window size (60-100)
 
-void GallonsInTank(void) {
-   
+float GallonsInTankPress(void) {
+   float waterHeight = 0;
    float PresSensorLSB = .00322580645; // lsb voltage value from datasheet
   
    float PresSensorValue = 0;
    float PresSensorRawValue = 0;
 
-   float ConstantX = .34; // Used Excel Polynomial Fitting to come up with equation
-   float Constant = .0962;
-  
-   float WaterHeight = 0;
-   float TankGallons = 0;
-   float TankPerFull = 0;
-   float Tank_Area = 0;
+   float ConstantX = 4.7359; // Used Excel Polynomial Fitting to come up with equation
+   float Constant = 3.6869;
 
    // Set initial state and state covariance for Kalman filter
    x = 0;
@@ -258,33 +296,70 @@ void GallonsInTank(void) {
    /*
       *** Use the Equation y=Constandx(x) + Constant solve for x to compute Water Height in tank
       */
-
+/*
    if (PresSensorValue <= Constant)
    {
       PresSensorValue = Constant;
    }
-
+*/
    //WaterHeight = ((PresSensorValue - ConstantX) / Constant) + .1; // The .1 accounts for the sensor not sitting on the bottom
-   WaterHeight = ((PresSensorValue*3.0242) + .1028) + .1; 
-   // printf("Water Height = %f\n", WaterHeight);
+   //printf("PresSensorValue: %f, ConstantX: %f, Constant: %f\n", PresSensorValue, ConstantX, Constant );
+   waterHeight = ((PresSensorValue*ConstantX) - Constant) + .33; 
+   //printf("Water Height = %f\n", waterHeight);
+   
+   return waterHeight;
 
-   /*
-      * Use the Equation (PI*R^2*WaterHeight)*VoltoGal to compute Water Gallons in tank
-      */
-   Tank_Area = PI * Tank_Radius_sqd; // area of base of tank
-   TankGallons = ((Tank_Area)*WaterHeight) * VoltoGal;
-   // printf("Gallons in Tank = %f\n", TankGallons);
+}
+float GallonsInTankUltra(void) {
+   float waterHeight = 0;
+   float UltraSensorRawValue = 0;
+   float UltraSensorValue = 0;
 
-   /*
-      *  Use the Equation Calculated Gallons/Max Gallons to compute Percent Gallons in tank
-      */
+   memcpy(&UltraSensorRawValue, &tankgal_data_payload[0], sizeof(float)) ;
+   printf("UltraSensorRawValue: %f\n", UltraSensorRawValue);
+ 
+   UltraSensorValue = UltraSensorRawValue ;;
 
-   TankPerFull = TankGallons / MaxTankGal * 100;
-   // printf("Percent Gallons in Tank = %f\n", TankPerFull);
+   waterHeight = (6.3783+.7480) - (UltraSensorValue/30.48); // Full top of water + sensor to top of water - sensor reading distance to water in ft
+   
+   //printf("Water Height = %f\n", waterHeight);
+   
+   return waterHeight;
 
-   tank_sensor_payload[1] =    WaterHeight;
-   tank_sensor_payload[2] =    TankGallons;
-   tank_sensor_payload[3] =    TankPerFull;
+}
+
+// Update the Kalman filter with a new sensor measurement
+void updateKalmanFilter(KalmanFilter* filter, double measurement, double measurementError) {
+    // Update the estimate based on the measurement and its error
+    filter->value = filter->value + filter->gain * (measurement - filter->value);
+
+    // Update the estimation error
+    filter->error = (1.0 - filter->gain) * filter->error + filter->gain * measurementError;
+
+    // Calculate the new Kalman gain for the next iteration
+    filter->gain = filter->error / (filter->error + measurementError);
+}
+
+// Fuse two sensor measurements using a Kalman filter
+FusedMeasurement fuseMeasurements(double measurement1, double measurement2, double measurementError1, double measurementError2) {
+    KalmanFilter filter;
+    FusedMeasurement fused;
+
+    // Initialize the Kalman filter
+    filter.gain = 0.5;  // Initial gain (can be adjusted based on noise characteristics)
+    filter.value = measurement1;  // Initial estimate
+    filter.error = measurementError1;  // Initial estimation error
+
+    // Update the Kalman filter with the second measurement
+    updateKalmanFilter(&filter, measurement2, measurementError2);
+
+    // Set the fused measurement value
+    fused.value = filter.value;
+
+    // Calculate the fused measurement error (can be adjusted based on noise characteristics)
+    fused.error = (measurementError1 + measurementError2) / 2.0;
+
+    return fused;
 }
 
 void GallonsPumped(void){
@@ -383,6 +458,10 @@ void MyMQTTSetup(char* mqtt_address){
    log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", TANK_CLIENT, TANK_CLIENTID);
    MQTTClient_subscribe(client, TANK_CLIENT, QOS);
    
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TANKGAL_CLIENT, TANKGAL_CLIENTID, QOS);
+   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", TANKGAL_CLIENT, TANKGAL_CLIENTID);
+   MQTTClient_subscribe(client, TANKGAL_CLIENT, QOS);
+
    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELL_TOPIC, WELL_MONID, QOS);
    log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, WELL_MONID);
    MQTTClient_subscribe(client, WELL_TOPIC, QOS);
