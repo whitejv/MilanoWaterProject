@@ -16,27 +16,34 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
 {
    
    int i;
-  /*
-   printf("Message arrived:\n");
-   printf("          topic: %s  ", topicName);
-   printf("         length: %d  ", topicLen);
-   printf("     PayloadLen: %d\n", message->payloadlen);
-   printf("message: ");
- */  
+   
+   if (verbose) {
+      printf("Message arrived:\n");
+      printf("          topic: %s  ", topicName);
+      printf("         length: %d  ", topicLen);
+      printf("     PayloadLen: %d\n", message->payloadlen);
+      printf("message: ");
+   }
+
    if ( strcmp(topicName, TANK_CLIENT) == 0) {
       memcpy(tank_data_payload, message->payload, message->payloadlen);
       if (verbose) {for(i=0; i < TANK_LEN; i++) {printf("%0x ", tank_data_payload[i]);}}
-      printf("|\n");
+      printf("t\n");
    }
    else if ( strcmp(topicName, WELL_CLIENT) == 0) {
       memcpy(well_data_payload, message->payload, message->payloadlen);
       if (verbose) {for(i=0; i < WELL_LEN; i++) {printf("%0x ", well_data_payload[i]);}}
-      printf("-\n");
+      printf("w\n");
    }
-   else if ( strcmp(topicName, FLOW_CLIENT) == 0) {
+   else if ( strcmp(topicName, TANKGAL_CLIENT) == 0) {
+      memcpy(tankgal_data_payload, message->payload, message->payloadlen);
+      if (verbose) {for(i=0; i < TANKGAL_LEN; i++) {printf("%0x ", tankgal_data_payload[i]);}}
+      printf("tg\n");
+   }
+      else if ( strcmp(topicName, FLOW_CLIENT) == 0) {
       memcpy(flow_data_payload, message->payload, message->payloadlen);
       if (verbose) {for(i=0; i < FLOW_LEN; i++) {printf("%0x ", flow_data_payload[i]);}}
-      printf(":\n");
+      printf("f\n");
    }
    else if ( strcmp(topicName, TANK_TOPIC) == 0) {
       memcpy(tank_sensor_payload, message->payload, message->payloadlen);
