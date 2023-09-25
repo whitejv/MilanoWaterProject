@@ -55,7 +55,9 @@ int WDT_Interval = 0;
 const int ERRMAX = 10;
 const int WDT_TIMEOUT = 10;
 unsigned int masterCounter = 0;
-
+const int discInput1 = DISCINPUT1;
+const int discInput2 = DISCINPUT2;
+int ioInput = 0;
 long currentMillis = 0;
 long previousMillis = 0;
 long millisecond = 0;
@@ -101,12 +103,8 @@ void IRAM_ATTR pulseCounter() {
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting");
-  
-  setupWiFi();
-  setupOTA();
-  connectToMQTTServer();
 
-#if defined(ARDUINO_FEATHER_ESP32)
+  #if defined(ARDUINO_FEATHER_ESP32)
   Serial.printf("Configuring WDT...");
   esp_task_wdt_init(WDT_TIMEOUT, true);
   esp_task_wdt_add(NULL);
@@ -116,8 +114,10 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   const int configPin1 = CONFIGPIN1;
   const int configPin2 = CONFIGPIN2;
-  pinMode(configPin1, INPUT);
-  pinMode(configPin2, INPUT);
+  pinMode(configPin1, INPUT_PULLUP);
+  pinMode(configPin2, INPUT_PULLUP);
+  pinMode(discInput1, INPUT_PULLUP);
+  pinMode(discInput2, INPUT_PULLUP);
   sensors.begin();// Start the DS18B20 sensor
   pinMode(FLOWSENSOR, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(FLOWSENSOR), pulseCounter, FALLING);
@@ -127,17 +127,26 @@ void setup() {
   gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
   Wire.begin();
 #endif
-
+  delay(3000); //give some time for things to get settled
   // Read the config pins and get configuation data
-  sensor = digitalRead((configPin2)<1) | (digitalRead(configPin2)) ;
+  //Serial.print(digitalRead(configPin1));
+  //Serial.print(digitalRead(configPin2));
+  sensor = digitalRead(configPin2)<<1 | digitalRead(configPin1) ;
+  Serial.print(sensor);
   //sensor = 3;
-  Serial.print("Sensor ID: ");
-
+  Serial.print("  Sensor ID: ");
   Serial.println(flowSensorConfig[sensor].sensorName);
+
+  
   strcpy(messageName, flowSensorConfig[sensor].sensorName);
   strcat(messageName, " Flow Data: ");
   strcpy(messageNameJSON, "JSON - ");
   strcat(messageNameJSON, flowSensorConfig[sensor].messageid);
+
+  setupWiFi();
+  setupOTA();
+  connectToMQTTServer();
+
 }
 
 void loop() {
@@ -149,6 +158,7 @@ void loop() {
      updateFlowData();
      updateTemperatureData();
      readAnalogInput() ;
+     readDigitalInput() ;
      processMqttClient();
      publishFlowData();
      publishJsonData();
@@ -322,6 +332,13 @@ void readAnalogInput() {
 
 void readDigitalInput() {
 
+  // Read the config pins and get configuation data
+  //Serial.print(digitalRead(discInput1));
+  //Serial.print(digitalRead(discInput2));
+  ioInput = digitalRead(discInput2)<<1 | digitalRead(discInput1) ;
+  flow_data_payload[4] = ioInput ;
+  //Serial.print("IO Input: ");
+  //Serial.println(ioInput);
 }
 
 void processMqttClient() {
@@ -401,7 +418,8 @@ void checkConnectionAndLogState(){
     if (client.connected() == FALSE) {
     ErrState = client.state() ;
     ++ErrCount;
-    Serial.print("Flow Monitor Disconnected from MQTT:");
+    Serial.printf(messageName);
+    Serial.print("-- Disconnected from MQTT:");
     Serial.print("Error Count:  ");
     Serial.print(ErrCount);
     Serial.print("Error Code:  ");
