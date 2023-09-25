@@ -10,28 +10,6 @@
 
 int verbose = FALSE;
 
-/* payload 0	Pulses Counted in Time Window
-* payload 1	Number of milliseconds in Time Window
-* payload 2	Flag 1=new data 0=stale data
-* payload 3	Pressure Sensor Analog Value
-* payload 4	 unused
-* payload 5	 unused
-* payload 6	 unused
-* payload 7	 unused
-* payload 8	 unused
-* payload 9	 unused
-* payload 10	 unused
-* payload 11	 unused
-* payload 12	 Cycle Counter 16bit Int
-* payload 13	 unused
-* payload 14	 unused
-* payload 15	 unused
-* payload 16	 unused
-* payload 17	Irrigation Pump Temperature in F Float Bytes 1&2
-* payload 18	Irrigation Pump Temperature in F Float Bytes 3&4
-* payload 19	 unused
-* payload 20	 FW Version 4 Hex 
-*/	
 /*	
 int	flow_data_payload[FLOW_LEN] ;
 */ 	
@@ -207,9 +185,9 @@ int main(int argc, char* argv[])
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", FLOW_CLIENT, FLOW_CLIENTID, QOS);
-   log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", FLOW_CLIENT, FLOW_CLIENTID);
-   MQTTClient_subscribe(client, FLOW_CLIENT, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", IRRIGATION_CLIENT, IRRIGATION_CLIENTID, QOS);
+   log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", IRRIGATION_CLIENT, IRRIGATION_CLIENTID);
+   MQTTClient_subscribe(client, IRRIGATION_CLIENT, QOS);
    
    printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELL_TOPIC, WELL_MONID, QOS);
    log_message("FlowMonitor: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, WELL_MONID);
@@ -242,7 +220,7 @@ int main(int argc, char* argv[])
          
          /* reset 24 hr stuff */
          
-         fprintf(fptr, "Daily Gallons Used: %f %s", dailyGallons, ctime(&t));
+         fprintf(fptr, "Daily Irrigation Gallons Used: %f %s", dailyGallons, ctime(&t));
          dailyGallons = 0; 
          fclose(fptr);
          
@@ -296,11 +274,11 @@ int main(int argc, char* argv[])
       }
       
       
-      irrigationPressure = (flow_data_payload[3] * .00322581) * 2.45 ;
+      irrigationPressure = (flow_data_payload[3] * .1336) - 10.523 ;
       
       //temperatureF = *((float *)&flow_data_payload[17]);
       
-      memcpy(&temperatureF, &flow_data_payload[17], sizeof(float));
+      memcpy(&temperatureF, &flow_data_payload[6], sizeof(float));
       
       
       /*
@@ -351,7 +329,7 @@ int main(int argc, char* argv[])
       //flow_sensor_payload[7] =    0;  //filled in by the above code
       flow_sensor_payload[8] =    0;
       flow_sensor_payload[9] =    0;
-      flow_sensor_payload[10] =   flow_data_payload[12];
+      flow_sensor_payload[10] =   flow_data_payload[8];
       flow_sensor_payload[11] =   0;
       flow_sensor_payload[12] =   0;
       flow_sensor_payload[13] =   0;

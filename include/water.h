@@ -14,7 +14,10 @@
 #define RED 3
 
 //#define ADDRESS "192.168.1.250:1883" // Local RaspberryPI RaspiCM4 Production MQTT Server
-#define ADDRESS "192.168.1.249:1883" // Local RaspberryPI 400 Development MQTT Server
+//#define ADDRESS "192.168.1.249:1883" // Local RaspberryPI 400 Development MQTT Server
+
+const char ssid[] = "ATT9LCV8fL_2.4";
+const char password[] = "6jhz7ai7pqy5";
 
 /* Define IP Address for MQTT for both
  * a Production Server and a Development Server
@@ -453,84 +456,92 @@ char *AlertData_var_names[] = {
 };
 
 /*************************************************
+ ************************************************* 
  * IOT Micro-Controller Input Devices Start Here *
+ ************************************************* 
  *************************************************/
 
-#define TANK_CLIENTID	 "Tank Client"
-#define TANK_CLIENT      "Tank Payload"
-#define TANK_LEN 25
-/* payload 0	Pulses Counted in Time Window
+/* Generic FLow Client to Support 3 Flow Sensors */
+
+#define FLOWSENSOR 13
+#define TEMPSENSOR 2
+#define CONFIGPIN1  12 //GPIO 12
+#define CONFIGPIN2  3  //GPIO 3
+#define DISCINPUT1  4  //GPIO 4 Input with Pullup
+#define DISCINPUT2  5  //GPIO 5 Input with Pullup
+#define GenericFLowMSGSize 10
+#define IRRIGATION_CLIENTID	 "Irrigation Flow Client"
+#define IRRIGATION_CLIENT   "Irrigation Flow Payload"
+#define IRRIGATION_LEN GenericFLowMSGSize
+#define TANK_CLIENTID	 "Tank Flow Client"
+#define TANK_CLIENT   "TankFlow  Payload"
+#define TANK_LEN GenericFLowMSGSize
+#define HOUSE_CLIENTID	 "House Flow Client"
+#define HOUSE_CLIENT   "House Flow Payload"
+#define HOUSE_LEN GenericFLowMSGSize
+#define SPARE_CLIENTID	 "Spare Flow  Client"
+#define SPARE_CLIENT   "Spare Flow  Payload"
+#define SPARE_LEN GenericFLowMSGSize
+
+struct flowSensorConfigTable
+{
+   int  sensorID;         // Sensor ID
+   char sensorName[35];    // Sensor Name  
+   char clientid[35] ;     // Client ID
+   char messageid[35];     // Message ID
+   int  messagelen ;       // Message Length
+};
+
+struct flowSensorConfigTable flowSensorConfig[4] = {
+    {0, "SPARE",         SPARE_CLIENTID, SPARE_CLIENT,           GenericFLowMSGSize},
+    {1, "TANK",          TANK_CLIENTID,     TANK_CLIENT,         GenericFLowMSGSize},
+    {2, "IRRIGATION",    IRRIGATION_CLIENTID, IRRIGATION_CLIENT, GenericFLowMSGSize},
+    {3, "HOUSE",         HOUSE_CLIENTID, HOUSE_CLIENT,           GenericFLowMSGSize}
+};
+	
+int	flow_data_payload[GenericFLowMSGSize] ;
+int	irrigation_data_payload[IRRIGATION_LEN] ;
+int	tank_data_payload[TANK_LEN] ;
+int	house_data_payload[HOUSE_LEN] ;
+int	spare_data_payload[SPARE_LEN] ;
+
+/* 
+* payload 0	Pulses Counted in Time Window
 * payload 1	Number of milliseconds in Time Window
 * payload 2	Flag 1=new data 0=stale data
-* payload 3	 4-20 mA Raw Tank Sensor HydroStatic Pressure 16bit
-* payload 4	Float 1
-* payload 5	Float 2
-* payload 6	Float 3
-* payload 7	Float 4
-* payload 8	 spare
-* payload 9	 spare
-* payload 10	 spare
-* payload 11	 spare
-* payload 12	 spare
-* payload 13	 spare
-* payload 14	 spare
-* payload 15	 spare
-* payload 16	 spare
-* payload 17	Air Temperature in F Float Bytes 1&2
-* payload 18	Air Temperature in F Float Bytes 3&4
-* payload 19	 spare
-* payload 20	 spare
+* payload 3	ADC Raw Sensor value (int/hex)
+* payload 4	GPIO Sensor Data valuse (int/hex)
+* payload 5	Temp f (int)
+* payload 6	Temperature in F Float Bytes 1&2
+* payload 7	Temperature in F Float Bytes 3&4
+* payload 8	 Cycle Counter
+* payload 9	 FW Version 4 Hex 
 */	
-	
-int	tank_data_payload[TANK_LEN] ;
-	
+		
+ 	
 
-struct TankClientData {		
+struct FlowClientData {		
 int	pulse_count	;
 int	millisecnods	;
 int	new_data_flag	;
-int	tank_hydrostatic_pressure	;
-int	float_1	;
-int	float_2	;
-int	float_3	;
-int	float_4	;
-int	spare_1	;
-int	spare_2	;
-int	spare_3	;
-int	spare_4	;
+int adc_sensor;
+int gpio_sensor;
+int	temp	    ;
+int	temp_f_1	;
+int	temp_f_2	;
 int	cycle_count	;
-int	spare_5	;
-int	spare_6	;
-int	spare_7	;
-int	spare_8	;
-int	air_temp_1	;
-int	air_temp_2	;
-int	spare_9	;
-int	spare_10	;
-};		
+int	fw_version	;
+}	;	
 
-char* TankClientData_var_name [] = {
+char* FlowClientData_var_name [] = {
 "pulse_count",
 "millisecnods",
 "new_data_flag",
-"tank_hydrostatic_pressure",
-"float_1",
-"float_2",
-"float_3",
-"float_4",
-"spare_1",
-"spare_2",
-"spare_3",
-"spare_4",
+"temperature",
+"temp_float_1",
+"temp_float_2",
 "cycle_count",
-"spare_5",
-"spare_6",
-"spare_7",
-"spare_8",
-"air_temp_1",
-"air_temp_2",
-"spare_9",
-"spare_10"
+"fw_version"
 };
 
 #define WELL_CLIENTID  "Well Client" 
@@ -609,83 +620,6 @@ char* WellClientData_var_name [] = {
 "spare_10",
 "FW_version_4_hex"
 } ;
-
-#define FLOW_CLIENTID "Flow Client" 
-#define FLOW_CLIENT   "Flow Payload"
-#define FLOW_LEN 25
-/* payload 0	Pulses Counted in Time Window
-* payload 1	Number of milliseconds in Time Window
-* payload 2	Flag 1=new data 0=stale data
-* payload 3	Pressure Sensor Analog Value
-* payload 4	 unused
-* payload 5	 unused
-* payload 6	 unused
-* payload 7	 unused
-* payload 8	 unused
-* payload 9	 unused
-* payload 10	 unused
-* payload 11	 unused
-* payload 12	 Cycle Counter 16bit Int
-* payload 13	 unused
-* payload 14	 unused
-* payload 15	 unused
-* payload 16	 unused
-* payload 17	Irrigation Pump Temperature in F Float Bytes 1&2
-* payload 18	Irrigation Pump Temperature in F Float Bytes 3&4
-* payload 19	 unused
-* payload 20	 FW Version 4 Hex 
-*/	
-
-int	flow_data_payload[FLOW_LEN] ;
-	
-
-struct FlowClientDatat {		
-int	pulse_count	;
-int	millisecnods	;
-int	new_data_flag	;
-int	irrigation_pressure_sensor	;
-int	spare_1	;
-int	spare_2	;
-int	spare_3	;
-int	spare_4	;
-int	spare_5	;
-int	spare_6	;
-int	spare_7	;
-int	spare_8	;
-int	cycle_count	;
-int	spare_9	;
-int	spare_10	;
-int	spare_11	;
-int	spare_12	;
-int	pump_temp_w1	;
-int	pump_temp_w2	;
-int	spare_13	;
-int	fw_version	;
-}	;	
-
-char* FlowClientData_var_name [] = {
-"pulse_count",
-"millisecnods",
-"new_data_flag",
-"irrigation_pressure_sensor",
-"spare_1",
-"spare_2",
-"spare_3",
-"spare_4",
-"spare_5",
-"spare_6",
-"spare_7",
-"spare_8",
-"cycle_count",
-"spare_9",
-"spare_10",
-"spare_11",
-"spare_12",
-"pump_temp_w1",
-"pump_temp_w2",
-"spare_13",
-"fw_version"
-};
 
 #define TANKGAL_CLIENTID "TankGal Client"
 #define TANKGAL_CLIENT   "TankGal Payload"

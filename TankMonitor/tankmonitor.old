@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
          
          /* reset 24 hr stuff */
          
-         fprintf(fptr, "Daily Gallons Used: %f %s", dailyGallons, ctime(&t));
+         fprintf(fptr, "Daily Well 3 Gallons Used: %f %s", dailyGallons, ctime(&t));
          dailyGallons = 0; 
          fclose(fptr);
          

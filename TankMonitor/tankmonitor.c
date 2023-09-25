@@ -213,21 +213,21 @@ int main(int argc, char* argv[])
 
       GallonsPumped() ;
  
-      Float100State = tank_data_payload[6] ;
-      Float90State = tank_data_payload[7]  ;
-      Float50State = tank_data_payload[4]  ;
-      Float25State = tank_data_payload[5]  ;
+      //Float100State = tank_data_payload[6] ;
+      //Float90State = tank_data_payload[7]  ;
+      //Float50State = tank_data_payload[4]  ;
+      //Float25State = tank_data_payload[5]  ;
 
       //temperatureF = *((float *)&flow_data_payload[17]);
       
-      memcpy(&temperatureF, &tank_data_payload[17], sizeof(float));
+      memcpy(&temperatureF, &tank_data_payload[6], sizeof(float));
 
       tank_sensor_payload[5] =    0;
       tank_sensor_payload[6] =    0;
       tank_sensor_payload[7] =    0;
       tank_sensor_payload[8] =    0;
       tank_sensor_payload[9] =    0;
-      tank_sensor_payload[10] =   tank_data_payload[12]; //Counter
+      tank_sensor_payload[10] =   tank_data_payload[8]; //Counter
       tank_sensor_payload[11] =   temperatureF;
       tank_sensor_payload[12] =   Float100State;
       tank_sensor_payload[13] =   Float90State;
@@ -316,7 +316,7 @@ float GallonsInTankUltra(void) {
    float UltraSensorValue = 0;
 
    memcpy(&UltraSensorRawValue, &tankgal_data_payload[0], sizeof(float)) ;
-   printf("UltraSensorRawValue: %f\n", UltraSensorRawValue);
+   //printf("UltraSensorRawValue: %f\n", UltraSensorRawValue);
  
    UltraSensorValue = UltraSensorRawValue ;;
 

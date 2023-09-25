@@ -40,9 +40,9 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
       if (verbose) {for(i=0; i < TANKGAL_LEN; i++) {printf("%0x ", tankgal_data_payload[i]);}}
       printf("tg\n");
    }
-      else if ( strcmp(topicName, FLOW_CLIENT) == 0) {
+      else if ( strcmp(topicName, IRRIGATION_CLIENT) == 0) {
       memcpy(flow_data_payload, message->payload, message->payloadlen);
-      if (verbose) {for(i=0; i < FLOW_LEN; i++) {printf("%0x ", flow_data_payload[i]);}}
+      if (verbose) {for(i=0; i < IRRIGATION_LEN; i++) {printf("%0x ", flow_data_payload[i]);}}
       printf("f\n");
    }
    else if ( strcmp(topicName, TANK_TOPIC) == 0) {
