@@ -465,8 +465,10 @@ char *AlertData_var_names[] = {
 
 #define FLOWSENSOR 13
 #define TEMPSENSOR 2
-#define CONFIGPIN1  12
-#define CONFIGPIN2  14
+#define CONFIGPIN1  12 //GPIO 12
+#define CONFIGPIN2  3  //GPIO 3
+#define DISCINPUT1  4  //GPIO 4 Input with Pullup
+#define DISCINPUT2  5  //GPIO 5 Input with Pullup
 #define GenericFLowMSGSize 10
 #define IRRIGATION_CLIENTID	 "Irrigation Flow Client"
 #define IRRIGATION_CLIENT   "Irrigation Flow Payload"
@@ -491,10 +493,10 @@ struct flowSensorConfigTable
 };
 
 struct flowSensorConfigTable flowSensorConfig[4] = {
-    {0, "TANK",          TANK_CLIENTID,     TANK_CLIENT,         GenericFLowMSGSize},
-    {1, "IRRIGATION",    IRRIGATION_CLIENTID, IRRIGATION_CLIENT, GenericFLowMSGSize},
-    {2, "HOUSE",         HOUSE_CLIENTID, HOUSE_CLIENT,           GenericFLowMSGSize},
-    {3, "SPARE",         SPARE_CLIENTID, SPARE_CLIENT,           GenericFLowMSGSize}
+    {0, "SPARE",         SPARE_CLIENTID, SPARE_CLIENT,           GenericFLowMSGSize},
+    {1, "TANK",          TANK_CLIENTID,     TANK_CLIENT,         GenericFLowMSGSize},
+    {2, "IRRIGATION",    IRRIGATION_CLIENTID, IRRIGATION_CLIENT, GenericFLowMSGSize},
+    {3, "HOUSE",         HOUSE_CLIENTID, HOUSE_CLIENT,           GenericFLowMSGSize}
 };
 	
 int	flow_data_payload[GenericFLowMSGSize] ;
