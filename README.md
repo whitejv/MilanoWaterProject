@@ -2,6 +2,10 @@
 
 ## This project provides IOT control and monitoring of my home water system.
 
+## Enable Remote Access
+
+- -> From the Raspbery Logo --> Preferences --> Raspberry PI Configuration --> Interface Tab --> VNC: Enable
+
 ## Intsall Git (if using Rapi-Lite)
 
 - -> sudo apt install git
