@@ -1,18 +1,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <SPI.h>
-#include <WiFiNINA.h>
+#include <WiFiS3.h>
 #include <Wire.h>
 #include <IPAddress.h>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
-#include <Arduino_LSM6DSOX.h>
-#include "hardware/watchdog.h" // Include the watchdog header
+//#include <Arduino_LSM6DSOX.h>
+//#include "hardware/watchdog.h" // Include the watchdog header
 #include <water.h>
 
-char ssid[] = "ATT9LCV8fL_2.4";   // local wifi network SSID
-char password[] = "6jhz7ai7pqy5"; // local network password
-
+//char ssid[] = "ATT9LCV8fL_2.4";   // local wifi network SSID
+//char password[] = "6jhz7ai7pqy5"; // local network password
+const char broker[] = "192.168.0.84";
+int        port     = 1883;
 int InitiateReset = 0;
 int ErrState = 0 ;
 int ErrCount = 0 ;
@@ -26,8 +27,8 @@ const int watchdogTimeoutMs = 3000; // 6 seconds, adjust as needed
 WiFiClient espWellClient;
 
 /* Define the IPs for Production and Development MQTT Servers */
-IPAddress prodMqttServerIP(192, 168, 1, 250);
-IPAddress devMqttServerIP(192, 168, 1, 249) ;
+IPAddress prodMqttServerIP(192, 168, 0, 84);
+IPAddress devMqttServerIP(192, 168, 0, 84) ;
 PubSubClient P_client(espWellClient);
 PubSubClient D_client(espWellClient);
 
@@ -43,7 +44,7 @@ unsigned int masterCounter = 0;
 
 void setup()
 {
-  digitalWrite(LEDR, HIGH);
+  //digitalWrite(LEDR, HIGH);
   //Initialize Serial
   Serial.begin(115200);
 
@@ -51,7 +52,7 @@ void setup()
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE) {
     Serial.print("Communication with WiFi module failed!");
-    digitalWrite(LEDR, HIGH);
+    //digitalWrite(LEDR, HIGH);
     while (true);
   }
 
@@ -76,14 +77,17 @@ void setup()
   Serial.print("WiFi connected -- ");
   Serial.print("Local IP address: ");
   Serial.println(WiFi.localIP());
-  digitalWrite(LEDG, HIGH);
+  //digitalWrite(LEDG, HIGH);
   
 unsigned long connectAttemptStart = millis();
 bool connected = false;
 
 //Try connecting to the production MQTT server first
-
-P_client.setServer(prodMqttServerIP, PROD_MQTT_PORT);
+Serial.print("Connecting to MQTT Server: ");
+Serial.print(prodMqttServerIP);
+Serial.print(":");
+Serial.println(PROD_MQTT_PORT);
+P_client.setServer(broker, port);
 
 // Connect to the MQTT server
 
@@ -93,7 +97,7 @@ while (!P_client.connected() && millis() - connectAttemptStart < 5000) { // Adju
   if (connected) {
     client = P_client; // Assign the connected production client to the global client object
     Serial.println("connected\n");
-    digitalWrite(LEDB, HIGH);
+    //digitalWrite(LEDB, HIGH);
   } else {
     Serial.print("failed with client state: ");
     printClientState(P_client.state());
@@ -106,14 +110,14 @@ while (!P_client.connected() && millis() - connectAttemptStart < 5000) { // Adju
 
 if (!connected) {
   //PubSubClient client(devMqttServerIP, DEV_MQTT_PORT, espWellClient);
-  D_client.setServer(devMqttServerIP, DEV_MQTT_PORT);
+  D_client.setServer(broker, port);
   while (!D_client.connected()) {
     Serial.print("Connecting to Development MQTT Server...");
     connected = D_client.connect(WELL_CLIENTID);
     if (connected) {
       client = D_client; // Assign the connected development client to the global client object
       Serial.println("connected\n");
-      digitalWrite(LEDB, HIGH);
+      //digitalWrite(LEDB, HIGH);
     } else {
       Serial.print("failed with client state: ");
       printClientState(D_client.state());
@@ -127,13 +131,13 @@ if (!connected) {
   //client.subscribe("ESP Control");
   
   // Enable the watchdog timer
-  watchdog_enable(watchdogTimeoutMs, 1);
+  //watchdog_enable(watchdogTimeoutMs, 1);
   Serial.println("Watchdog Timer Enabled\n");
 
-  if (!IMU.begin()) {  
+  //if (!IMU.begin()) {  
     //Serial.println("Failed to initialize IMU!");
-    while (1);
-  }
+   // while (1);
+  //}
   /*
    * Setup Pin Modes for Discretes and increase analogs to 12bits
    */
@@ -158,12 +162,12 @@ void loop()
   }
     
   // Regularly "kick" the watchdog to prevent a system reset
-  watchdog_update();
+  //watchdog_update();
 
-  if (IMU.temperatureAvailable())
+  //if (IMU.temperatureAvailable())
   {
 
-    IMU.readTemperature(temperature_deg);
+    //IMU.readTemperature(temperature_deg);
     //Serial.print("LSM6DSOX Temperature = ");
     //Serial.print(temperature_deg);
     //Serial.println(" °C");
@@ -173,7 +177,7 @@ void loop()
   well_data_payload[1] = analogRead(A1);
   well_data_payload[2] = analogRead(A2);
   well_data_payload[3] = analogRead(A3);
-  well_data_payload[4] = analogRead(A7);
+  //well_data_payload[4] = analogRead(A7);
   well_data_payload[5] = digitalRead(2);
   well_data_payload[6] = digitalRead(3);
   well_data_payload[10] = temperature_deg ;  
@@ -194,7 +198,7 @@ jsonDoc["A0"] = analogRead(A0);
 jsonDoc["A1"] = analogRead(A1);
 jsonDoc["A2"] = analogRead(A2);
 jsonDoc["A3"] = analogRead(A3);
-jsonDoc["A7"] = analogRead(A7);
+//jsonDoc["A7"] = analogRead(A7);
 jsonDoc["D2"] = digitalRead(2);
 jsonDoc["D3"] = digitalRead(3);
 jsonDoc["Temp"] = temperature_deg;
