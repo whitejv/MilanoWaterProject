@@ -6,11 +6,15 @@
 
 - -> From the Raspbery Logo --> Preferences --> Raspberry PI Configuration --> Interface Tab --> VNC: Enable
 
-## Intsall Git (if using Rapi-Lite)
+## The Remainder of the Setup & Configuration Can Be Done via Remote Connection 
 
+## Intsall Git (if using Rapi-Lite)
 - -> sudo apt install git
 
-## Install OpenSSL for C/C++ programs
+## Install the Project and Required Configuration files
+- -> git clone https://github.com/whitejv/MilanoWaterProject.git
+
+- ## Install OpenSSL for C/C++ programs
 
 - -> sudo apt-get install libssl-dev
 - -> sudo apt-get install xutils-dev
@@ -94,9 +98,7 @@
 - -> pip install .
 - -> pip install paho-mqtt
 
-## Install the Project
-
-- -> git clone https://github.com/whitejv/MilanoWaterProject.git
+## Configure the Project
 - -> mkdir MWPLogData
 - -> cd MilanoWaterProject
 - -> mkdir /home/pi/MWPLogData (Create this on first time install on a new system)
