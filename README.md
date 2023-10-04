@@ -13,54 +13,58 @@
 
 ## Install the Project and Required Configuration files
 - -> git clone https://github.com/whitejv/MilanoWaterProject.git
+- -> cp MilanoWaterProject/setup.sh .
+- -> sudo setup.sh
+- -> sudo cp MilanoWaterProject/misc/vsftpd.conf /etc/.
 
-- ## Install OpenSSL for C/C++ programs
-
-- -> sudo apt-get install libssl-dev
-- -> sudo apt-get install xutils-dev
-
-## Install FTP Daemon
-
-- -> sudo apt install vsftpd
-- -> sudo cp /home/MilanoWaterProject/misc/vsftpd.conf /etc/.
--   -> sudo nano /etc/vsftpd.conf (if doing it manually)
--    ->>anonymous_enable=NO
--    ->>local_enable=YES
--    ->>write_enable=YES
--    ->>local_umask=022
--    ->>chroot_local_user=YES
--    ->>user_sub_token=$USER
--    ->>local_root=/home/$USER/FTP
--    -> mkdir -p /home/<user>/FTP/files
--    -> chmod a-w /home/<user>/FTP
-- -> sudo service vsftpd restart
-
-## Install JSON Lib
-
-- -> sudo apt install libjson-c-dev
-
-## Install CMake
-
-- -> sudo apt-get install cmake
- 
-## Install Mosquitto MQTT Service
-
-- -> sudo apt install -y mosquitto mosquitto-clients
-- -> sudo systemctl enable mosquitto.service
-- -> mosquitto -v
-
-## Install MQTT and Update Config File and Application Libraries
-
-- -> git clone https://github.com/eclipse/paho.mqtt.c.git
-- -> cd paho.mqtt.c
-- -> make
-- -> sudo make install
-- -> cd /etc/mosquitto
-- -> sudo nano mosquitto.conf
-- ->>> add: listener 1883
-- ->>> add: allow_anonymous true
-
-![image](https://user-images.githubusercontent.com/41390348/167849852-2fd8cb29-3461-4562-9e7c-22be091cd4f3.png)
+## Commands If You Don't Use Script Above
+        ### Install OpenSSL for C/C++ programs
+        
+        - -> sudo apt-get install libssl-dev
+        - -> sudo apt-get install xutils-dev
+        
+        ### Install FTP Daemon
+        
+        - -> sudo apt install vsftpd
+        - -> sudo cp /home/MilanoWaterProject/misc/vsftpd.conf /etc/.
+        -   -> sudo nano /etc/vsftpd.conf (if doing it manually)
+        -    ->>anonymous_enable=NO
+        -    ->>local_enable=YES
+        -    ->>write_enable=YES
+        -    ->>local_umask=022
+        -    ->>chroot_local_user=YES
+        -    ->>user_sub_token=$USER
+        -    ->>local_root=/home/$USER/FTP
+        -    -> mkdir -p /home/<user>/FTP/files
+        -    -> chmod a-w /home/<user>/FTP
+        - -> sudo service vsftpd restart
+        
+        ### Install JSON Lib
+        
+        - -> sudo apt install libjson-c-dev
+        
+        ### Install CMake
+        
+        - -> sudo apt-get install cmake
+         
+        ### Install Mosquitto MQTT Service
+        
+        - -> sudo apt install -y mosquitto mosquitto-clients
+        - -> sudo systemctl enable mosquitto.service
+        - -> mosquitto -v
+        
+        ### Install MQTT and Update Config File and Application Libraries
+        
+        - -> git clone https://github.com/eclipse/paho.mqtt.c.git
+        - -> cd paho.mqtt.c
+        - -> make
+        - -> sudo make install
+        - -> cd /etc/mosquitto
+        - -> sudo nano mosquitto.conf
+        - ->>> add: listener 1883
+        - ->>> add: allow_anonymous true
+        
+        ![image](https://user-images.githubusercontent.com/41390348/167849852-2fd8cb29-3461-4562-9e7c-22be091cd4f3.png)
 
 ## Install Wiringpi (needed by Blynk)
 
