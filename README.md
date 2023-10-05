@@ -99,7 +99,7 @@
 ## Install the Py Rainbird Project
 - -> git clone https://github.com/allenporter/pyrainbird.git
 - -> cd pyrainbird
-- -> pip install -r requirements_dev.txt
+- -> pip install -r requirements_dev.txt --ignore-requires-python
 - -> pip install .
 - -> pip install paho-mqtt
 
