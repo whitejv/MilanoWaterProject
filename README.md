@@ -16,6 +16,7 @@
 - -> cp MilanoWaterProject/setup.sh .
 - -> sudo ./setup.sh
 - -> sudo cp MilanoWaterProject/misc/vsftpd.conf /etc/. (diff to verify content prior to copy)
+- -> sudo reboot
 
 ## Commands If You Don't Use Script Above
         ### Install OpenSSL for C/C++ programs
