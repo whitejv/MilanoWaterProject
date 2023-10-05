@@ -91,6 +91,7 @@
 
 - -> git clone https://github.com/blynkkk/blynk-library.git
 - -> cd blynk-library/linux
+- -> Edit main.cpp to remove comment from template id
 - -> make clean all target=raspberry
 - -> make target=raspberry
 === clean build means succesful install
