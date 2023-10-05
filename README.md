@@ -14,8 +14,8 @@
 ## Install the Project and Required Configuration files
 - -> git clone https://github.com/whitejv/MilanoWaterProject.git
 - -> cp MilanoWaterProject/setup.sh .
-- -> sudo setup.sh
-- -> sudo cp MilanoWaterProject/misc/vsftpd.conf /etc/.
+- -> sudo ./setup.sh
+- -> sudo cp MilanoWaterProject/misc/vsftpd.conf /etc/. (diff to verify content prior to copy)
 
 ## Commands If You Don't Use Script Above
         ### Install OpenSSL for C/C++ programs
@@ -100,7 +100,7 @@
 - -> git clone https://github.com/allenporter/pyrainbird.git
 - -> cd pyrainbird
 - -> pip install -r requirements_dev.txt --ignore-requires-python
-- -> pip install .
+- -> pip install . --ignore-requires-python
 - -> pip install paho-mqtt
 
 ## Configure the Project
