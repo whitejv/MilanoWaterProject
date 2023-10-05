@@ -408,31 +408,29 @@ char* MonData_var_names[] = {
 int alert_payload[A_LEN];
 
 struct AlertData {		
-int	pump_no_start	;
-int	spare1	;
-int	spare2	;
-int	spare3	;
-int	spare4	;
-int	spare5	;
-int	spare6	;
-int	spare7	;
-int	spare8	;
-int	spare9	;
-int	spare10	;
-int	spare11	;
-int	spare12	;
-int	spare13	;
-int	spare14	;
-int	spare15	;
-int	spare16	;
-int	spare17	;
-int	spare18	;
-int	spare19	;
-int	spare20	;
+int	alarm1	;
+int	alarm2	;
+int	alarm3	;
+int	alarm4	;
+int	alarm5	;
+int	alarm6	;
+int	alarm7	;
+int	alarm8	;
+int	alarm9	;
+int	alarm10	;
+int	alarm11	;
+int	alarm12	;
+int	alarm13	;
+int	alarm14	;
+int	alarm15	;
+int	alarm16	;
+int	alarm17	;
+int	alarm18	;
+int	alarm19	;
+int	alarm20	;
 };	
 
 char *AlertData_var_names[] = {
-"pump_no_start",
 "spare1",
 "spare2",
 "spare3",
@@ -543,6 +541,39 @@ char* FlowClientData_var_name [] = {
 "cycle_count",
 "fw_version"
 };
+char* IrrigationClientData_var_name [] = {	
+    "irrigation_pulse_count",
+    "irrigation_millisecnods",
+    "irrigation_new_data_flag",
+    "irrigation_adc_sensor",
+    "irrigation_gpio_sensor",
+    "irrigation_temp",
+    "irrigation_temp_w1",
+    "irrigation_temp_w2",
+    "irrigation_cycle_count",
+    "irrigation_fw_version"};
+char* TankClientData_var_name [] = {	
+    "tank_pulse_count",
+    "tank_millisecnods",
+    "tank_new_data_flag",
+    "tank_adc_sensor",
+    "tank_gpio_sensor",
+    "tank_temp",
+    "tank_temp_w1",
+    "tank_temp_w2",
+    "tank_cycle_count",
+    "tank_fw_version"};
+char* HouseClientData_var_name [] = {	
+    "house_pulse_count",
+    "house_millisecnods",
+    "house_new_data_flag",
+    "house_adc_sensor",
+    "house_gpio_sensor",
+    "house_temp",
+    "house_temp_w1",
+    "house_temp_w2",
+    "house_cycle_count",
+    "house_fw_version"};
 
 #define WELL_CLIENTID  "Well Client" 
 #define WELL_CLIENT    "Well Payload"

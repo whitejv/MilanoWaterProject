@@ -14,6 +14,7 @@ int verbose = FALSE;
 Usage: ./program_name [-v] [-r N] -l [1,2,3] [file_name]
 
 Options:
+-P -D = Set the MQTT Client ID Production or Development
 -v : Enable verbose output
 -l [1,2,3] : Set test log level:
 1 = Print all messages (default)
@@ -136,12 +137,21 @@ int main(int argc, char* argv[]) {
     int i = 0;
     int j = 0;
     int cleanup[20];
-
+    const char *mqtt_ip;
+    int mqtt_port;
 
     // Parse command-line arguments
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-v") == 0) {
             verbose = true;
+        }
+        else if (strcmp(argv[i], "-P") == 0) {   
+            mqtt_ip = PROD_MQTT_IP;
+            mqtt_port = PROD_MQTT_PORT;
+        }
+        else if (strcmp(argv[i], "-D") == 0) {
+            mqtt_ip = DEV_MQTT_IP;
+            mqtt_port = DEV_MQTT_PORT;
         }
         else if (strcmp(argv[i], "-l") == 0) {
             if (i + 1 < argc) {
@@ -208,8 +218,17 @@ int main(int argc, char* argv[]) {
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
     MQTTClient_deliveryToken token;
     int rc;
+    if (mqtt_ip == NULL) {
+        fprintf(stderr, "Please specify either Production (-P) or Development (-D) server\n");
+        return 1;
+    }
 
-    if ((rc = MQTTClient_create(&client, ADDRESS, T_CLIENTID,
+    char mqtt_address[256];
+    snprintf(mqtt_address, sizeof(mqtt_address), "tcp://%s:%d", mqtt_ip, mqtt_port);
+
+    printf("MQTT Address: %s\n", mqtt_address);
+
+    if ((rc = MQTTClient_create(&client, mqtt_address, T_CLIENTID,
         MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
     {
         log_test(verbose, log_level, 1, "Test: Error == Failed to Create Client. Return Code: %d\n", rc);
@@ -351,11 +370,11 @@ int main(int argc, char* argv[]) {
                 MQTTClient_publishMessage(client, WELL_CLIENT, &pubmsg, &token);
                 break;
             case 2:
-                pubmsg.payload = (void*)flow_data_payload;
-                pubmsg.payloadlen = sizeof(flow_data_payload);
+                pubmsg.payload = (void*)irrigation_data_payload;
+                pubmsg.payloadlen = sizeof(irrigation_data_payload);
                 pubmsg.qos = QOS;
                 pubmsg.retained = 0;
-                MQTTClient_publishMessage(client, FLOW_CLIENT, &pubmsg, &token);
+                MQTTClient_publishMessage(client, IRRIGATION_CLIENT, &pubmsg, &token);
                 break;
             }
             log_test(verbose, log_level, 1, "The set value of %s is %d\n", param, value.decimal);
@@ -478,7 +497,7 @@ int main(int argc, char* argv[]) {
     pubmsg.retained = 0;
     MQTTClient_publishMessage(client, TANK_CLIENT, &pubmsg, &token);
     MQTTClient_publishMessage(client, WELL_CLIENT, &pubmsg, &token);
-    MQTTClient_publishMessage(client, FLOW_CLIENT, &pubmsg, &token);
+    MQTTClient_publishMessage(client, IRRIGATION_CLIENT, &pubmsg, &token);
 
 
     MQTTClient_unsubscribe(client, FLOW_TOPIC);
