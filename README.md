@@ -65,8 +65,6 @@
         - -> sudo nano mosquitto.conf
         - ->>> add: listener 1883
         - ->>> add: allow_anonymous true
-        
-        ![image](https://user-images.githubusercontent.com/41390348/167849852-2fd8cb29-3461-4562-9e7c-22be091cd4f3.png)
 
 ## Install Wiringpi (needed by Blynk)
 
@@ -106,11 +104,12 @@
 - -> pip install paho-mqtt
 
 ## Configure the Project
+- -> cd ~
 - -> mkdir -p FTP/files
 - -> chmod a-w FTP
 - -> mkdir MWPLogData
 - -> cd MilanoWaterProject
-- -> mkdir /home/pi/MWPLogData (Create this on first time install on a new system)
+  
 ### CMake Process
 - -> cmake -S . (to rebuild the Root Makefile
 - -> make clean
