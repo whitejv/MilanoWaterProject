@@ -14,6 +14,7 @@
 ## Install the Project and Required Configuration files
 - -> git clone https://github.com/whitejv/MilanoWaterProject.git
 - -> cp MilanoWaterProject/setup.sh .
+- -> chmod +x setup.sh
 - -> sudo ./setup.sh
 - -> sudo cp MilanoWaterProject/misc/vsftpd.conf /etc/. (diff to verify content prior to copy)
 - -> sudo reboot
@@ -105,6 +106,8 @@
 - -> pip install paho-mqtt
 
 ## Configure the Project
+- -> mkdir -p FTP/files
+- -> chmod a-w FTP
 - -> mkdir MWPLogData
 - -> cd MilanoWaterProject
 - -> mkdir /home/pi/MWPLogData (Create this on first time install on a new system)
