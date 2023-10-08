@@ -1,5 +1,6 @@
 
 #define BLYNK_TEMPLATE_ID "TMPLrWkZjlCS"
+#define BLYNK_TEMPLATE_NAME "MWP"
 #define BLYNK_DEVICE_NAME "Villa Milano Home"
 #define BLYNK_AUTH_TOKEN "qGKZG9ptI-uLjGEG9y_8BSaTDunwLEQM"
 // #define BLYNK_AUTH_TOKEN "50z7wkVf3LuA1G8_5QGjVn54lllSnpG3";
