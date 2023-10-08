@@ -66,34 +66,34 @@
         - ->>> add: listener 1883
         - ->>> add: allow_anonymous true
 
-## Install Wiringpi (needed by Blynk)
+## Depricated - Install Wiringpi (needed by Blynk) - Only Needed if PI is using GPIO
 
-#### New Method (works for 32bit and may work for 64bit)
-- -> sudo apt install wiringpi
-#### Alternative Method is to Clone
-- ->git clone https://github.com/WiringPi/WiringPi.git
-- ->cd WiringPi
-- ->./build
-
-#### Old Method (depricated)
-- -> wget https://project-downloads.drogon.net/wiringpi-latest.deb
-- -> sudo dpkg -i wiringpi-latest.deb
-- -> dpkg-deb -x wiringpi-latest.deb WiringPi/
-
-#### Verify Installed Correctly
-- -> gpio -v (look below means good install)
-=== gpio version: 2.52
-=== Copyright (c) 2012-2018 Gordon Henderson
-=== This is free software with ABSOLUTELY NO WARRANTY.
-=== For details type: gpio -warranty
+        #### New Method (works for 32bit and may work for 64bit)
+        - -> sudo apt install wiringpi
+        #### Alternative Method is to Clone
+        - ->git clone https://github.com/WiringPi/WiringPi.git
+        - ->cd WiringPi
+        - ->./build
+        
+        #### Old Method (depricated)
+        - -> wget https://project-downloads.drogon.net/wiringpi-latest.deb
+        - -> sudo dpkg -i wiringpi-latest.deb
+        - -> dpkg-deb -x wiringpi-latest.deb WiringPi/
+        
+        #### Verify Installed Correctly
+        - -> gpio -v (look below means good install)
+        === gpio version: 2.52
+        === Copyright (c) 2012-2018 Gordon Henderson
+        === This is free software with ABSOLUTELY NO WARRANTY.
+        === For details type: gpio -warranty
 
 ## Install Blynk
 
 - -> git clone https://github.com/blynkkk/blynk-library.git
 - -> cd blynk-library/linux
 - -> Edit main.cpp to remove comment from template id
-- -> make clean all target=raspberry
-- -> make target=raspberry
+- -> make clean all
+- -> make
 === clean build means succesful install
  
 ## Install the Py Rainbird Project
