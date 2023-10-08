@@ -14,6 +14,7 @@
 ## Install the Project and Required Configuration files
 - -> git clone https://github.com/whitejv/MilanoWaterProject.git
 - -> cp MilanoWaterProject/setup.sh .
+- -> chmod +x setup.sh
 - -> sudo ./setup.sh
 - -> sudo cp MilanoWaterProject/misc/vsftpd.conf /etc/. (diff to verify content prior to copy)
 - -> sudo reboot
@@ -64,50 +65,50 @@
         - -> sudo nano mosquitto.conf
         - ->>> add: listener 1883
         - ->>> add: allow_anonymous true
+
+## Depricated - Install Wiringpi (needed by Blynk) - Only Needed if PI is using GPIO
+
+        #### New Method (works for 32bit and may work for 64bit)
+        - -> sudo apt install wiringpi
+        #### Alternative Method is to Clone
+        - ->git clone https://github.com/WiringPi/WiringPi.git
+        - ->cd WiringPi
+        - ->./build
         
-        ![image](https://user-images.githubusercontent.com/41390348/167849852-2fd8cb29-3461-4562-9e7c-22be091cd4f3.png)
-
-## Install Wiringpi (needed by Blynk)
-
-#### New Method (works for 32bit and may work for 64bit)
-- -> sudo apt install wiringpi
-#### Alternative Method is to Clone
-- ->git clone https://github.com/WiringPi/WiringPi.git
-- ->cd WiringPi
-- ->./build
-
-#### Old Method (depricated)
-- -> wget https://project-downloads.drogon.net/wiringpi-latest.deb
-- -> sudo dpkg -i wiringpi-latest.deb
-- -> dpkg-deb -x wiringpi-latest.deb WiringPi/
-
-#### Verify Installed Correctly
-- -> gpio -v (look below means good install)
-=== gpio version: 2.52
-=== Copyright (c) 2012-2018 Gordon Henderson
-=== This is free software with ABSOLUTELY NO WARRANTY.
-=== For details type: gpio -warranty
+        #### Old Method (depricated)
+        - -> wget https://project-downloads.drogon.net/wiringpi-latest.deb
+        - -> sudo dpkg -i wiringpi-latest.deb
+        - -> dpkg-deb -x wiringpi-latest.deb WiringPi/
+        
+        #### Verify Installed Correctly
+        - -> gpio -v (look below means good install)
+        === gpio version: 2.52
+        === Copyright (c) 2012-2018 Gordon Henderson
+        === This is free software with ABSOLUTELY NO WARRANTY.
+        === For details type: gpio -warranty
 
 ## Install Blynk
 
 - -> git clone https://github.com/blynkkk/blynk-library.git
 - -> cd blynk-library/linux
 - -> Edit main.cpp to remove comment from template id
-- -> make clean all target=raspberry
-- -> make target=raspberry
+- -> make clean
+- -> make
 === clean build means succesful install
  
-## Install the Py Rainbird Project
+## Install the Python LIBs & Py Rainbird Project
 - -> git clone https://github.com/allenporter/pyrainbird.git
-- -> cd pyrainbird
-- -> pip install -r requirements_dev.txt --ignore-requires-python
+- -> pip install -r pyrainbird/requirements_dev.txt --ignore-requires-python
 - -> pip install . --ignore-requires-python
 - -> pip install paho-mqtt
 
 ## Configure the Project
+- -> cd ~
+- -> mkdir -p FTP/files
+- -> chmod a-w FTP
 - -> mkdir MWPLogData
 - -> cd MilanoWaterProject
-- -> mkdir /home/pi/MWPLogData (Create this on first time install on a new system)
+  
 ### CMake Process
 - -> cmake -S . (to rebuild the Root Makefile
 - -> make clean
