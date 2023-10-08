@@ -92,14 +92,13 @@
 - -> git clone https://github.com/blynkkk/blynk-library.git
 - -> cd blynk-library/linux
 - -> Edit main.cpp to remove comment from template id
-- -> make clean all
+- -> make clean
 - -> make
 === clean build means succesful install
  
-## Install the Py Rainbird Project
+## Install the Python LIBs & Py Rainbird Project
 - -> git clone https://github.com/allenporter/pyrainbird.git
-- -> cd pyrainbird
-- -> pip install -r requirements_dev.txt --ignore-requires-python
+- -> pip install -r pyrainbird/requirements_dev.txt --ignore-requires-python
 - -> pip install . --ignore-requires-python
 - -> pip install paho-mqtt
 
