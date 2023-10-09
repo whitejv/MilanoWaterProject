@@ -6,6 +6,11 @@
 
 - -> From the Raspbery Logo --> Preferences --> Raspberry PI Configuration --> Interface Tab --> VNC: Enable
 
+## Update all Packages (if necessary)
+- -> sudo apt update
+- -> sudo apt full-upgrade
+- -> sudo reboot
+  
 ## The Remainder of the Setup & Configuration Can Be Done via Remote Connection 
 
 ## Intsall Git (if using Rapi-Lite)
