@@ -73,6 +73,11 @@
         - -> pip install . --ignore-requires-python
         - -> pip install paho-mqtt
         - -> cd ../
+
+        ## Create Project Directories
+        - -> mkdir -p FTP/files
+        - -> chmod a-w FTP
+        - -> mkdir MWPLogData        
         
 ## Depricated - Install Wiringpi (needed by Blynk) - Only Needed if PI is using GPIO
 
@@ -106,9 +111,6 @@
 
 ## Configure the Project
 - -> cd ~
-- -> mkdir -p FTP/files
-- -> chmod a-w FTP
-- -> mkdir MWPLogData
 - -> cd MilanoWaterProject
   
 ### CMake Process
