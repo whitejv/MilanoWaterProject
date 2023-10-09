@@ -65,7 +65,13 @@
         - -> sudo nano mosquitto.conf
         - ->>> add: listener 1883
         - ->>> add: allow_anonymous true
-
+        
+        ## Install the Python LIBs & Py Rainbird Project
+        - -> git clone https://github.com/allenporter/pyrainbird.git
+        - -> pip install -r pyrainbird/requirements_dev.txt --ignore-requires-python
+        - -> pip install . --ignore-requires-python
+        - -> pip install paho-mqtt
+        
 ## Depricated - Install Wiringpi (needed by Blynk) - Only Needed if PI is using GPIO
 
         #### New Method (works for 32bit and may work for 64bit)
@@ -95,12 +101,6 @@
 - -> make clean
 - -> make
 === clean build means succesful install
- 
-## Install the Python LIBs & Py Rainbird Project
-- -> git clone https://github.com/allenporter/pyrainbird.git
-- -> pip install -r pyrainbird/requirements_dev.txt --ignore-requires-python
-- -> pip install . --ignore-requires-python
-- -> pip install paho-mqtt
 
 ## Configure the Project
 - -> cd ~
