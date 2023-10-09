@@ -65,6 +65,10 @@
         - -> sudo nano mosquitto.conf
         - ->>> add: listener 1883
         - ->>> add: allow_anonymous true
+        - -> cd ~
+        
+        ## Update PIP
+        - ->pip install --upgrade pip
         
         ## Install the Python LIBs & Py Rainbird Project
         - -> git clone https://github.com/allenporter/pyrainbird.git
