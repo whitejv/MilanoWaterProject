@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.2)
 project (blynk LANGUAGES CXX)
-SET (CMAKE_CXX_FLAGS ${CMAKE_CXX_STANDARD} "-DRASPBERRY -DLINUX")
+SET (CMAKE_CXX_FLAGS ${CMAKE_CXX_STANDARD} "-DLINUX")
 add_executable(blynk main.cpp ./utility/BlynkDebug.cpp ./utility/BlynkHandlers.cpp ./utility/BlynkTimer.cpp)
 target_link_directories(blynk PRIVATE /home/pi/paho.mqtt.c/build/output/lib ../mylib)
 target_link_libraries(blynk libpaho-mqtt3c.so libpaho-mqtt3a.so libpaho-mqtt3as.so libpaho-mqtt3cs.so libmylib.a)
