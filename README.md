@@ -68,9 +68,11 @@
         
         ## Install the Python LIBs & Py Rainbird Project
         - -> git clone https://github.com/allenporter/pyrainbird.git
-        - -> pip install -r pyrainbird/requirements_dev.txt --ignore-requires-python
+        - -> cd pyrainbird
+        - -> pip install -r requirements_dev.txt --ignore-requires-python
         - -> pip install . --ignore-requires-python
         - -> pip install paho-mqtt
+        - -> cd ../
         
 ## Depricated - Install Wiringpi (needed by Blynk) - Only Needed if PI is using GPIO
 
