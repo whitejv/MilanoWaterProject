@@ -161,11 +161,12 @@
 - -> Login to Target:  ssh pi@raspi.local
 - -> Password: raspberry
 
-# Configuring the SSH keys for remote development
+# Configuring VS Code SSH keys for remote development
 - -> On the MAC terminal: cd .ssh/
 - -> ssh-keygen -t ed25519 -b 4096
 - -> enter: known_hosts at the prompt
-   
+- -> ssh-copy-id -i "/home/pi/.ssh/known_hosts.pub pi@rpi400.local
+     
 # Configuring VS Code for Debug
 - -> C++ extension for VS Code. Install the C/C++ extension by searching for 'c++' in the Extensions view (⇧⌘X).
 - -> CMake Tools extension for VS Code. Install the CMake Tools extension by searching for 'CMake tools' in the Extensions view (⇧⌘X).
