@@ -13,6 +13,7 @@
 #include <ArduinoOTA.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <Adafruit_ADS1X15.h>
 #elif defined(ARDUINO_FEATHER_ESP32)
 #include <WiFi.h>
 #include <esp_task_wdt.h>
@@ -24,23 +25,18 @@
 #endif
 
 /*
- * For Reference - D# vs GPIO# Reference Table
-*static const uint8_t D0   = 3;
-*static const uint8_t D1   = 1;
-*static const uint8_t D2   = 16;
-*static const uint8_t D3   = 5;
-*static const uint8_t D4   = 4;
-*static const uint8_t D5   = 14;
-*static const uint8_t D6   = 12;
-*static const uint8_t D7   = 13;
-*static const uint8_t D8   = 0;
-*static const uint8_t D9   = 2;
-*static const uint8_t D10  = 15;
-*static const uint8_t D11  = 13;
-*static const uint8_t D12  = 12;
-*static const uint8_t D13  = 14;
-*static const uint8_t D14  = 4;
-*static const uint8_t D15  = 5;
+GPIO00 - //Good - Config 3
+GPIO01 - stops operation of board
+GPIO02 - //Good also lights LED - Temp Sensor
+GPIO03 - //Good - Config 2 (Also TX Pin If grounded board won’t load)
+GPIO04 - //Good - Disc Input 1
+GPIO05 - //Good - Disc Input 2
+GPIO06 - doesn’t exist
+GPIO12 - //Good - Config 1
+GPIO13 - //Good - Flow Sensor
+GPIO14 - //reserved SDA
+GPIO15 - //reserved SCL
+GPIO16 - //Good - Disc 3 (no pull-up)
 */
 
 /* Declare all constants and global variables */
@@ -48,6 +44,7 @@
 IPAddress prodMqttServerIP(192, 168, 1, 250);
 IPAddress devMqttServerIP(192, 168, 1, 249);
 
+int extendedSeneor = 0;
 int sensor = 0;
 int InitiateReset = 0;
 int ErrState = 0;
@@ -58,6 +55,7 @@ const int WDT_TIMEOUT = 10;
 unsigned int masterCounter = 0;
 const int discInput1 = DISCINPUT1;
 const int discInput2 = DISCINPUT2;
+const int discInput3 = DISCINPUT3;
 int ioInput = 0;
 long currentMillis = 0;
 long previousMillis = 0;
@@ -79,6 +77,8 @@ PubSubClient client;
 const int oneWireBus = TEMPSENSOR;
 OneWire oneWire(oneWireBus);
 DallasTemperature sensors(&oneWire);
+//Adafruit_ADS1115 ads;  /* Use this for the 16-bit version */
+Adafruit_ADS1015 ads;     /* Use this for the 12-bit version */
 
 /* Forward declaration of functions to solve circular dependencies */
 void updateWatchdog();
@@ -92,6 +92,8 @@ void printFlowData();
 void printClientState(int state);
 void readAnalogInput();
 void readDigitalInput();
+void readAnalogInputX();
+void readDigitalInputX();
 void setupOTA();
 void setupWiFi();
 void connectToMQTTServer();
@@ -119,6 +121,7 @@ void setup() {
   pinMode(configPin2, INPUT_PULLUP);
   pinMode(discInput1, INPUT_PULLUP);
   pinMode(discInput2, INPUT_PULLUP);
+  pinMode(discInput3, INPUT_PULLUP);
   sensors.begin();// Start the DS18B20 sensor
   pinMode(FLOWSENSOR, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(FLOWSENSOR), pulseCounter, FALLING);
@@ -132,9 +135,16 @@ void setup() {
   // Read the config pins and get configuation data
   //Serial.print(digitalRead(configPin1));
   //Serial.print(digitalRead(configPin2));
-  sensor = digitalRead(configPin2)<<1 | digitalRead(configPin1) ;
+  sensor = digitalRead(configPin3 <<2 | configPin2)<<1 | digitalRead(configPin1) ;
   Serial.print(sensor);
-  //sensor = 3;
+
+/* 
+ * Sensors 0-3 are standard sensors
+ * Sensors 4-7 are extended sensors with additional data words
+ */
+
+
+  if (sensor > 3){ extendedSensor == 1} ;
   Serial.print("  Sensor ID: ");
   Serial.println(flowSensorConfig[sensor].sensorName);
 
@@ -142,6 +152,12 @@ void setup() {
   strcpy(messageName, flowSensorConfig[sensor].messageid);
   strcpy(messageNameJSON, flowSensorConfig[sensor].jsonid);
  
+  if ( extendedSensor == 1 ) {
+    if (!ads.begin()) {
+       Serial.println("Failed to initialize ADS.");
+       while (1);
+    }
+  }
   setupWiFi();
   setupOTA();
   connectToMQTTServer();
@@ -158,6 +174,10 @@ void loop() {
      updateTemperatureData();
      readAnalogInput() ;
      readDigitalInput() ;
+     if ( extendedSensor == 1) {
+        readAnalogInputX();
+        readDigitalInputX();
+     }
      processMqttClient();
      publishFlowData();
      publishJsonData();
@@ -323,6 +343,42 @@ void readAnalogInput() {
   //Serial.println(flow_data_payload[3]);
 }
 
+void readAnalogInputX() {
+  //Serial.println("ADC Range: +/- 6.144V (1 bit = 3mV/ADS1015, 0.1875mV/ADS1115)");
+
+  // The ADC input range (or gain) can be changed via the following
+  // functions, but be careful never to exceed VDD +0.3V max, or to
+  // exceed the upper and lower limits if you adjust the input range!
+  // Setting these values incorrectly may destroy your ADC!
+  //                                                                ADS1015  ADS1115
+  //                                                                -------  -------
+  // ads.setGain(GAIN_TWOTHIRDS);  // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)
+  // ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
+  // ads.setGain(GAIN_TWO);        // 2x gain   +/- 2.048V  1 bit = 1mV      0.0625mV
+  // ads.setGain(GAIN_FOUR);       // 4x gain   +/- 1.024V  1 bit = 0.5mV    0.03125mV
+  // ads.setGain(GAIN_EIGHT);      // 8x gain   +/- 0.512V  1 bit = 0.25mV   0.015625mV
+  // ads.setGain(GAIN_SIXTEEN);    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
+
+
+  int16_t adc0, adc1, adc2, adc3;
+  float volts0, volts1, volts2, volts3;
+
+  adc0 = ads.readADC_SingleEnded(0);
+  adc1 = ads.readADC_SingleEnded(1);
+  adc2 = ads.readADC_SingleEnded(2);
+  adc3 = ads.readADC_SingleEnded(3);
+  //genericSens_.generic.adc_sensor = adc0;
+  volts0 = ads.computeVolts(adc0);
+  volts1 = ads.computeVolts(adc1);
+  volts2 = ads.computeVolts(adc2);
+  volts3 = ads.computeVolts(adc3);
+
+  Serial.println("-----------------------------------------------------------");
+  Serial.print("AIN0: "); Serial.print(adc0); Serial.print("  "); Serial.print(volts0); Serial.println("V");
+  Serial.print("AIN1: "); Serial.print(adc1); Serial.print("  "); Serial.print(volts1); Serial.println("V");
+  Serial.print("AIN2: "); Serial.print(adc2); Serial.print("  "); Serial.print(volts2); Serial.println("V");
+  Serial.print("AIN3: "); Serial.print(adc3); Serial.print("  "); Serial.print(volts3); Serial.println("V");
+}
 void readDigitalInput() {
 
   // Read the config pins and get configuation data
