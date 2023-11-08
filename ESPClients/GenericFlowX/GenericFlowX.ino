@@ -47,6 +47,7 @@
 
 IPAddress prodMqttServerIP(192, 168, 1, 250);
 IPAddress devMqttServerIP(192, 168, 1, 249);
+
 int sensor = 0;
 int InitiateReset = 0;
 int ErrState = 0;
@@ -138,11 +139,9 @@ void setup() {
   Serial.println(flowSensorConfig[sensor].sensorName);
 
   
-  strcpy(messageName, flowSensorConfig[sensor].sensorName);
-  strcat(messageName, " Flow Data: ");
-  strcpy(messageNameJSON, "JSON - ");
-  strcat(messageNameJSON, flowSensorConfig[sensor].messageid);
-
+  strcpy(messageName, flowSensorConfig[sensor].messageid);
+  strcpy(messageNameJSON, flowSensorConfig[sensor].jsonid);
+ 
   setupWiFi();
   setupOTA();
   connectToMQTTServer();
@@ -175,11 +174,10 @@ void setupWiFi() {
   Serial.println(ssid);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  digitalWrite(LED_BUILTIN, LOW);   // turn the LED on
+  
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println("Connection Failed! Rebooting...");
     delay(5000);
-    digitalWrite(LED_BUILTIN, HIGH);  // turn the LED off)
     ESP.restart();
   }
   Serial.println("");
@@ -247,15 +245,13 @@ void connectToMQTTServer(){
   P_client.setServer(prodMqttServerIP, PROD_MQTT_PORT);
 
   // Connect to the MQTT server
- digitalWrite(LED_BUILTIN, LOW);   // turn the LED on
+ 
   while (!P_client.connected() && millis() - connectAttemptStart < 5000) { // Adjust the timeout as needed
-    digitalWrite(LED_BUILTIN, HIGH);   // turn the LED off
     Serial.print("Connecting to Production MQTT Server: ...");
     connected = P_client.connect(flowSensorConfig[sensor].clientid);
     if (connected) {
       client = P_client; // Assign the connected production client to the global client object
       Serial.println("connected\n");
-      digitalWrite(LED_BUILTIN, LOW);   // turn the LED on
     } else {
       Serial.print("failed with client state: ");
       printClientState(P_client.state());
@@ -265,18 +261,15 @@ void connectToMQTTServer(){
   }
 
   // If connection to the production server failed, try connecting to the development server
-  digitalWrite(LED_BUILTIN, LOW);   // turn the LED on
   if (!connected) {
     //PubSubClient client(devMqttServerIP, DEV_MQTT_PORT, espWellClient);
     D_client.setServer(devMqttServerIP, DEV_MQTT_PORT);
     while (!D_client.connected()) {
-      digitalWrite(LED_BUILTIN, HIGH);   // turn the LED off
       Serial.print("Connecting to Development MQTT Server...");
       connected = D_client.connect(flowSensorConfig[sensor].clientid);
       if (connected) {
         client = D_client; // Assign the connected development client to the global client object
         Serial.println("connected\n");
-       digitalWrite(LED_BUILTIN, LOW);   // turn the LED on digitalWrite(5, HIGH);
       } else {
         Serial.print("failed with client state: ");
         printClientState(D_client.state());
@@ -299,7 +292,7 @@ void updateMasterCounter() {
   if (masterCounter > 28800) {  //Force a reboot every 8 hours
     while (1) {};
   }
-  flow_data_payload[8] = masterCounter;
+  genericSens_.generic.cycle_count = masterCounter;
 }
 
 void updateFlowData() {
@@ -307,12 +300,12 @@ void updateFlowData() {
   if (((currentMillis - previousMillis) > interval) && pulseCount > 0 ) {
     pulse1Sec = pulseCount;
     millisecond = millis() - previousMillis ;
-    flow_data_payload[0] = pulse1Sec ;
-    flow_data_payload[1] = millisecond ;
-    flow_data_payload[2] = 1;
+    genericSens_.generic.pulse_count = pulse1Sec ;
+    genericSens_.generic.milliseconds = millisecond ;
+    genericSens_.generic.new_data_flag = 1;
     previousMillis = millis();
   } else {
-    flow_data_payload[2] = 0 ;
+    genericSens_.generic.new_data_flag = 0 ;
   }
   pulseCount = 0;
 }
@@ -320,13 +313,13 @@ void updateFlowData() {
 void updateTemperatureData() {
   sensors.requestTemperatures(); 
   temperatureF = sensors.getTempFByIndex(0);
-  flow_data_payload[5] = (int)temperatureF;
-  memcpy(&flow_data_payload[6],  &temperatureF, sizeof(temperatureF));
+  genericSens_.generic.temp = (int)temperatureF;
+  memcpy(&genericSens_.generic.temp_w1,  &temperatureF, sizeof(temperatureF));
 }
 
 void readAnalogInput() {
   const int analogInPin = A0; 
-  flow_data_payload[3] = analogRead(analogInPin);
+  genericSens_.generic.adc_sensor = analogRead(analogInPin);
   //Serial.println(flow_data_payload[3]);
 }
 
@@ -336,7 +329,7 @@ void readDigitalInput() {
   //Serial.print(digitalRead(discInput1));
   //Serial.print(digitalRead(discInput2));
   ioInput = digitalRead(discInput2)<<1 | digitalRead(discInput1) ;
-  flow_data_payload[4] = ioInput ;
+  genericSens_.generic.gpio_sensor = ioInput ;
   //Serial.print("IO Input: ");
   //Serial.println(ioInput);
 }
@@ -346,37 +339,34 @@ void processMqttClient() {
 }
 
 void publishFlowData() {
-  client.publish(flowSensorConfig[sensor].messageid, (byte *)flow_data_payload, flowSensorConfig[sensor].messagelen*4);
+  client.publish(flowSensorConfig[sensor].messageid, (byte *)genericSens_.data_payload, flowSensorConfig[sensor].messagelen*4);
 }
 
 void publishJsonData() {
-  const size_t capacity = JSON_OBJECT_SIZE(10);
+  int i;
+  const size_t capacity = JSON_OBJECT_SIZE(20);
   StaticJsonDocument<capacity> jsonDoc;
 
-  jsonDoc["Pulses Counted"]    = flow_data_payload[0];
-  jsonDoc["Elapsed MilliSec"]  = flow_data_payload[1];
-  jsonDoc["New Data Flag"]     = flow_data_payload[2];
-  jsonDoc["ADC_Sensor"]         = flow_data_payload[3];
-  jsonDoc["GPIO_Sensor"]        = flow_data_payload[4];
-  jsonDoc["Temperature F(int)"]= flow_data_payload[5];
-  jsonDoc["Temperature F"]     = temperatureF;
-  jsonDoc["Counter"]           = flow_data_payload[8];
-  jsonDoc["FW Version"]        = flow_data_payload[9];
-  
+  for (i=0; i<=GENERICSENS_LEN-1; i++) {
+    jsonDoc[genericsens_ClientData_var_name [i]] = genericSens_.data_payload[i];
+  }
 
-  char jsonBuffer[256];
+  char jsonBuffer[2048];
   size_t n = serializeJson(jsonDoc, jsonBuffer);
-
-  client.publish(messageNameJSON, jsonBuffer, n);
+  //Serial.printf(flowSensorConfig[sensor].jsonid);
+  //Serial.printf("   %d",n);
+  //Serial.printf("\n");
+  //Serial.printf(jsonBuffer);
+  client.publish(flowSensorConfig[sensor].jsonid, jsonBuffer, n);
 }
 void printFlowData() {
   Serial.printf(messageName);
   for (int i = 0; i <= 5; ++i) {
-    Serial.printf("%x ", flow_data_payload[i]);
+    Serial.printf(" %x", genericSens_.data_payload[i]);
   }
-  Serial.printf("%f ", *((float *)&flow_data_payload[6]));
+  Serial.printf("%f ", *((float *)&genericSens_.data_payload[6]));
   for (int i = 7; i <= 8; ++i) {
-    Serial.printf("%x ", flow_data_payload[i]);
+    Serial.printf("%x ", genericSens_.data_payload[i]);
   }
   Serial.printf("\n");
 }
