@@ -29,7 +29,7 @@ async def check_zones(mqtt_server, controller_id):
     mqtt_client.on_message = on_message
     mqtt_client.username_pw_set("pi", "raspberry")  # set your MQTT username and password
     mqtt_client.connect(mqtt_server, 1883)  # set your MQTT server and port
-    mqtt_client.subscribe("rainbird/command")
+    mqtt_client.subscribe("mwp/command/rainbird/command")
     mqtt_client.loop_start()
 
     rainbird_ips = ["192.168.1.80", "192.168.1.79"]  # replace with your Rainbird IP addresses
@@ -52,7 +52,7 @@ async def check_zones(mqtt_server, controller_id):
                     continue
                 
                 logger.info(f"States: {states}")  # debugging line
-                mqtt_client.publish(f"rainbird/controller{controller_id}/active_zone", str(states))  
+                mqtt_client.publish(f"mwp/response/rainbird/controller{controller_id}/active_zone", str(states))  
                 userdata['check_flag'] = False
 
             await asyncio.sleep(1)

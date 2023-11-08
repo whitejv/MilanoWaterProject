@@ -134,8 +134,8 @@ rebuild_cache/fast: rebuild_cache
 
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/usr/bin/cmake-gui -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
+	/usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -176,6 +176,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named clean-all
+
+# Build rule for target.
+clean-all: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 clean-all
+.PHONY : clean-all
+
+# fast build rule for target.
+clean-all/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clean-all.dir/build.make CMakeFiles/clean-all.dir/build
+.PHONY : clean-all/fast
+
+#=============================================================================
 # Target rules for targets named mylib
 
 # Build rule for target.
@@ -189,17 +202,17 @@ mylib/fast:
 .PHONY : mylib/fast
 
 #=============================================================================
-# Target rules for targets named flowmonitor
+# Target rules for targets named irrigationmonitor
 
 # Build rule for target.
-flowmonitor: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 flowmonitor
-.PHONY : flowmonitor
+irrigationmonitor: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 irrigationmonitor
+.PHONY : irrigationmonitor
 
 # fast build rule for target.
-flowmonitor/fast:
-	$(MAKE) $(MAKESILENT) -f FlowMonitor/CMakeFiles/flowmonitor.dir/build.make FlowMonitor/CMakeFiles/flowmonitor.dir/build
-.PHONY : flowmonitor/fast
+irrigationmonitor/fast:
+	$(MAKE) $(MAKESILENT) -f IrrigationMonitor/CMakeFiles/irrigationmonitor.dir/build.make IrrigationMonitor/CMakeFiles/irrigationmonitor.dir/build
+.PHONY : irrigationmonitor/fast
 
 #=============================================================================
 # Target rules for targets named tankmonitor
@@ -291,9 +304,10 @@ help:
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
+	@echo "... clean-all"
 	@echo "... alert"
 	@echo "... blynk"
-	@echo "... flowmonitor"
+	@echo "... irrigationmonitor"
 	@echo "... monitor"
 	@echo "... mylib"
 	@echo "... tankmonitor"

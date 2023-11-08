@@ -1,0 +1,23 @@
+* Set values in WellClientData
+s   raw_current_sense_well1               d   1500
+s   raw_current_sense_well2               d   1500
+s   raw_current_sense_well3               d   1500
+s   raw_current_sense_irrigation_pump     d   1500
+s   house_water_pressure                  d   35
+s   house_tank_pressure_switch_on         d   1
+s   septic_alert_on                       d   0
+s   raw_temp_celcius                      d   25
+r	raw_temp_celcius				      d
+s   cycle_count                           d   10
+s   FW_version_4_hex                      x   1A2F
+
+* Verify values in WellMonitorData
+v   well_pump_1_on                        d   1     0
+v   well_pump_2_on                        d   1     0
+v   well_pump_3_on                        d   1     0
+v   irrigation_pump_on                    d   1     0
+v   house_water_pressure                  d   35    1
+v   House_tank_pressure_switch_on         d   1     0
+v   septic_alert_on                       d   0     0
+v   system_temp                           f   25.5  0.1
+v   cycle_count                           d   10    0

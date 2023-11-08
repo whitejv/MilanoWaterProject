@@ -20,7 +20,6 @@ typedef struct {
 
 #define ALARM_COUNT 20
 AlarmStructure alarms[ALARM_COUNT];
-struct AlertData AlertData;
 
 int alarmSummary = 0;
 enum AlarmInternalState
@@ -31,10 +30,6 @@ enum AlarmInternalState
    reset = 3,
    timeout = 4
 };
-
-struct WellMonitorData WellSensorData;
-struct TankMonitorData TankSensorData;
-struct FlowMonitorData FlowSensorData;
 
 MQTTClient client;
 MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -114,7 +109,7 @@ int main(int argc, char *argv[])
 
    printf("MQTT Address: %s\n", mqtt_address);
 
-   if ((rc = MQTTClient_create(&client, mqtt_address, ALERT_ID,
+   if ((rc = MQTTClient_create(&client, mqtt_address, ALERT_CLIENTID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       log_message("Alert: Error == Failed to Create Client. Return Code: %d\n", rc);
@@ -142,17 +137,17 @@ int main(int argc, char *argv[])
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELL_TOPIC, ALERT_ID, QOS);
-   log_message("Alert: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, ALERT_ID);
-   MQTTClient_subscribe(client, WELL_TOPIC, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELLMON_TOPICID, WELLMON_CLIENTID, QOS);
+   log_message("Alert: Subscribing to topic: %s for client: %s\n", WELLMON_TOPICID, WELLMON_CLIENTID);
+   MQTTClient_subscribe(client, WELLMON_TOPICID, QOS);
 
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TANK_TOPIC, ALERT_ID, QOS);
-   log_message("Alert: Subscribing to topic: %s for client: %s\n", TANK_TOPIC, ALERT_ID);
-   MQTTClient_subscribe(client, TANK_TOPIC, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TANKMON_TOPICID, TANKMON_CLIENTID, QOS);
+   log_message("Alert: Subscribing to topic: %s for client: %s\n", TANKMON_TOPICID, TANKMON_CLIENTID);
+   MQTTClient_subscribe(client, TANKMON_TOPICID, QOS);
 
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", FLOW_TOPIC, ALERT_ID, QOS);
-   log_message("Alert: Subscribing to topic: %s for client: %s\n", FLOW_TOPIC, ALERT_ID);
-   MQTTClient_subscribe(client, FLOW_TOPIC, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", IRRIGATIONMON_TOPICID, IRRIGATIONMON_CLIENTID, QOS);
+   log_message("Alert: Subscribing to topic: %s for client: %s\n", IRRIGATIONMON_TOPICID, IRRIGATIONMON_CLIENTID);
+   MQTTClient_subscribe(client, IRRIGATIONMON_TOPICID, QOS);
 
 
    /*
@@ -165,14 +160,7 @@ int main(int argc, char *argv[])
    {
 
 
-      /*
-       *  Populate the structure with the sensor array data
-       */
 
-      memcpy((void *)&WellSensorData, (void *)well_sensor_payload, sizeof(struct WellMonitorData));
-      memcpy((void *)&TankSensorData, (void *)tank_sensor_payload, sizeof(struct TankMonitorData));
-      memcpy((void *)&FlowSensorData, (void *)flow_sensor_payload, sizeof(struct FlowMonitorData));
-      
       alarmSummary = 0;
 
 /**	1 -	Critical	Tank Critically Low	*/
@@ -203,34 +191,31 @@ int main(int argc, char *argv[])
       /*
        * Load Up the Data
        */
-
-      AlertData.alarm1 = ((uint32_t)alarms[1].internalState << 16) | alarms[1].alarmState;
-      AlertData.alarm2 = ((uint32_t)alarms[2].internalState << 16) | alarms[2].alarmState;
-      AlertData.alarm3 = ((uint32_t)alarms[3].internalState << 16) | alarms[3].alarmState;
-      AlertData.alarm4 = ((uint32_t)alarms[4].internalState << 16) | alarms[4].alarmState;
-      AlertData.alarm5 = ((uint32_t)alarms[5].internalState << 16) | alarms[5].alarmState;
-      AlertData.alarm6 = ((uint32_t)alarms[6].internalState << 16) | alarms[6].alarmState;
-      AlertData.alarm7 = ((uint32_t)alarms[7].internalState << 16) | alarms[7].alarmState;
-      AlertData.alarm8 = ((uint32_t)alarms[8].internalState << 16) | alarms[8].alarmState;
-      AlertData.alarm9 = ((uint32_t)alarms[9].internalState << 16) | alarms[9].alarmState;
-      AlertData.alarm10 = ((uint32_t)alarms[10].internalState << 16) | alarms[10].alarmState;
-      AlertData.alarm11 = ((uint32_t)alarms[11].internalState << 16) | alarms[11].alarmState;
-      AlertData.alarm12 = ((uint32_t)alarms[12].internalState << 16) | alarms[12].alarmState;
-      AlertData.alarm13 = ((uint32_t)alarms[13].internalState << 16) | alarms[13].alarmState;
-      AlertData.alarm14 = 0;
-      AlertData.alarm15 = 0;
-      AlertData.alarm16 = 0;
-      AlertData.alarm17 = 0;
-      AlertData.alarm18 = 0;
-      AlertData.alarm19 = 0;
-      AlertData.alarm20 = 0;
-
-      memcpy((void *)alert_payload, (void *)&AlertData, sizeof(struct AlertData));
+      alert_.alert.alert1 = ((uint32_t)alarms[1].internalState << 16) | alarms[1].alarmState;
+      alert_.alert.alert2 = ((uint32_t)alarms[2].internalState << 16) | alarms[2].alarmState;
+      alert_.alert.alert3 = ((uint32_t)alarms[3].internalState << 16) | alarms[3].alarmState;
+      alert_.alert.alert4 = ((uint32_t)alarms[4].internalState << 16) | alarms[4].alarmState;
+      alert_.alert.alert5 = ((uint32_t)alarms[5].internalState << 16) | alarms[5].alarmState;
+      alert_.alert.alert6 = ((uint32_t)alarms[6].internalState << 16) | alarms[6].alarmState;
+      alert_.alert.alert7 = ((uint32_t)alarms[7].internalState << 16) | alarms[7].alarmState;
+      alert_.alert.alert8 = ((uint32_t)alarms[8].internalState << 16) | alarms[8].alarmState;
+      alert_.alert.alert9 = ((uint32_t)alarms[9].internalState << 16) | alarms[9].alarmState;
+      alert_.alert.alert10 = ((uint32_t)alarms[10].internalState << 16) | alarms[10].alarmState;
+      alert_.alert.alert11 = ((uint32_t)alarms[11].internalState << 16) | alarms[11].alarmState;
+      alert_.alert.alert12 = ((uint32_t)alarms[12].internalState << 16) | alarms[12].alarmState;
+      alert_.alert.alert13 = ((uint32_t)alarms[13].internalState << 16) | alarms[13].alarmState;
+      alert_.alert.alert14 = 0;
+      alert_.alert.alert15 = 0;
+      alert_.alert.alert16 = 0;
+      alert_.alert.alert17 = 0;
+      alert_.alert.alert18 = 0;
+      alert_.alert.alert19= 0;
+      alert_.alert.alert20 = 0;
 
       /*
        * Determine if an Alarm was detected
        */
-
+      alarmSummary = 0;
       for (i = 0; i < ALARM_COUNT; i++) {
          if (alarms[i].alarmState == 1) {
             alarmSummary = 1;
@@ -246,7 +231,7 @@ int main(int argc, char *argv[])
       sleep(1);
    }
    log_message("Alert: Exiting Main Loop\n");
-   MQTTClient_unsubscribe(client, WELL_TOPIC);
+   MQTTClient_unsubscribe(client, WELLMON_TOPICID);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);
    return rc;
@@ -279,19 +264,19 @@ void MyMQTTPublish() {
                             "undefined"};
 
    if (verbose) {
-      for (i = 0; i <= A_LEN; i++) {
-         printf("%x ", alert_payload[i]);
+      for (i = 0; i <= ALERT_LEN; i++) {
+         printf("%x ", alert_.data_payload[i]);
       }
       printf("%s", ctime(&t));
    }
 
-   pubmsg.payload = alert_payload;
-   pubmsg.payloadlen = A_LEN * 4;
+   pubmsg.payload = alert_.data_payload;
+   pubmsg.payloadlen = ALERT_LEN * 4;
    pubmsg.qos = QOS;
    pubmsg.retained = 0;
    deliveredtoken = 0;
 
-   if ((rc = MQTTClient_publishMessage(client, A_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS) {
+   if ((rc = MQTTClient_publishMessage(client, ALERT_TOPICID, &pubmsg, &token)) != MQTTCLIENT_SUCCESS) {
       log_message("Alert: Error == Failed to Publish Message. Return Code: %d\n", rc);
       printf("Failed to publish message, return code %d\n", rc);
       rc = EXIT_FAILURE;
@@ -316,7 +301,7 @@ void MyMQTTPublish() {
       pubmsg.payloadlen = strlen(json_string);
       pubmsg.qos = QOS;
       pubmsg.retained = 0;
-      MQTTClient_publishMessage(client, "JSON - Alert Data", &pubmsg, &token);
+      MQTTClient_publishMessage(client, ALERT_JSONID, &pubmsg, &token);
       MQTTClient_waitForCompletion(client, token, TIMEOUT);
 
       json_object_put(root); // Free the memory allocated to the JSON object
@@ -339,7 +324,7 @@ void processAlarmWellPumpsNotStarting() {
       }
       break;
    case (inactive):
-      if (WellSensorData.House_tank_pressure_switch_on == ON)
+      if (wellMon_.well.House_tank_pressure_switch_on == ON)
       {
          alarms[7].internalState  = trigger;
          alarms[7].timer  = 0;
@@ -348,7 +333,7 @@ void processAlarmWellPumpsNotStarting() {
    case (trigger):
       if (alarms[7].timer >= alarms[7].timeOut)
       {
-         if ((WellSensorData.House_tank_pressure_switch_on == ON && (WellSensorData.well_pump_1_on== OFF || WellSensorData.well_pump_2_on == OFF)))
+         if ((wellMon_.well.House_tank_pressure_switch_on == ON && (wellMon_.well.well_pump_1_on == OFF || wellMon_.well.well_pump_2_on == OFF)))
          {
             alarms[7].internalState  = active;
             alarms[7].timer  = 0;
@@ -360,7 +345,7 @@ void processAlarmWellPumpsNotStarting() {
       }
       break;
    case (active):
-      if ((WellSensorData.House_tank_pressure_switch_on == ON && (WellSensorData.well_pump_1_on == OFF || WellSensorData.well_pump_2_on == OFF)))
+      if ((wellMon_.well.House_tank_pressure_switch_on == ON && (wellMon_.well.well_pump_1_on == OFF || wellMon_.well.well_pump_2_on == OFF)))
       {
          alarms[7].alarmState = 1;
       }
@@ -370,7 +355,7 @@ void processAlarmWellPumpsNotStarting() {
       }
       break;
    case (reset):
-      if (WellSensorData.House_tank_pressure_switch_on == OFF) {
+      if (wellMon_.well.House_tank_pressure_switch_on == OFF) {
          alarms[7].alarmState = 0;
          alarms[7].timer  = 0;
          alarms[7].timeOut = 10;
@@ -396,7 +381,7 @@ void processAlarmTankCriticallyLow(){
          break;
 
       case inactive:
-         if (TankSensorData.float_state_4 == ON)
+         if (tankMon_.tank.float2 == ON)
          {
                alarms[1].internalState = trigger;
                alarms[1].timer = 0;
@@ -416,7 +401,7 @@ void processAlarmTankCriticallyLow(){
          break;
 
       case active:
-         if (TankSensorData.float_state_4 == ON)
+         if (tankMon_.tank.float2 == ON)
          {
                alarms[1].alarmState = 1; // alarm triggered
                log_message("Water Level in Tank is Critically Low");
@@ -428,7 +413,7 @@ void processAlarmTankCriticallyLow(){
          break;
 
       case reset:
-         if (TankSensorData.float_state_4 == OFF)
+         if (tankMon_.tank.float2 == OFF)
          {
                alarms[1].alarmState = 0; // reset alarm
                alarms[1].timer = 0;

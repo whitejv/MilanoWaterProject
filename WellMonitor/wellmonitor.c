@@ -10,57 +10,6 @@
 
 int verbose = FALSE;
 
-/*#define  WELL_CLIENTID	 "Well Client", #define WELL_TOPIC   "Well ESP", well_esp_ , #define WELL_LEN 21
-* payload 0	 A0 Raw Sensor Current Sense Well 1 16bit
-* payload 1	 A1 Raw Sensor Current Sense Well 2 16bit
-* payload 2	 A2 Raw Sensor Current Sense Well 3 16bit
-* payload 3	 A3 Raw Sensor Current Sense Irrigation Pump 16bit
-* payload 4	 A7 Sensor House Water Pressure 16bit ADC 0-5v
-* payload 5	D2 House Tank Pressure Switch (0=active)
-* payload 6	D3 Septic Alert (0=active)
-* payload 7	 unused
-* payload 8	 unused
-* payload 9	 unused
-* payload 10	 Raw Temp Celcius
-* payload 11	 unused
-* payload 12	 Cycle Counter 16bit Int
-* payload 13	 spare
-* payload 14	 spare
-* payload 15	 spare
-* payload 16	 spare
-* payload 17	 spare
-* payload 18	 spare
-* payload 19	 spare
-* payload 20	 FW Version 4 Hex 
- */
-/*
- * payload 21     Last payload is Control Word From User
- */
-
-/* CLIENTID     "Tank Monitor", #define PUB_TOPIC   "Formatted Sensor Data", formatted_sensor_, len=88
- * payload[0] =    Pressure Sensor Value
- * payload[2] =    Water Height
- * payload[3] =    Tank Gallons
- * payload[4] =    Tank Percent Full
- * payload[5] =    Current Sensor  1 Value (Well #1)
- * payload[6] =    Current Sensor  2 Value (Well #2)
- * payload[7] =    Current Sensor  3 Value (Well #3) 
- * payload[8] =    Current Sensor  4 Value (Irrigation Pump)
- * payload[9] =    Firmware Version of ESP
- * payload[10] =    I2C Fault Count
- * payload[11] =    Cycle Count
- * payload[12] =    Ambient Temperature
- * payload[13] =    Float State 1
- * payload[14] =    Float State 2
- * payload[15] =    Float State 3
- * payload[16] =    Float State 4
- * payload[17] =    Pressure Switch State
- * payload[18] =    House Water Pressure Value
- * payload[19] =     spare
- * payload[20] =     spare
- * payload[21] =     spare
- */
-
 MQTTClient_deliveryToken deliveredtoken;
 
 void delivered(void *context, MQTTClient_deliveryToken dt)
@@ -154,7 +103,7 @@ int main(int argc, char *argv[])
 
    printf("MQTT Address: %s\n", mqtt_address);
 
-   if ((rc = MQTTClient_create(&client, mqtt_address, WELL_MONID,
+   if ((rc = MQTTClient_create(&client, mqtt_address, WELLMON_CLIENTID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       log_message("WellMonitor: Error == Failed to Create Client. Return Code: %d\n", rc);
@@ -183,9 +132,9 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
    }
 
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELL_CLIENT, WELL_CLIENTID, QOS);
-   log_message("WellMonitor: Subscribing to topic: %s for client: %s\n", WELL_CLIENT, WELL_CLIENTID);
-   MQTTClient_subscribe(client, WELL_CLIENT, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELLSENS_TOPICID, WELLSENS_CLIENTID, QOS);
+   log_message("WellMonitor: Subscribing to topic: %s for client: %s\n", WELLSENS_TOPICID, WELLSENS_CLIENTID);
+   MQTTClient_subscribe(client, WELLSENS_TOPICID, QOS);
 
    /*
     * Main Loop
@@ -198,7 +147,7 @@ int main(int argc, char *argv[])
       time(&t);
 
      
-      raw_voltage1_adc = well_data_payload[0];
+      raw_voltage1_adc = wellSens_.well.raw_current_sense_well1;
       if (raw_voltage1_adc > 1000) {
          pump1_on = 1 ;
       }
@@ -206,21 +155,21 @@ int main(int argc, char *argv[])
          pump1_on = 0;
       }
 
-      raw_voltage2_adc = well_data_payload[1];
+      raw_voltage2_adc = wellSens_.well.raw_current_sense_well2;
       if (raw_voltage2_adc > 1000) {
          pump2_on = 1 ;
       }
       else {
          pump2_on = 0;
       }     
-      raw_voltage3_adc = well_data_payload[2];
+      raw_voltage3_adc = wellSens_.well.raw_current_sense_well3;
       if (raw_voltage3_adc > 1000) {
          pump3_on = 1 ;
       }
       else {
          pump3_on = 0;
       }
-      raw_voltage4_adc = well_data_payload[3];
+      raw_voltage4_adc = wellSens_.well.raw_current_sense_irrigation_pump;
       if (raw_voltage4_adc > 750) {
          pump4_on = 1 ;
       }
@@ -228,26 +177,19 @@ int main(int argc, char *argv[])
          pump4_on = 0;
       }
 
-      //printf("W1: %d  W2: %d  W3: %d  W4: %d\n", raw_voltage1_adc, raw_voltage2_adc, raw_voltage3_adc, raw_voltage4_adc );
-      //printf("P1: %d  P2: %d  P3: %d  P4: %d\n", pump1_on, pump2_on, pump3_on, pump4_on );
-      WaterPresSensorValue = well_data_payload[4] * .00275496;
-      //printf("Raw Water Pressure: 0%x  %d  %f\n", well_data_payload[4],well_data_payload[4], WaterPresSensorValue);
-
-    
-
       /*
        * Convert the Discrete data
        */
 
 
-      PressSwitState = !well_data_payload[5];
-      SepticAlert = !well_data_payload[6];
+      PressSwitState = !(wellSens_.well.house_tank_pressure_switch_on);
+      SepticAlert = !(wellSens_.well.septic_alert_on);
 
       /*
        * Convert Raw Temp Sensor to degrees farenhiet
        */
 
-      raw_temp = well_data_payload[10];
+      raw_temp = wellSens_.well.raw_temp_celcius;
       AmbientTempC = raw_temp ;
       AmbientTempF = (AmbientTempC * 1.8) + 32.0;
       //printf("Ambient Temp:%f  \n", AmbientTempF);
@@ -261,60 +203,41 @@ int main(int argc, char *argv[])
        * Load Up the Data
        */
 
-      well_sensor_payload[0] = pump1_on;
-      well_sensor_payload[1] = pump2_on;
-      well_sensor_payload[2] = pump3_on;
-      well_sensor_payload[3] = pump4_on;
-      well_sensor_payload[4] = WaterPresSensorValue;
-      well_sensor_payload[5] = PressSwitState;
-      well_sensor_payload[6] = SepticAlert;
-      well_sensor_payload[7] = 0;
-      well_sensor_payload[8] = 0;
-      well_sensor_payload[9] = 0;
-      well_sensor_payload[10] = AmbientTempF;
-      well_sensor_payload[11] = 0;
-      well_sensor_payload[12] = well_data_payload[12];
-      well_sensor_payload[13] = 0;
-      well_sensor_payload[14] = raw_voltage1_adc;
-      well_sensor_payload[15] = raw_voltage2_adc;
-      well_sensor_payload[16] = raw_voltage3_adc;
-      well_sensor_payload[17] = raw_voltage4_adc;
-      well_sensor_payload[18] = 0;
+      wellMon_.well.well_pump_1_on = pump1_on;
+      wellMon_.well.well_pump_2_on = pump2_on;
+      wellMon_.well.well_pump_3_on = pump3_on;
+      wellMon_.well.irrigation_pump_on = pump4_on;
+      wellMon_.well.house_water_pressure = 0.0;
+      wellMon_.well.system_temp = AmbientTempF;
+      wellMon_.well.House_tank_pressure_switch_on = PressSwitState;
+      wellMon_.well.septic_alert_on = SepticAlert;
+      wellMon_.well.cycle_count = wellSens_.well.cycle_count;
+      wellMon_.well.fw_version = wellSens_.well.fw_version;
+
       /*
        * Load Up the Payload
        */
        if (verbose) {
-         for (i=0; i<=WELL_DATA; i++) {
-            printf("%.3f ", well_sensor_payload[i]);
+         for (i=0; i<=WELLMON_LEN-1; i++) {
+            printf("%.3f ", wellMon_.data_payload[i]);
          }
          printf("%s", ctime(&t));
       }
-      pubmsg.payload = well_sensor_payload;
-      pubmsg.payloadlen = WELL_DATA * 4;
+      pubmsg.payload = wellMon_.data_payload;
+      pubmsg.payloadlen = WELLMON_LEN * 4;
       pubmsg.qos = QOS;
       pubmsg.retained = 0;
       deliveredtoken = 0;
-      if ((rc = MQTTClient_publishMessage(client, WELL_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
+      if ((rc = MQTTClient_publishMessage(client, WELLMON_TOPICID, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
       {
          log_message("WellMonitor: Error == Failed to Publish Message. Return Code: %d\n", rc);
          printf("Failed to publish message, return code %d\n", rc);
          rc = EXIT_FAILURE;
       }
       json_object *root = json_object_new_object();
-
-      json_object_object_add(root, "Pump 1 On", json_object_new_double(well_sensor_payload[0]));
-      json_object_object_add(root, "Pump 2 On", json_object_new_double(well_sensor_payload[1]));
-      json_object_object_add(root, "Pump 3 On", json_object_new_double(well_sensor_payload[2]));
-      json_object_object_add(root, "Irrigation Pump On", json_object_new_double(well_sensor_payload[3]));
-      json_object_object_add(root, "House Water Pressure", json_object_new_double(well_sensor_payload[4]));
-      json_object_object_add(root, "Pressure Switch On", json_object_new_double(well_sensor_payload[5]));
-      json_object_object_add(root, "Septic Alert On", json_object_new_double(well_sensor_payload[6]));
-      json_object_object_add(root, "System Temperatur", json_object_new_double(well_sensor_payload[10]));
-      json_object_object_add(root, "cycle_count", json_object_new_double(well_sensor_payload[12]));
-      json_object_object_add(root, "Raw ADC Pump 1 On", json_object_new_double(well_sensor_payload[14]));
-      json_object_object_add(root, "Raw ADC Pump 2 On", json_object_new_double(well_sensor_payload[15]));
-      json_object_object_add(root, "Raw ADC Pump 3 On", json_object_new_double(well_sensor_payload[16]));
-      json_object_object_add(root, "Raw ADC Irrigation Pump On", json_object_new_double(well_sensor_payload[17]));
+      for (i=0; i<=WELLMON_LEN-1; i++) {
+         json_object_object_add(root, wellmon_ClientData_var_name [i], json_object_new_double(wellMon_.data_payload[i]));
+      }
 
       const char *json_string = json_object_to_json_string(root);
 
@@ -322,7 +245,7 @@ int main(int argc, char *argv[])
       pubmsg.payloadlen = strlen(json_string);
       pubmsg.qos = QOS;
       pubmsg.retained = 0;
-      MQTTClient_publishMessage(client, "Formatted Well Data", &pubmsg, &token);
+      MQTTClient_publishMessage(client, WELLMON_JSONID, &pubmsg, &token);
       //printf("Waiting for publication of %s\non topic %s for client with ClientID: %s\n", json_string, TANK_TOPIC, TANK_MONID);
       MQTTClient_waitForCompletion(client, token, TIMEOUT);
       //printf("Message with delivery token %d delivered\n", token);
@@ -335,7 +258,7 @@ int main(int argc, char *argv[])
       sleep(1);
    }
    log_message("WellMonitor: Exiting Main Loop\n") ;
-   MQTTClient_unsubscribe(client, WELL_TOPIC);
+   MQTTClient_unsubscribe(client, WELLMON_TOPICID);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);
    return rc;

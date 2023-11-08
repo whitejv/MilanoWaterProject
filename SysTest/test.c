@@ -11,7 +11,7 @@
 int verbose = FALSE;
 
 /*
-Usage: ./program_name [-v] [-r N] -l [1,2,3] [file_name]
+Usage: ./program_name -P or -D -v -l [1,2,3] [file_name]
 
 Options:
 -P -D = Set the MQTT Client ID Production or Development
@@ -27,12 +27,13 @@ Example usage:
 
 Note:
 
-All options are optional, but file_name is required.
+Options -P or -D are required to specify witch MQTT server to attach to
+all other options are optional, but file_name is required.
 If no test log level is specified, all messages will be printed.
 If no verbose flag is provided, only critical messages will be printed.
 */
 void print_usage() {
-    printf("Usage: program_name [-v] [-r N] -l [1,2,3] [file_name]\n");
+    printf("Usage: program_name -P or -D -v -l [1,2,3] [file_name]\n");
     printf("Options:\n");
     printf("  -v             : Enable verbose output\n");
     printf("  -l [1,2,3]     : Set test log level: \n");
@@ -66,18 +67,26 @@ void connlost(void* context, char* cause)
  * Initialize the Buffer Pointer Array
  */
 
-int* BufferPointerArray[8];
+int* BufferPointerArray[9];
 
+/**
+ * Initializes the BufferPointerArray with pointers to various data payloads.
+ * 
+ * The BufferPointerArray is an array of pointers to integer arrays, where each integer array
+ * represents a different type of data payload. This function initializes the BufferPointerArray
+ * by assigning each element to the corresponding data payload.
+ */
 void init_buffer_pointer_array() {
 
-    BufferPointerArray[0] = (int*)tank_data_payload;
-    BufferPointerArray[1] = (int*)well_data_payload;
-    BufferPointerArray[2] = (int*)flow_data_payload;
-    BufferPointerArray[3] = (int*)tank_sensor_payload;
-    BufferPointerArray[4] = (int*)well_sensor_payload;
-    BufferPointerArray[5] = (int*)flow_sensor_payload;
-    BufferPointerArray[6] = (int*)monitor_payload;
-    BufferPointerArray[7] = (int*)alert_payload;
+    BufferPointerArray[0] = (int*)irrigationSens_.data_payload;
+    BufferPointerArray[1] = (int*)tankSens_.data_payload;
+    BufferPointerArray[2] = (int*)houseSens_.data_payload;
+    BufferPointerArray[3] = (int*)wellSens_.data_payload;
+    BufferPointerArray[4] = (int*)tankMon_.data_payload;
+    BufferPointerArray[5] = (int*)wellMon_.data_payload;
+    BufferPointerArray[6] = (int*)irrigationMon_.data_payload;
+    BufferPointerArray[7] = (int*)monitor_.data_payload;
+    BufferPointerArray[8] = (int*)alert_.data_payload;
    
     return;
 }
@@ -86,27 +95,58 @@ void init_buffer_pointer_array() {
  * Initialize the Interface Name Array
  */
 
-char* InterfaceNameArray[8][21];
+char* InterfaceNameArray[9][21] ;
 
+
+/**
+ * Initializes the InterfaceNameArray with the appropriate client and monitor data variable names.
+ * The InterfaceNameArray is a 2D array of strings with dimensions 9x21.
+ * The first three rows contain client data variable names for Irrigation, Tank, and House.
+ * The remaining six rows contain monitor data variable names for Well, Tank, WellMonitor, FlowMonitor, MonData, and AlertData.
+ * Each row can hold up to 20 characters for the variable name, with the last element being reserved for the null terminator.
+ */
 void init_interface_name_array() {
 
     int i;
+    int j;
+
+    for (int i = 0; i < 9; ++i) {
+       for (int j = 0; j < 21; ++j) {
+           InterfaceNameArray[i][j] = NULL;
+       }
+    }
+    
+    for (i = 0; i <= 9; i++) {
+        InterfaceNameArray[0][i] = irrigationsens_ClientData_var_name[i];
+        InterfaceNameArray[1][i] = tanksens_ClientData_var_name[i];
+        InterfaceNameArray[2][i] = housesens_ClientData_var_name[i];
+        InterfaceNameArray[3][i] = wellsens_ClientData_var_name[i];
+        InterfaceNameArray[4][i] = tankmon_ClientData_var_name[i];
+        InterfaceNameArray[5][i] = wellmon_ClientData_var_name[i];
+        InterfaceNameArray[6][i] = irrigationmon_ClientData_var_name[i];
+    }  
     for (i = 0; i <= 20; i++) {
-        InterfaceNameArray[0][i] = TankClientData_var_name[i];
-        InterfaceNameArray[1][i] = WellClientData_var_name[i];
-        InterfaceNameArray[2][i] = FlowClientData_var_name[i];
-        InterfaceNameArray[3][i] = TankMonitorData_var_name[i];
-        InterfaceNameArray[4][i] = WellMonitorData_var_name[i];
-        InterfaceNameArray[6][i] = FlowMonitorData_var_name[i];
-        InterfaceNameArray[5][i] = MonData_var_names[i];
-        InterfaceNameArray[5][i] = AlertData_var_names[i];
+        InterfaceNameArray[7][i] = monitor_ClientData_var_name[i];
+        InterfaceNameArray[8][i] = alert_ClientData_var_name[i];
     }
     return;
 }
 
+/**
+ * Searches a 2D array of strings for a target string.
+ * 
+ * @param arr The 2D array of strings to search.
+ * @param target The target string to search for.
+ * @param row A pointer to an integer where the row index of the target string will be stored.
+ * @param col A pointer to an integer where the column index of the target string will be stored.
+ * @return 0 if the target string is found, -1 otherwise.
+ */
 int search_string(char* arr[][21], char* target, int* row, int* col) {
-    for (int i = 0; i <= 6; i++) {
+    for (int i = 0; i <= 8; i++) {
         for (int j = 0; j <= 20; j++) {
+            if (arr[i][j] == NULL) {
+                continue;
+            }
             if (strcmp(arr[i][j], target) == 0) {
                 *row = i;
                 *col = j;
@@ -257,25 +297,25 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
     
-    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", TANK_TOPIC, QOS); }
-    //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", TANK_TOPIC, FL_CLIENTID);
-    MQTTClient_subscribe(client, TANK_TOPIC, QOS);
+    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", TANKSENS_TOPICID, QOS); }
+    //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", TANKSENS_TOPICID, TANKSENS_CLIENTID);
+    MQTTClient_subscribe(client, TANKSENS_TOPICID, QOS);
 
-    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", WELL_TOPIC, QOS); }
-    //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", FL_TOPIC, FL_CLIENTID);
-    MQTTClient_subscribe(client, WELL_TOPIC, QOS);
+    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", WELLSENS_TOPICID, QOS); }
+    //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", WELLSENS_TOPICID, WELLSENS_CLIENTID);
+    MQTTClient_subscribe(client, WELLSENS_TOPICID, QOS);
 
-    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", FLOW_TOPIC, QOS); }
-    //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", F_TOPIC, F_CLIENTID);
-    MQTTClient_subscribe(client, FLOW_TOPIC, QOS);
+    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", IRRIGATIONSENS_TOPICID, QOS); }
+    //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", IRRIGATIONSENS_TOPICID, IRRIGATIONSENS_CLIENTID);
+    MQTTClient_subscribe(client, IRRIGATIONSENS_TOPICID, QOS);
 
-    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", M_TOPIC, QOS); }
-    //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", M_TOPIC, M_CLIENTID);
-    MQTTClient_subscribe(client, M_TOPIC, QOS);
+    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", MONITOR_TOPICID, QOS); }
+    //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", MONITOR_TOPICID, MONITOR_CLIENTID);
+    MQTTClient_subscribe(client, MONITOR_TOPICID, QOS);
 
-    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", A_TOPIC, QOS); }
-    //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", A_TOPIC, A_CLIENTID);
-    MQTTClient_subscribe(client, A_TOPIC, QOS);
+    if (verbose) { log_test(verbose, log_level, 1, "Subscribing to topic: %s using QoS: %d\n", ALERT_TOPICID, QOS); }
+    //log_test(verbose, log_level, 1, "Test: Subscribing to topic: %s for client: %s\n", ALERT_TOPICID, ALERT_CLIENTID);
+    MQTTClient_subscribe(client, ALERT_TOPICID, QOS);
 
     /*
      * Initialize the Buffer Pointer Array and Name Array Before we Start
@@ -355,26 +395,33 @@ int main(int argc, char* argv[]) {
                 break;
             }
             switch (i) {
-            case 0:
-                pubmsg.payload = (void*)tank_data_payload;
-                pubmsg.payloadlen = sizeof(tank_data_payload);
-                pubmsg.qos = QOS;
-                pubmsg.retained = 0;
-                MQTTClient_publishMessage(client, TANK_CLIENT, &pubmsg, &token);
-                break;
             case 1:
-                pubmsg.payload = (void*)well_data_payload;
-                pubmsg.payloadlen = sizeof(well_data_payload);
+                pubmsg.payload = (void*)tankSens_.data_payload;
+                pubmsg.payloadlen = sizeof(tankSens_.data_payload);
                 pubmsg.qos = QOS;
                 pubmsg.retained = 0;
-                MQTTClient_publishMessage(client, WELL_CLIENT, &pubmsg, &token);
+                MQTTClient_publishMessage(client, TANKSENS_TOPICID, &pubmsg, &token);
+                break;
+            case 3:
+                pubmsg.payload = (void*)wellSens_.data_payload;
+                pubmsg.payloadlen = sizeof(wellSens_.data_payload);
+                pubmsg.qos = QOS;
+                pubmsg.retained = 0;
+                MQTTClient_publishMessage(client, WELLSENS_TOPICID, &pubmsg, &token);
                 break;
             case 2:
-                pubmsg.payload = (void*)irrigation_data_payload;
-                pubmsg.payloadlen = sizeof(irrigation_data_payload);
+                pubmsg.payload = (void*)houseSens_.data_payload;
+                pubmsg.payloadlen = sizeof(houseSens_.data_payload);
                 pubmsg.qos = QOS;
                 pubmsg.retained = 0;
-                MQTTClient_publishMessage(client, IRRIGATION_CLIENT, &pubmsg, &token);
+                MQTTClient_publishMessage(client, HOUSESENS_TOPICID, &pubmsg, &token);
+                break;
+            case 0:
+                pubmsg.payload = (void*)irrigationSens_.data_payload;
+                pubmsg.payloadlen = sizeof(irrigationSens_.data_payload);
+                pubmsg.qos = QOS;
+                pubmsg.retained = 0;
+                MQTTClient_publishMessage(client, IRRIGATIONSENS_TOPICID, &pubmsg, &token);
                 break;
             }
             log_test(verbose, log_level, 1, "The set value of %s is %d\n", param, value.decimal);
@@ -495,12 +542,12 @@ int main(int argc, char* argv[]) {
     pubmsg.payloadlen = sizeof(cleanup);
     pubmsg.qos = QOS;
     pubmsg.retained = 0;
-    MQTTClient_publishMessage(client, TANK_CLIENT, &pubmsg, &token);
-    MQTTClient_publishMessage(client, WELL_CLIENT, &pubmsg, &token);
-    MQTTClient_publishMessage(client, IRRIGATION_CLIENT, &pubmsg, &token);
+    MQTTClient_publishMessage(client, TANKSENS_TOPICID, &pubmsg, &token);
+    MQTTClient_publishMessage(client, WELLSENS_TOPICID, &pubmsg, &token);
+    MQTTClient_publishMessage(client, IRRIGATIONSENS_TOPICID, &pubmsg, &token);
 
 
-    MQTTClient_unsubscribe(client, FLOW_TOPIC);
+    MQTTClient_unsubscribe(client, IRRIGATIONSENS_TOPICID);
     MQTTClient_disconnect(client, 10000);
     MQTTClient_destroy(&client);
     return rc;

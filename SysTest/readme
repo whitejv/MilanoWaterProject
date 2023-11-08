@@ -1,3 +1,56 @@
+Based on the information provided, your test language serves as a simplified DSL (Domain-Specific Language) for scripting tests on a Water Monitoring System. The language provides a set of commands, parameters, and other details necessary for performing different kinds of operations and verifications. Here's an outline:
+
+### Command Types:
+
+- `s`: **Set** a parameter to a specific value.
+- `r`: **Read** the value of a parameter and print it.
+- `v`: **Verify** that a parameter has an expected value within a given tolerance.
+- `c`: **Compare** a parameter's value against a specific value and report whether they match.
+- `d`: **Delay** the execution of the test for a specified time.
+
+### Operations:
+
+- `set`: Set the value of a given parameter.
+- `read`: Read the value of a given parameter.
+- `verify`: Verify the value of a parameter.
+- `compare`: Compare the value of a parameter.
+- `delay`: Pause the test for a specific amount of time.
+
+### Parameters:
+
+- `parameter ID`: The ID that uniquely identifies each parameter you wish to test. These might be sensor readings, status flags, etc.
+
+### Value Types:
+
+- `d`: Decimal integer value.
+- `f`: Floating-point value.
+- `x`: Hexadecimal value.
+
+### Values and Tolerances:
+
+- `value`: The value you either set for a parameter or expect a parameter to have.
+- `tolerance`: A range within which the parameter value should fall for a verification to be considered successful (only applicable to the `verify` command and float type).
+
+### Test File Example:
+
+```
+s set TankLevel d 50
+r read WellFlowRate f
+v verify AlertStatus x 0x1A 0
+c compare TankLevel d 50
+d delay d 5000
+```
+
+In this example:
+
+1. The `TankLevel` is set to a decimal value of 50.
+2. The `WellFlowRate` is read and printed, and it is of float type.
+3. The `AlertStatus` is verified to be equal to the hexadecimal value 0x1A with zero tolerance.
+4. The `TankLevel` is compared against a decimal value of 50.
+5. The execution of the test is delayed by 5000 milliseconds.
+
+The test language is designed for simplicity and ease of use, catering specifically to the domain of water monitoring systems. It provides the ability to script a series of test steps with clear semantics, making it easier to automate the testing process.
+
 Test File syntax:										
 Water Monitoring System Test Tool - Test File Syntax
 
