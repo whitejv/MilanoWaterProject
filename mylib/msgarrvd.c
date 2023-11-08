@@ -25,52 +25,47 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
       printf("message: ");
    }
 
-   if ( strcmp(topicName, TANK_CLIENT) == 0) {
-      memcpy(tank_data_payload, message->payload, message->payloadlen);
-      if (verbose) {for(i=0; i < TANK_LEN; i++) {printf("%0x ", tank_data_payload[i]);}}
+   if ( strcmp(topicName, TANKSENS_TOPICID) == 0) {
+      memcpy(tankSens_.data_payload, message->payload, message->payloadlen);
+      if (verbose) {for(i=0; i < TANKSENS_LEN; i++) {printf("%0x ", tankSens_.data_payload[i]);}}
       printf("t\n");
    }
-   else if ( strcmp(topicName, WELL_CLIENT) == 0) {
-      memcpy(well_data_payload, message->payload, message->payloadlen);
-      if (verbose) {for(i=0; i < WELL_LEN; i++) {printf("%0x ", well_data_payload[i]);}}
+   else if ( strcmp(topicName, WELLSENS_TOPICID) == 0) {
+      memcpy(wellSens_.data_payload, message->payload, message->payloadlen);
+      if (verbose) {for(i=0; i < WELLSENS_LEN; i++) {printf("%0x ", wellSens_.data_payload[i]);}}
       printf("w\n");
    }
-   else if ( strcmp(topicName, TANKGAL_CLIENT) == 0) {
-      memcpy(tankgal_data_payload, message->payload, message->payloadlen);
-      if (verbose) {for(i=0; i < TANKGAL_LEN; i++) {printf("%0x ", tankgal_data_payload[i]);}}
-      printf("tg\n");
-   }
-      else if ( strcmp(topicName, IRRIGATION_CLIENT) == 0) {
-      memcpy(flow_data_payload, message->payload, message->payloadlen);
-      if (verbose) {for(i=0; i < IRRIGATION_LEN; i++) {printf("%0x ", flow_data_payload[i]);}}
+   else if ( strcmp(topicName, IRRIGATIONSENS_TOPICID) == 0) {
+      memcpy(irrigationSens_.data_payload, message->payload, message->payloadlen);
+      if (verbose) {for(i=0; i < IRRIGATIONSENS_LEN; i++) {printf("%0x ", irrigationSens_.data_payload[i]);}}
       printf("f\n");
    }
-   else if ( strcmp(topicName, TANK_TOPIC) == 0) {
-      memcpy(tank_sensor_payload, message->payload, message->payloadlen);
-      if (verbose) {for(i=0; i < TANK_DATA; i++) { printf("%0f ", tank_sensor_payload[i]);}}
+   else if ( strcmp(topicName, TANKMON_TOPICID) == 0) {
+      memcpy(tankMon_.data_payload, message->payload, message->payloadlen);
+      if (verbose) {for(i=0; i < TANKMON_LEN; i++) { printf("%0f ", tankMon_.data_payload[i]);}}
       printf("+\n");
    }
-   else if ( strcmp(topicName, WELL_TOPIC) == 0) {
-      memcpy(well_sensor_payload, message->payload, message->payloadlen);
-      if (verbose) {for(i=0; i < WELL_DATA; i++) {printf("%0x ", well_sensor_payload[i]);}}
+   else if ( strcmp(topicName, WELLMON_TOPICID) == 0) {
+      memcpy(wellMon_.data_payload, message->payload, message->payloadlen);
+      if (verbose) {for(i=0; i < WELLMON_LEN; i++) {printf("%0x ", wellMon_.data_payload[i]);}}
       printf(">\n");
    } 
-   else if ( strcmp(topicName, FLOW_TOPIC) == 0) {
-      memcpy(flow_sensor_payload, message->payload, message->payloadlen);
-      if (verbose) {for(i=0; i < FLOW_DATA; i++) {printf("%0f ", flow_sensor_payload[i]);}}
+   else if ( strcmp(topicName, IRRIGATIONMON_TOPICID) == 0) {
+      memcpy(irrigationMon_.data_payload, message->payload, message->payloadlen);
+      if (verbose) {for(i=0; i < IRRIGATIONMON_LEN; i++) {printf("%0f ", irrigationMon_.data_payload[i]);}}
       printf("^\n");
    }
-   else if ( strcmp(topicName, M_TOPIC) == 0) {
-      memcpy(monitor_payload, message->payload, message->payloadlen);
-      if (verbose) {for(i=0; i < M_LEN; i++) { printf("%0x ", monitor_payload[i]);}}
+   else if ( strcmp(topicName, MONITOR_TOPICID) == 0) {
+      memcpy(monitor_.data_payload, message->payload, message->payloadlen);
+      if (verbose) {for(i=0; i < MONITOR_LEN; i++) { printf("%0x ", monitor_.data_payload[i]);}}
       printf(".\n");
    }
-   else if ( strcmp(topicName, A_TOPIC) == 0) {
-      memcpy(alert_payload, message->payload, message->payloadlen);
-      if (verbose) {for(i=0; i < A_LEN; i++) {printf("%0x ", alert_payload[i]);}}
+   else if ( strcmp(topicName, ALERT_TOPICID) == 0) {
+      memcpy(alert_.data_payload, message->payload, message->payloadlen);
+      if (verbose) {for(i=0; i < ALERT_LEN; i++) {printf("%0x ", alert_.data_payload[i]);}}
       printf("*\n");
    }
-   else if ( strcmp(topicName, "rainbird/controller1/active_zone") == 0) {
+   else if ( strcmp(topicName, "mwp/rainbird/response/controller1/active_zone") == 0) {
       memcpy(rainbird_payload, message->payload, message->payloadlen);
       if (verbose) {printf("%s ", rainbird_payload);}
       
@@ -83,7 +78,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
       
       printf("F\n");
    }
-      else if ( strcmp(topicName, "rainbird/controller2/active_zone") == 0) {
+      else if ( strcmp(topicName, "mwp/rainbird/response/controller2/active_zone") == 0) {
       memcpy(rainbird_payload, message->payload, message->payloadlen);
       if (verbose) {printf("%s ", rainbird_payload);}
       

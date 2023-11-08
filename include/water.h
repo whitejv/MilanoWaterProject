@@ -133,10 +133,51 @@ struct PumpStats MyPumpStats[NPumps + 1];
 //      0,0,0,0,0,
 //      0,0,0,0,0 };
 
-int ESP_payload[4];
-
 int firmware = 0;
 int SubFirmware = 0x80FF;
+
+/*************************************************
+ ************************************************* 
+ * IOT Micro-Controller Input Devices Start Here *
+ ************************************************* 
+ *************************************************/
+/*****************************************************
+ *** Generic Sensor to Support 8 Flow Sensors      ***
+ ***                                               ***
+ *** GPIO00 - //Good - Config 3
+ *** GPIO01 - stops operation of board
+ *** GPIO02 - //Good also lights LED - Temp Sensor
+ *** GPIO03 - //Good - Config 2 (Also TX Pin If grounded board won’t load)
+ *** GPIO04 - //Good - Disc Input 1
+ *** GPIO05 - //Good - Disc Input 2
+ *** GPIO06 - doesn’t exist
+ *** GPIO12 - //Good - Config 1
+ *** GPIO13 - //Good - Flow Sensor
+ *** GPIO14 - //reserved SDA
+ *** GPIO15 - //reserved SCL
+ *** GPIO16 - //Good - Disc 3 (no pull-up)
+******************************************************/
+
+#define FLOWSENSOR  13
+#define TEMPSENSOR  2
+#define CONFIGPIN1  12 //GPIO 12   Input with Pullup
+#define CONFIGPIN2  3  //GPIO 3 Input with Pullup
+#define CONFIGPIN3  0  //GPIO 0 Input with Pullup
+#define DISCINPUT1  4  //GPIO 4 Input with Pullup
+#define DISCINPUT2  5  //GPIO 5 Input with Pullup
+
+
+struct flowSensorConfigTable
+{
+   int  sensorID;        // Sensor ID
+   const char  *sensorName;     // Sensor Name  
+   const char  *clientid ;      // Client ID
+   const char  *messageid;      // Message ID
+   const char  *jsonid;         // JSON ID
+   int         messagelen ;     // Message Length
+};
+
+int	flow_data_payload[10] ; //must match messagelen below
 
 //#define MilanoWaterProject\IrrigationHeader.h  (created and maintained in Excel)
 /*********************************************************************************
@@ -147,6 +188,94 @@ int SubFirmware = 0x80FF;
  ****                                                                         ****
  *********************************************************************************
  ********************************************************************************/
+/*
+* Block ID: X001D
+* Block Name: genericSens
+* Description: Generic Sensor Data
+* From: generic
+* To: xxx
+* Type: data
+* MQTT Client ID: Generic Flow Client
+* MQTT Topic ID: /sensor/X001D/flow/generic
+* MSG Length: 10
+*  word #        data type            variable                description        min        max        nominal
+*  0        int            pulse_count                Pulses Counted in Time Window        0        5000        20
+*  1        int            milliseconds                Number of milliseconds in Time Window        0        10000        2000
+*  2        int            new_data_flag                Flag 1=new data 0=stale data        0        1        1
+*  3        int            adc_sensor                ADC Raw Sensor value: Bit 0-9 (0-1023)        0        1023        512
+*  4        int            gpio_sensor                GPIO Sensor Data: Bit 1: GPIO 4, Bit 2: GPIO 5        0        3        3
+*  5        int            temp                Temp f (int)        -32        150        80
+*  6        int            temp_w1                Temperature in F Float Bytes 1&2                        
+*  7        int            temp_w2                Temperature in F Float Bytes 3&4                        
+*  8        int            cycle_count                 Cycle Counter        0        28800        
+*  9        int            fw_version                 FW Version 4 Hex                         
+*  10        int            adc_x1                extended sensor adc - 1                        
+*  11        int            adc_x2                extended sensor adc - 2                        
+*  12        int            adc_x3                extended sensor adc - 3                        
+*  13        int            adc_x4                extended sensor adc - 4                        
+*  14        int            adc_x5                extended sensor adc - 5                        
+*  15        int            adc_x6                extended sensor adc - 6                        
+*  16        int            adc_x7                extended sensor adc - 7                        
+*  17        int            adc_x8                extended sensor adc - 8                        
+*  18        int            GPIO_x1                estended sensor GPIO - 1                        
+*  19        int            GPIO_x2                estended sensor GPIO - 2                        
+*/
+
+const char GENERICSENS_CLIENTID[] =    "Generic Flow Client" ;
+const char GENERICSENS_TOPICID[] =  "mwp/data/sensor/X001D/flow/generic";
+const char GENERICSENS_JSONID[] =  "mwp/json/data/sensor/X001D/flow/generic";
+#define GENERICSENS_LEN 10
+
+union   GENERICSENS_  {
+   int     data_payload[GENERICSENS_LEN] ;
+
+   struct  {
+      int   pulse_count    ;
+      int   milliseconds    ;
+      int   new_data_flag    ;
+      int   adc_sensor    ;
+      int   gpio_sensor    ;
+      int   temp    ;
+      int   temp_w1    ;
+      int   temp_w2    ;
+      int   cycle_count    ;
+      int   fw_version    ;
+      int   adc_x1    ;
+      int   adc_x2    ;
+      int   adc_x3    ;
+      int   adc_x4    ;
+      int   adc_x5    ;
+      int   adc_x6    ;
+      int   adc_x7    ;
+      int   adc_x8    ;
+      int   GPIO_x1    ;
+      int   GPIO_x2    ;
+   }  generic  ;
+}  ;
+union  GENERICSENS_  genericSens_  ;
+
+char* genericsens_ClientData_var_name [] = { 
+    "X001D:pulse_count",
+    "X001D:milliseconds",
+    "X001D:new_data_flag",
+    "X001D:adc_sensor",
+    "X001D:gpio_sensor",
+    "X001D:temp",
+    "X001D:temp_w1",
+    "X001D:temp_w2",
+    "X001D:cycle_count",
+    "X001D:fw_version",
+    "X001D:adc_x1",
+    "X001D:adc_x2",
+    "X001D:adc_x3",
+    "X001D:adc_x4",
+    "X001D:adc_x5",
+    "X001D:adc_x6",
+    "X001D:adc_x7",
+    "X001D:adc_x8",
+    "X001D:GPIO_x1",
+    "X001D:GPIO_x2",
+}  ;
 
 /*
 * Block ID: S001D
@@ -154,13 +283,13 @@ int SubFirmware = 0x80FF;
 * Description: irrigation Flow Data
 * From: irrigation
 * To: irrigation Flow Monitor
-* Rate: 1 hz
+* Type: data
 * MQTT Client ID: Irrigation Flow Client
-* MQTT Topic ID: mwp/data/sensor/S001D/flow/irrigation
+* MQTT Topic ID: /sensor/S001D/flow/irrigation
 * MSG Length: 10
 *  word #        data type            variable                description        min        max        nominal
 *  0        int            pulse_count                Pulses Counted in Time Window        0        5000        20
-*  1        int            millisecnods                Number of milliseconds in Time Window        0        10000        2000
+*  1        int            milliseconds                Number of milliseconds in Time Window        0        10000        2000
 *  2        int            new_data_flag                Flag 1=new data 0=stale data        0        1        1
 *  3        int            adc_sensor                ADC Raw Sensor value: Bit 0-9 (0-1023)        0        1023        512
 *  4        int            gpio_sensor                GPIO Sensor Data: Bit 1: GPIO 4, Bit 2: GPIO 5        0        3        3
@@ -173,6 +302,7 @@ int SubFirmware = 0x80FF;
 
 const char IRRIGATIONSENS_CLIENTID[] =    "Irrigation Flow Client" ;
 const char IRRIGATIONSENS_TOPICID[] =  "mwp/data/sensor/S001D/flow/irrigation";
+const char IRRIGATIONSENS_JSONID[] =  "mwp/json/data/sensor/S001D/flow/irrigation";
 #define IRRIGATIONSENS_LEN 10
 
 union   IRRIGATIONSENS_  {
@@ -180,7 +310,7 @@ union   IRRIGATIONSENS_  {
 
    struct  {
       int   pulse_count    ;
-      int   millisecnods    ;
+      int   milliseconds    ;
       int   new_data_flag    ;
       int   adc_sensor    ;
       int   gpio_sensor    ;
@@ -194,16 +324,16 @@ union   IRRIGATIONSENS_  {
 union  IRRIGATIONSENS_  irrigationSens_  ;
 
 char* irrigationsens_ClientData_var_name [] = { 
-    "irrigationSens_pulse_count",
-    "irrigationSens_millisecnods",
-    "irrigationSens_new_data_flag",
-    "irrigationSens_adc_sensor",
-    "irrigationSens_gpio_sensor",
-    "irrigationSens_temp",
-    "irrigationSens_temp_w1",
-    "irrigationSens_temp_w2",
-    "irrigationSens_cycle_count",
-    "irrigationSens_fw_version",
+    "S001D:pulse_count",
+    "S001D:milliseconds",
+    "S001D:new_data_flag",
+    "S001D:adc_sensor",
+    "S001D:gpio_sensor",
+    "S001D:temp",
+    "S001D:temp_w1",
+    "S001D:temp_w2",
+    "S001D:cycle_count",
+    "S001D:fw_version",
 }  ;
 
 /*
@@ -212,13 +342,13 @@ char* irrigationsens_ClientData_var_name [] = {
 * Description: tank Flow Data
 * From: tank
 * To: tank Flow Monitor
-* Rate: 1 hz
+* Type: data
 * MQTT Client ID: Tank Flow Client
-* MQTT Topic ID: mwp/data/sensor/S002D/flow/tank
+* MQTT Topic ID: /sensor/S002D/flow/tank
 * MSG Length: 10
 *  word #        data type            variable                description        min        max        nominal
 *  0        int            pulse_count                Pulses Counted in Time Window        0        5000        20
-*  1        int            millisecnods                Number of milliseconds in Time Window        0        10000        2000
+*  1        int            milliseconds                Number of milliseconds in Time Window        0        10000        2000
 *  2        int            new_data_flag                Flag 1=new data 0=stale data        0        1        1
 *  3        int            adc_sensor                ADC Raw Sensor value: Bit 0-9 (0-1023)        0        1023        512
 *  4        int            gpio_sensor                GPIO Sensor Data: Bit 1: GPIO 4, Bit 2: GPIO 5        0        3        3
@@ -231,6 +361,7 @@ char* irrigationsens_ClientData_var_name [] = {
 
 const char TANKSENS_CLIENTID[] =    "Tank Flow Client" ;
 const char TANKSENS_TOPICID[] =  "mwp/data/sensor/S002D/flow/tank";
+const char TANKSENS_JSONID[] =  "mwp/json/data/sensor/S002D/flow/tank";
 #define TANKSENS_LEN 10
 
 union   TANKSENS_  {
@@ -238,7 +369,7 @@ union   TANKSENS_  {
 
    struct  {
       int   pulse_count    ;
-      int   millisecnods    ;
+      int   milliseconds    ;
       int   new_data_flag    ;
       int   adc_sensor    ;
       int   gpio_sensor    ;
@@ -252,16 +383,16 @@ union   TANKSENS_  {
 union  TANKSENS_  tankSens_  ;
 
 char* tanksens_ClientData_var_name [] = { 
-    "tankSens_pulse_count",
-    "tankSens_millisecnods",
-    "tankSens_new_data_flag",
-    "tankSens_adc_sensor",
-    "tankSens_gpio_sensor",
-    "tankSens_temp",
-    "tankSens_temp_w1",
-    "tankSens_temp_w2",
-    "tankSens_cycle_count",
-    "tankSens_fw_version",
+    "S002D:pulse_count",
+    "S002D:milliseconds",
+    "S002D:new_data_flag",
+    "S002D:adc_sensor",
+    "S002D:gpio_sensor",
+    "S002D:temp",
+    "S002D:temp_w1",
+    "S002D:temp_w2",
+    "S002D:cycle_count",
+    "S002D:fw_version",
 }  ;
 
 /*
@@ -270,13 +401,13 @@ char* tanksens_ClientData_var_name [] = {
 * Description: house Flow Data
 * From: house
 * To: house Flow Monitor
-* Rate: 1 hz
+* Type: data
 * MQTT Client ID: House Flow Client
-* MQTT Topic ID: mwp/data/sensor/S002D/flow/house
+* MQTT Topic ID: /sensor/S002D/flow/house
 * MSG Length: 10
 *  word #        data type            variable                description        min        max        nominal
 *  0        int            pulse_count                Pulses Counted in Time Window        0        5000        20
-*  1        int            millisecnods                Number of milliseconds in Time Window        0        10000        2000
+*  1        int            milliseconds                Number of milliseconds in Time Window        0        10000        2000
 *  2        int            new_data_flag                Flag 1=new data 0=stale data        0        1        1
 *  3        int            adc_sensor                ADC Raw Sensor value: Bit 0-9 (0-1023)        0        1023        512
 *  4        int            gpio_sensor                GPIO Sensor Data: Bit 1: GPIO 4, Bit 2: GPIO 5        0        3        3
@@ -289,6 +420,7 @@ char* tanksens_ClientData_var_name [] = {
 
 const char HOUSESENS_CLIENTID[] =    "House Flow Client" ;
 const char HOUSESENS_TOPICID[] =  "mwp/data/sensor/S002D/flow/house";
+const char HOUSESENS_JSONID[] =  "mwp/json/data/sensor/S002D/flow/house";
 #define HOUSESENS_LEN 10
 
 union   HOUSESENS_  {
@@ -296,7 +428,7 @@ union   HOUSESENS_  {
 
    struct  {
       int   pulse_count    ;
-      int   millisecnods    ;
+      int   milliseconds    ;
       int   new_data_flag    ;
       int   adc_sensor    ;
       int   gpio_sensor    ;
@@ -310,31 +442,31 @@ union   HOUSESENS_  {
 union  HOUSESENS_  houseSens_  ;
 
 char* housesens_ClientData_var_name [] = { 
-    "houseSens_pulse_count",
-    "houseSens_millisecnods",
-    "houseSens_new_data_flag",
-    "houseSens_adc_sensor",
-    "houseSens_gpio_sensor",
-    "houseSens_temp",
-    "houseSens_temp_w1",
-    "houseSens_temp_w2",
-    "houseSens_cycle_count",
-    "houseSens_fw_version",
+    "S003D:pulse_count",
+    "S003D:milliseconds",
+    "S003D:new_data_flag",
+    "S003D:adc_sensor",
+    "S003D:gpio_sensor",
+    "S003D:temp",
+    "S003D:temp_w1",
+    "S003D:temp_w2",
+    "S003D:cycle_count",
+    "S003D:fw_version",
 }  ;
 
 /*
 * Block ID: S004D
-* Block Name: spareSense
+* Block Name: spareSens
 * Description: spare Flow Data
 * From: spare
 * To: spare Flow Monitor
-* Rate: 1 hz
+* Type: data
 * MQTT Client ID: Spare Flow Client
-* MQTT Topic ID: mwp/data/sensor/S002D/flow/spare
+* MQTT Topic ID: /sensor/S002D/flow/spare
 * MSG Length: 10
 *  word #        data type            variable                description        min        max        nominal
 *  0        int            pulse_count                Pulses Counted in Time Window        0        5000        20
-*  1        int            millisecnods                Number of milliseconds in Time Window        0        10000        2000
+*  1        int            milliseconds                Number of milliseconds in Time Window        0        10000        2000
 *  2        int            new_data_flag                Flag 1=new data 0=stale data        0        1        1
 *  3        int            adc_sensor                ADC Raw Sensor value: Bit 0-9 (0-1023)        0        1023        512
 *  4        int            gpio_sensor                GPIO Sensor Data: Bit 1: GPIO 4, Bit 2: GPIO 5        0        3        3
@@ -345,16 +477,17 @@ char* housesens_ClientData_var_name [] = {
 *  9        int            fw_version                 FW Version 4 Hex                         
 */
 
-const char SPARESENSE_CLIENTID[] =    "Spare Flow Client" ;
-const char SPARESENSE_TOPICID[] =  "mwp/data/sensor/S002D/flow/spare";
-#define SPARESENSE_LEN 10
+const char SPARESENS_CLIENTID[] =    "Spare Flow Client" ;
+const char SPARESENS_TOPICID[] =  "mwp/data/sensor/S002D/flow/spare";
+const char SPARESENS_JSONID[] =  "mwp/json/data/sensor/S002D/flow/spare";
+#define SPARESENS_LEN 10
 
-union   SPARESENSE_  {
-   int     data_payload[SPARESENSE_LEN] ;
+union   SPARESENS_  {
+   int     data_payload[SPARESENS_LEN] ;
 
    struct  {
       int   pulse_count    ;
-      int   millisecnods    ;
+      int   milliseconds    ;
       int   new_data_flag    ;
       int   adc_sensor    ;
       int   gpio_sensor    ;
@@ -365,19 +498,19 @@ union   SPARESENSE_  {
       int   fw_version    ;
    }  spare  ;
 }  ;
-union  SPARESENSE_  spareSense_  ;
+union  SPARESENS_  spareSens_  ;
 
-char* sparesense_ClientData_var_name [] = { 
-    "spareSense_pulse_count",
-    "spareSense_millisecnods",
-    "spareSense_new_data_flag",
-    "spareSense_adc_sensor",
-    "spareSense_gpio_sensor",
-    "spareSense_temp",
-    "spareSense_temp_w1",
-    "spareSense_temp_w2",
-    "spareSense_cycle_count",
-    "spareSense_fw_version",
+char* sparesens_ClientData_var_name [] = { 
+    "S004D:pulse_count",
+    "S004D:milliseconds",
+    "S004D:new_data_flag",
+    "S004D:adc_sensor",
+    "S004D:gpio_sensor",
+    "S004D:temp",
+    "S004D:temp_w1",
+    "S004D:temp_w2",
+    "S004D:cycle_count",
+    "S004D:fw_version",
 }  ;
 
 /*
@@ -386,9 +519,9 @@ char* sparesense_ClientData_var_name [] = {
 * Description: well power data
 * From: well
 * To: well Flow Monitor
-* Rate: 1 hz
+* Type: data
 * MQTT Client ID: Well Flow Client
-* MQTT Topic ID: mwp/data/sensor/S002D/flow/well
+* MQTT Topic ID: /sensor/S002D/flow/well
 * MSG Length: 10
 *  word #        data type            variable                description        min        max        nominal
 *  0        int            raw_current_sense_well1                Current Sense for Well #1        0        5000        20
@@ -405,6 +538,7 @@ char* sparesense_ClientData_var_name [] = {
 
 const char WELLSENS_CLIENTID[] =    "Well Flow Client" ;
 const char WELLSENS_TOPICID[] =  "mwp/data/sensor/S002D/flow/well";
+const char WELLSENS_JSONID[] =  "mwp/json/data/sensor/S002D/flow/well";
 #define WELLSENS_LEN 10
 
 union   WELLSENS_  {
@@ -426,16 +560,16 @@ union   WELLSENS_  {
 union  WELLSENS_  wellSens_  ;
 
 char* wellsens_ClientData_var_name [] = { 
-    "wellSens_raw_current_sense_well1",
-    "wellSens_raw_current_sense_well2",
-    "wellSens_raw_current_sense_well3",
-    "wellSens_raw_current_sense_irrigation_pump",
-    "wellSens_spare",
-    "wellSens_house_tank_pressure_switch_on",
-    "wellSens_septic_alert_on",
-    "wellSens_raw_temp_celcius",
-    "wellSens_cycle_count",
-    "wellSens_fw_version",
+    "S005D:raw_current_sense_well1",
+    "S005D:raw_current_sense_well2",
+    "S005D:raw_current_sense_well3",
+    "S005D:raw_current_sense_irrigation_pump",
+    "S005D:spare",
+    "S005D:house_tank_pressure_switch_on",
+    "S005D:septic_alert_on",
+    "S005D:raw_temp_celcius",
+    "S005D:cycle_count",
+    "S005D:fw_version",
 }  ;
 
 /*
@@ -444,9 +578,9 @@ char* wellsens_ClientData_var_name [] = {
 * Description: irrigation Flow Command
 * From: Irrigation
 * To: irrigation Flow Sensor
-* Rate: As-Req
+* Type: command
 * MQTT Client ID: Irrigation Flow Client
-* MQTT Topic ID: mwp/command/sensor/S001C/flow/irrigation
+* MQTT Topic ID: /sensor/S001C/flow/irrigation
 * MSG Length: 2
 *  word #        data type            variable                description        min        max        nominal
 *  0        int            command                Command Word        0        4        1
@@ -455,6 +589,7 @@ char* wellsens_ClientData_var_name [] = {
 
 const char IRRIGATIONCOMMAND_CLIENTID[] =    "Irrigation Flow Client" ;
 const char IRRIGATIONCOMMAND_TOPICID[] =  "mwp/command/sensor/S001C/flow/irrigation";
+const char IRRIGATIONCOMMAND_JSONID[] =  "mwp/json/command/sensor/S001C/flow/irrigation";
 #define IRRIGATIONCOMMAND_LEN 2
 
 union   IRRIGATIONCOMMAND_  {
@@ -468,19 +603,19 @@ union   IRRIGATIONCOMMAND_  {
 union  IRRIGATIONCOMMAND_  irrigationCommand_  ;
 
 char* irrigationcommand_ClientData_var_name [] = { 
-    "irrigationCommand_command",
-    "irrigationCommand_command_data_w1",
+    "S001C:command",
+    "S001C:command_data_w1",
 }  ;
 
 /*
 * Block ID: S001CR
 * Block Name: irrigationResponse
 * Description: irrigation Flow Response
-* From: irrigation Flow Sensor
+* From: Irrigation
 * To: Irrigation
-* Rate: As-Req
+* Type: response
 * MQTT Client ID: Irrigation Flow Client
-* MQTT Topic ID: mwp/command/sensor/S001CR/flow/irrigation
+* MQTT Topic ID: /sensor/S001CR/flow/irrigation
 * MSG Length: 2
 *  word #        data type            variable                description        min        max        nominal
 *  0        int            command_response_w1                Command Response Word        0        4        1
@@ -488,7 +623,8 @@ char* irrigationcommand_ClientData_var_name [] = {
 */
 
 const char IRRIGATIONRESPONSE_CLIENTID[] =    "Irrigation Flow Client" ;
-const char IRRIGATIONRESPONSE_TOPICID[] =  "mwp/command/sensor/S001CR/flow/irrigation";
+const char IRRIGATIONRESPONSE_TOPICID[] =  "mwp/response/sensor/S001CR/flow/irrigation";
+const char IRRIGATIONRESPONSE_JSONID[] =  "mwp/json/response/sensor/S001CR/flow/irrigation";
 #define IRRIGATIONRESPONSE_LEN 2
 
 union   IRRIGATIONRESPONSE_  {
@@ -497,13 +633,13 @@ union   IRRIGATIONRESPONSE_  {
    struct  {
       int   command_response_w1    ;
       int   command_response_w2    ;
-   }  irrigation ;
+   }  irrigation  ;
 }  ;
 union  IRRIGATIONRESPONSE_  irrigationResponse_  ;
 
 char* irrigationresponse_ClientData_var_name [] = { 
-    "irrigationResponse_command_response_w1",
-    "irrigationResponse_command_response_w2",
+    "S001CR:command_response_w1",
+    "S001CR:command_response_w2",
 }  ;
 
 /*
@@ -512,25 +648,26 @@ char* irrigationresponse_ClientData_var_name [] = {
 * Description: Irrigation Monitor
 * From: Irrigation
 * To: yyy
-* Rate: 1 hz
+* Type: data
 * MQTT Client ID: Irrigation Monitor Client
-* MQTT Topic ID: mwp/data/monitor/I001D
+* MQTT Topic ID: /monitor/I001D
 * MSG Length: 10
 *  word #        data type            variable                description        min        max        nominal
 *  0        float            FlowPerMin                Gallons Per Minute        0        50        10
 *  1        float            TotalFlow                Total Gallons (24 Hrs)        0        5000        2000
 *  2        float            Pressure                Irrigation Pressure        0        100        50
 *  3        float            PumpTemp                Pump Temperature        -5        125        80
-*  4        float            activeController                Active Controller        1        2        1
-*  5        float            activeZone                Active Zone        1        22        1
-*  6        float            spare1                spare1        0        0        0
-*  7        float            spare2                spare2        0        0        0
+*  4        float            FrontControllerActive                Front Controller Active        0        1        1
+*  5        float            FrontActiveZone                Front Active Zone        1        22        1
+*  6        float            BackControllerActive                Back Controller Active        0        1        1
+*  7        float            BackActiveZone                Back Active Zone        1        22        1
 *  8        float            cycle_count                 Cycle Counter        0        28800        
 *  9        float            fw_version                 FW Version 4 Hex                         
 */
 
 const char IRRIGATIONMON_CLIENTID[] =    "Irrigation Monitor Client" ;
 const char IRRIGATIONMON_TOPICID[] =  "mwp/data/monitor/I001D";
+const char IRRIGATIONMON_JSONID[] =  "mwp/json/data/monitor/I001D";
 #define IRRIGATIONMON_LEN 10
 
 union   IRRIGATIONMON_  {
@@ -541,10 +678,10 @@ union   IRRIGATIONMON_  {
       float   TotalFlow    ;
       float   Pressure    ;
       float   PumpTemp    ;
-      float   activeController    ;
-      float   activeZone    ;
-      float   spare1    ;
-      float   spare2    ;
+      float   FrontControllerActive    ;
+      float   FrontActiveZone    ;
+      float   BackControllerActive    ;
+      float   BackActiveZone    ;
       float   cycle_count    ;
       float   fw_version    ;
    }  irrigation  ;
@@ -552,16 +689,80 @@ union   IRRIGATIONMON_  {
 union  IRRIGATIONMON_  irrigationMon_  ;
 
 char* irrigationmon_ClientData_var_name [] = { 
-    "irrigationMon_FlowPerMin",
-    "irrigationMon_TotalFlow",
-    "irrigationMon_Pressure",
-    "irrigationMon_PumpTemp",
-    "irrigationMon_activeController",
-    "irrigationMon_activeZone",
-    "irrigationMon_spare1",
-    "irrigationMon_spare2",
-    "irrigationMon_cycle_count",
-    "irrigationMon_fw_version",
+    "I001D:FlowPerMin",
+    "I001D:TotalFlow",
+    "I001D:Pressure",
+    "I001D:PumpTemp",
+    "I001D:FrontControllerActive",
+    "I001D:FrontActiveZone",
+    "I001D:BackControllerActive",
+    "I001D:BackActiveZone",
+    "I001D:cycle_count",
+    "I001D:fw_version",
+}  ;
+
+/*
+* Block ID: R001C
+* Block Name: rainbirdCommand
+* Description: Rainbird Command Block
+* From: rainbirdPy
+* To: xxx
+* Type: command
+* MQTT Client ID: RainbirdPy
+* MQTT Topic ID: /rainbird/command
+* MSG Length: 7
+*  word #        data type            variable                description        min        max        nominal
+*  0        char            command[7]                Command Word                        
+*/
+
+const char RAINBIRDCOMMAND_CLIENTID[] =    "RainbirdPy" ;
+const char RAINBIRDCOMMAND_TOPICID[] =  "mwp/command/rainbird/command";
+const char RAINBIRDCOMMAND_JSONID[] =  "mwp/json/command/rainbird/command";
+#define RAINBIRDCOMMAND_LEN 7
+
+union   RAINBIRDCOMMAND_  {
+   char     data_payload[RAINBIRDCOMMAND_LEN] ;
+
+   struct  {
+      char   command[7]    ;
+   }  rainbirdpy  ;
+}  ;
+union  RAINBIRDCOMMAND_  rainbirdCommand_  ;
+
+char* rainbirdcommand_ClientData_var_name [] = { 
+    "R001C:command[7]",
+}  ;
+
+/*
+* Block ID: R001R
+* Block Name: rainbirdResponse
+* Description: Rainbird Response 
+* From: rainbirdPy
+* To: Irrigation
+* Type: response
+* MQTT Client ID: RainbirdPy
+* MQTT Topic ID: /rainbird/+/active_zone
+* MSG Length: 255
+*  word #        data type            variable                description        min        max        nominal
+*  0        char            command_response[255]                Command Response Word                        
+*/
+
+const char RAINBIRDRESPONSE_CLIENTID[] =    "RainbirdPy" ;
+const char RAINBIRDRESPONSE_TOPICID[] =  "mwp/response/rainbird/+/active_zone";
+const char RAINBIRDRESPONSE_JSONID[] =  "mwp/json/response/rainbird/+/active_zone";
+#define RAINBIRDRESPONSE_LEN 255
+
+union   RAINBIRDRESPONSE_  {
+   char     data_payload[RAINBIRDRESPONSE_LEN] ;
+
+   struct  {
+      char   command_response[255]    ;
+   }  rainbirdpy  ;
+}  ;
+union  RAINBIRDRESPONSE_  rainbirdResponse_  ;
+
+char* rainbirdresponse_ClientData_var_name [] = { 
+    "R001R:command_response[255]",
 }  ;
 
 /*
@@ -570,9 +771,9 @@ char* irrigationmon_ClientData_var_name [] = {
 * Description: Tank Monitor
 * From: tank
 * To: blynk
-* Rate: 1 hz
+* Type: data
 * MQTT Client ID: Tank Monitor Client
-* MQTT Topic ID: mwp/data/monitor/T001D
+* MQTT Topic ID: /monitor/T001D
 * MSG Length: 10
 *  word #        data type            variable                description        min        max        nominal
 *  0        float            tank_gallons_per_minute                Tank Gallons Per Minute                        
@@ -589,6 +790,7 @@ char* irrigationmon_ClientData_var_name [] = {
 
 const char TANKMON_CLIENTID[] =    "Tank Monitor Client" ;
 const char TANKMON_TOPICID[] =  "mwp/data/monitor/T001D";
+const char TANKMON_JSONID[] =  "mwp/json/data/monitor/T001D";
 #define TANKMON_LEN 10
 
 union   TANKMON_  {
@@ -610,16 +812,16 @@ union   TANKMON_  {
 union  TANKMON_  tankMon_  ;
 
 char* tankmon_ClientData_var_name [] = { 
-    "tankMon_tank_gallons_per_minute",
-    "tankMon_water_height",
-    "tankMon_tank_gallons",
-    "tankMon_tank_per_full",
-    "tankMon_tank_total_gallons_24",
-    "tankMon_air_temp",
-    "tankMon_float1",
-    "tankMon_float2",
-    "tankMon_cycle_count",
-    "tankMon_fw_version",
+    "T001D:tank_gallons_per_minute",
+    "T001D:water_height",
+    "T001D:tank_gallons",
+    "T001D:tank_per_full",
+    "T001D:tank_total_gallons_24",
+    "T001D:air_temp",
+    "T001D:float1",
+    "T001D:float2",
+    "T001D:cycle_count",
+    "T001D:fw_version",
 }  ;
 
 /*
@@ -628,9 +830,9 @@ char* tankmon_ClientData_var_name [] = {
 * Description: House Monitor
 * From: house
 * To: blynk
-* Rate: 1 hz
+* Type: data
 * MQTT Client ID: House Monitor Client
-* MQTT Topic ID: mwp/data/monitor/H001D
+* MQTT Topic ID: /monitor/H001D
 * MSG Length: 10
 *  word #        data type            variable                description        min        max        nominal
 *  0        float            tank_gallons_per_minute                Tank Gallons Per Minute                        
@@ -647,6 +849,7 @@ char* tankmon_ClientData_var_name [] = {
 
 const char HOUSEMON_CLIENTID[] =    "House Monitor Client" ;
 const char HOUSEMON_TOPICID[] =  "mwp/data/monitor/H001D";
+const char HOUSEMON_JSONID[] =  "mwp/json/data/monitor/H001D";
 #define HOUSEMON_LEN 10
 
 union   HOUSEMON_  {
@@ -668,16 +871,16 @@ union   HOUSEMON_  {
 union  HOUSEMON_  houseMon_  ;
 
 char* housemon_ClientData_var_name [] = { 
-    "houseMon_tank_gallons_per_minute",
-    "houseMon_water_height",
-    "houseMon_tank_gallons",
-    "houseMon_tank_per_full",
-    "houseMon_tank_total_gallons_24",
-    "houseMon_air_temp",
-    "houseMon_float1",
-    "houseMon_float2",
-    "houseMon_cycle_count",
-    "houseMon_fw_version",
+    "H001D:tank_gallons_per_minute",
+    "H001D:water_height",
+    "H001D:tank_gallons",
+    "H001D:tank_per_full",
+    "H001D:tank_total_gallons_24",
+    "H001D:air_temp",
+    "H001D:float1",
+    "H001D:float2",
+    "H001D:cycle_count",
+    "H001D:fw_version",
 }  ;
 
 /*
@@ -686,9 +889,9 @@ char* housemon_ClientData_var_name [] = {
 * Description: Well Monitor
 * From: well
 * To: blynk
-* Rate: 1 hz
+* Type: data
 * MQTT Client ID: Well Monitor Client
-* MQTT Topic ID: mwp/data/monitor/W001D
+* MQTT Topic ID: /monitor/W001D
 * MSG Length: 10
 *  word #        data type            variable                description        min        max        nominal
 *  0        float            well_pump_1_on                Well Pump 1 On                        
@@ -705,6 +908,7 @@ char* housemon_ClientData_var_name [] = {
 
 const char WELLMON_CLIENTID[] =    "Well Monitor Client" ;
 const char WELLMON_TOPICID[] =  "mwp/data/monitor/W001D";
+const char WELLMON_JSONID[] =  "mwp/json/data/monitor/W001D";
 #define WELLMON_LEN 10
 
 union   WELLMON_  {
@@ -726,27 +930,27 @@ union   WELLMON_  {
 union  WELLMON_  wellMon_  ;
 
 char* wellmon_ClientData_var_name [] = { 
-    "wellMon_well_pump_1_on",
-    "wellMon_well_pump_2_on",
-    "wellMon_well_pump_3_on",
-    "wellMon_irrigation_pump_on",
-    "wellMon_house_water_pressure",
-    "wellMon_system_temp",
-    "wellMon_House_tank_pressure_switch_on",
-    "wellMon_septic_alert_on",
-    "wellMon_cycle_count",
-    "wellMon_fw_version",
+    "W001D:well_pump_1_on",
+    "W001D:well_pump_2_on",
+    "W001D:well_pump_3_on",
+    "W001D:irrigation_pump_on",
+    "W001D:house_water_pressure",
+    "W001D:system_temp",
+    "W001D:House_tank_pressure_switch_on",
+    "W001D:septic_alert_on",
+    "W001D:cycle_count",
+    "W001D:fw_version",
 }  ;
 
 /*
 * Block ID: M001D
-* Block Name: Monitor
+* Block Name: monitor
 * Description: Monitor Data for Blynk
 * From: monitor
 * To: Blynk
-* Rate: 1 hz
+* Type: data
 * MQTT Client ID: Monitor Client
-* MQTT Topic ID: mwp/data/monitor/M001D
+* MQTT Topic ID: /monitor/M001D
 * MSG Length: 20
 *  word #        data type            variable                description        min        max        nominal
 *  0        int            pump_current_sense_1                 PumpCurrentSense[1];                        
@@ -773,6 +977,7 @@ char* wellmon_ClientData_var_name [] = {
 
 const char MONITOR_CLIENTID[] =    "Monitor Client" ;
 const char MONITOR_TOPICID[] =  "mwp/data/monitor/M001D";
+const char MONITOR_JSONID[] =  "mwp/json/data/monitor/M001D";
 #define MONITOR_LEN 20
 
 union   MONITOR_  {
@@ -804,37 +1009,37 @@ union   MONITOR_  {
 union  MONITOR_  monitor_  ;
 
 char* monitor_ClientData_var_name [] = { 
-    "Monitor_pump_current_sense_1",
-    "Monitor_pump_current_sense_2",
-    "Monitor_pump_current_sense_3",
-    "Monitor_pump_current_sense_4",
-    "Monitor_pump_led_color_1",
-    "Monitor_pump_led_color_2",
-    "Monitor_pump_led_color_3",
-    "Monitor_pump_led_color_4",
-    "Monitor_pump_run_count",
-    "Monitor_pump_run_time_1",
-    "Monitor_pump_run_time_2",
-    "Monitor_pump_run_time_3",
-    "Monitor_pump_run_time_4",
-    "Monitor_float_state_43",
-    "Monitor_float_state_21",
-    "Monitor_all_float_led_colors",
-    "Monitor_septic_relay_alert",
-    "Monitor_septic_relay_alert_color",
-    "Monitor_press_relay_sense",
-    "Monitor_press_led_color",
+    "M001D:pump_current_sense_1",
+    "M001D:pump_current_sense_2",
+    "M001D:pump_current_sense_3",
+    "M001D:pump_current_sense_4",
+    "M001D:pump_led_color_1",
+    "M001D:pump_led_color_2",
+    "M001D:pump_led_color_3",
+    "M001D:pump_led_color_4",
+    "M001D:pump_run_count",
+    "M001D:pump_run_time_1",
+    "M001D:pump_run_time_2",
+    "M001D:pump_run_time_3",
+    "M001D:pump_run_time_4",
+    "M001D:float_state_43",
+    "M001D:float_state_21",
+    "M001D:all_float_led_colors",
+    "M001D:septic_relay_alert",
+    "M001D:septic_relay_alert_color",
+    "M001D:press_relay_sense",
+    "M001D:press_led_color",
 }  ;
 
 /*
 * Block ID: A001D
-* Block Name: Alert
+* Block Name: alert
 * Description: Alert Data for Blynk
 * From: alert
 * To: Blynk
-* Rate: 1 hz
+* Type: data
 * MQTT Client ID: Alert Client
-* MQTT Topic ID: mwp/data/monitor/A001D
+* MQTT Topic ID: /monitor/A001D
 * MSG Length: 20
 *  word #        data type            variable                description        min        max        nominal
 *  0        int            alert1                Alert 1                        
@@ -861,6 +1066,7 @@ char* monitor_ClientData_var_name [] = {
 
 const char ALERT_CLIENTID[] =    "Alert Client" ;
 const char ALERT_TOPICID[] =  "mwp/data/monitor/A001D";
+const char ALERT_JSONID[] =  "mwp/json/data/monitor/A001D";
 #define ALERT_LEN 20
 
 union   ALERT_  {
@@ -892,56 +1098,51 @@ union   ALERT_  {
 union  ALERT_  alert_  ;
 
 char* alert_ClientData_var_name [] = { 
-    "Alert_alert1",
-    "Alert_alert2",
-    "Alert_alert3",
-    "Alert_alert4",
-    "Alert_alert5",
-    "Alert_alert6",
-    "Alert_alert7",
-    "Alert_alert8",
-    "Alert_alert9",
-    "Alert_alert10",
-    "Alert_alert11",
-    "Alert_alert12",
-    "Alert_alert13",
-    "Alert_alert14",
-    "Alert_alert15",
-    "Alert_alert16",
-    "Alert_alert17",
-    "Alert_alert18",
-    "Alert_alert19",
-    "Alert_alert20",
+    "A001D:alert1",
+    "A001D:alert2",
+    "A001D:alert3",
+    "A001D:alert4",
+    "A001D:alert5",
+    "A001D:alert6",
+    "A001D:alert7",
+    "A001D:alert8",
+    "A001D:alert9",
+    "A001D:alert10",
+    "A001D:alert11",
+    "A001D:alert12",
+    "A001D:alert13",
+    "A001D:alert14",
+    "A001D:alert15",
+    "A001D:alert16",
+    "A001D:alert17",
+    "A001D:alert18",
+    "A001D:alert19",
+    "A001D:alert20",
 }  ;
-/*************************************************
- ************************************************* 
- * IOT Micro-Controller Input Devices Start Here *
- ************************************************* 
- *************************************************/
 
-/* Generic FLow Client to Support 3 Flow Sensors */
+//#define MilanoWaterProject\IrrigationHeader.h  (created and maintained in Excel)
+/*********************************************************************************
+ *********************************************************************************
+ **** ^^^           ^^^           ^^^           ^^^          ^^^          ^^^ ****
+ **** |||           |||           |||           |||          |||          ||| ****
+ **** Data Above This Line is Auto Generated from the Excel Spreadsheet Above ****
+ ****                                                                         ****
+ *********************************************************************************
+ ********************************************************************************/
 
-#define FLOWSENSOR 13
-#define TEMPSENSOR 2
-#define CONFIGPIN1  12 //GPIO 12
-#define CONFIGPIN2  3  //GPIO 3
-#define DISCINPUT1  4  //GPIO 4 Input with Pullup
-#define DISCINPUT2  5  //GPIO 5 Input with Pullup
+/*********************************************************************************
+ *********************************************************************************
+ ******   Sensors 0-3 are standard flow sensors with 10 data words         *******
+ ******   Sensors 4-7 are extended sensors with 20 data words              *******
+**********************************************************************************/
 
-
-struct flowSensorConfigTable
-{
-   int  sensorID;         // Sensor ID
-   char sensorName[40];    // Sensor Name  
-   char clientid[40] ;     // Client ID
-   char messageid[40];     // Message ID
-   int  messagelen ;       // Message Length
+struct flowSensorConfigTable flowSensorConfig[8] = {
+    {0, "SPARE",         SPARESENS_CLIENTID, SPARESENS_TOPICID, SPARESENS_JSONID, SPARESENS_LEN},
+    {1, "TANK",          TANKSENS_CLIENTID,     TANKSENS_TOPICID,TANKSENS_JSONID, TANKSENS_LEN},
+    {2, "IRRIGATION",    IRRIGATIONSENS_CLIENTID, IRRIGATIONSENS_TOPICID, IRRIGATIONSENS_JSONID,IRRIGATIONSENS_LEN},
+    {3, "HOUSE",         HOUSESENS_CLIENTID, HOUSESENS_TOPICID, HOUSESENS_JSONID, HOUSESENS_LEN},
+    {4, "WELL",          WELLSENS_CLIENTID, WELLSENS_TOPICID, WELLSENS_JSONID, WELLSENS_LEN},
+    {5, "SPARE",         SPARESENS_CLIENTID, SPARESENS_TOPICID, SPARESENS_JSONID, SPARESENS_LEN},
+    {6, "SPARE",         SPARESENS_CLIENTID, SPARESENS_TOPICID, SPARESENS_JSONID, SPARESENS_LEN},
+    {7, "SPARE",         SPARESENS_CLIENTID, SPARESENS_TOPICID, SPARESENS_JSONID, SPARESENS_LEN},
 };
-/*
-struct flowSensorConfigTable flowSensorConfig[4] = {
-    {0, "SPARE",         SPARE_CLIENTID, SPARE_TOPICID,           SPARE_LEN},
-    {1, "TANK",          TANK_CLIENTID,     TANK_TOPICID,         TANK_LEN},
-    {2, "IRRIGATION",    IRRIGATION_CLIENTID, IRRIGATION_TOPICID, IRRIGATION_LEN},
-    {3, "HOUSE",         HOUSE_CLIENTID, HOUSE_TOPICID,           HOUSE_LEN}
-};
-*/

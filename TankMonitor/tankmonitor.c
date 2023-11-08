@@ -206,10 +206,11 @@ int main(int argc, char* argv[])
       // printf("Gallons in Tank = %f\n", TankGallons);
       TankPerFull = TankGallons / MaxTankGal * 100;
       // printf("Percent Gallons in Tank = %f\n", TankPerFull);
-
-      tank_sensor_payload[1] =    waterHeight;
-      tank_sensor_payload[2] =    TankGallons;
-      tank_sensor_payload[3] =    TankPerFull;
+     
+     // tankMon.tank.water_height =  waterHeight;
+      tankMon_.tank.water_height =  waterHeight;
+      tankMon_.tank.tank_gallons =  TankGallons;
+      tankMon_.tank.tank_per_full =  TankPerFull;
 
       GallonsPumped() ;
  
@@ -220,24 +221,14 @@ int main(int argc, char* argv[])
 
       //temperatureF = *((float *)&flow_data_payload[17]);
       
-      memcpy(&temperatureF, &tank_data_payload[6], sizeof(float));
+      memcpy(&temperatureF, &tankSens_.data_payload[6], sizeof(float));
 
-      tank_sensor_payload[5] =    0;
-      tank_sensor_payload[6] =    0;
-      tank_sensor_payload[7] =    0;
-      tank_sensor_payload[8] =    0;
-      tank_sensor_payload[9] =    0;
-      tank_sensor_payload[10] =   tank_data_payload[8]; //Counter
-      tank_sensor_payload[11] =   temperatureF;
-      tank_sensor_payload[12] =   Float100State;
-      tank_sensor_payload[13] =   Float90State;
-      tank_sensor_payload[14] =   Float50State;
-      tank_sensor_payload[15] =   Float25State;
-      tank_sensor_payload[16] =   0;
-      tank_sensor_payload[17] =   0;
-      tank_sensor_payload[18] =   0;
-      tank_sensor_payload[19] =   0;
-     
+      tankMon_.data_payload[5] =    temperatureF;
+      tankMon_.data_payload[6] =    Float100State;
+      tankMon_.data_payload[7] =    Float25State;
+      tankMon_.data_payload[8] =    tankSens_.data_payload[8]  ;
+      tankMon_.data_payload[9] =    0;
+      
       MyMQTTPublish() ;
 
       PumpStats() ;
@@ -249,7 +240,7 @@ int main(int argc, char* argv[])
    }
    
    log_message("TankMonitor: Exited Main Loop\n");
-   MQTTClient_unsubscribe(client, TANK_TOPIC);
+   MQTTClient_unsubscribe(client, TANKMON_TOPICID);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);
    return rc;
@@ -278,7 +269,7 @@ float GallonsInTankPress(void) {
    * A/D to Water Height, Gallons & Percent Full
    */
 
-   PresSensorRawValue = tank_data_payload[3] * PresSensorLSB;
+   PresSensorRawValue = tankSens_.tank.adc_sensor * PresSensorLSB;
    
    /*
       * Kalman Filter to smooth the hydrostatic sensor readings
@@ -310,6 +301,7 @@ float GallonsInTankPress(void) {
    return waterHeight;
 
 }
+/*
 float GallonsInTankUltra(void) {
    float waterHeight = 0;
    float UltraSensorRawValue = 0;
@@ -327,7 +319,7 @@ float GallonsInTankUltra(void) {
    return waterHeight;
 
 }
-
+*/
 // Update the Kalman filter with a new sensor measurement
 void updateKalmanFilter(KalmanFilter* filter, double measurement, double measurementError) {
     // Update the estimate based on the measurement and its error
@@ -378,15 +370,15 @@ void GallonsPumped(void){
    int dailyPulseCount = 0;
    int newPulseData = 0;
 
-   newPulseData = tank_data_payload[2] ;
+   newPulseData = tankSens_.tank.new_data_flag;
    if ( newPulseData == 1){
       
-      millsElapsed = tank_data_payload[1] ;
-      pulseCount = tank_data_payload[0];
+      millsElapsed = tankSens_.tank.milliseconds;
+      pulseCount = tankSens_.tank.pulse_count;
       
       if ((millsElapsed < 5000) && (millsElapsed != 0)) {     //ignore the really long intervals
          //dailyPulseCount = dailyPulseCount + pulseCount ;
-         millsElapsed = tank_data_payload[1] ;
+         millsElapsed = tankSens_.tank.milliseconds ;
          //millsTotal = millsTotal + millsElapsed;
          flowRate = ((pulseCount / (millsElapsed/1000)) / .5) / calibrationFactor;
          flowRate = ((flowRate * .00026417)/(millsElapsed/1000)) * 60;  //GPM
@@ -417,15 +409,15 @@ void GallonsPumped(void){
       millsElapsed = 0 ;
    }
 
-   tank_sensor_payload[0] =    avgflowRateGPM;
-   tank_sensor_payload[4] =    dailyGallons;
+   tankMon_. tank.tank_gallons_per_minute =    avgflowRateGPM;
+   tankMon_. tank.tank_total_gallons_24 =    dailyGallons;
 }
 
 void MyMQTTSetup(char* mqtt_address){
 
    int rc;
 
-   if ((rc = MQTTClient_create(&client, mqtt_address, TANK_MONID,
+   if ((rc = MQTTClient_create(&client, mqtt_address, TANKMON_CLIENTID,
                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to create client, return code %d\n", rc);
@@ -454,17 +446,13 @@ void MyMQTTSetup(char* mqtt_address){
       exit(EXIT_FAILURE);
    }
    
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TANK_CLIENT, TANK_CLIENTID, QOS);
-   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", TANK_CLIENT, TANK_CLIENTID);
-   MQTTClient_subscribe(client, TANK_CLIENT, QOS);
-   
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TANKGAL_CLIENT, TANKGAL_CLIENTID, QOS);
-   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", TANKGAL_CLIENT, TANKGAL_CLIENTID);
-   MQTTClient_subscribe(client, TANKGAL_CLIENT, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TANKSENS_TOPICID, TANKSENS_CLIENTID, QOS);
+   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", TANKSENS_TOPICID, TANKSENS_CLIENTID);
+   MQTTClient_subscribe(client, TANKSENS_TOPICID, QOS);
 
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELL_TOPIC, WELL_MONID, QOS);
-   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", WELL_TOPIC, WELL_MONID);
-   MQTTClient_subscribe(client, WELL_TOPIC, QOS);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELLMON_TOPICID, WELLMON_CLIENTID,  QOS);
+   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", WELLMON_TOPICID, WELLMON_CLIENTID );
+   MQTTClient_subscribe(client, WELLMON_TOPICID, QOS);
 }
 void MyMQTTPublish() {
    int rc;
@@ -473,17 +461,17 @@ void MyMQTTPublish() {
    time(&t);
 
    if (verbose) {
-      for (i=0; i<=TANK_DATA; i++) {
-         printf("%f ", tank_sensor_payload[i]);
+      for (i=0; i<=TANKMON_LEN-1; i++) {
+         printf("%f ", tankMon_.data_payload[i]);
       }
       printf("%s", ctime(&t));
    }
-   pubmsg.payload = tank_sensor_payload;
-   pubmsg.payloadlen = TANK_DATA * 4;
+   pubmsg.payload = tankMon_.data_payload;
+   pubmsg.payloadlen = TANKMON_LEN * 4;
    pubmsg.qos = QOS;
    pubmsg.retained = 0;
    deliveredtoken = 0;
-   if ((rc = MQTTClient_publishMessage(client, TANK_TOPIC, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
+   if ((rc = MQTTClient_publishMessage(client, TANKMON_TOPICID, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
    {
       printf("Failed to publish message, return code %d\n", rc);
       log_message("TankMonitor: Error == Failed to Publish Message. Return Code: %d\n", rc);
@@ -492,18 +480,9 @@ void MyMQTTPublish() {
 
 
 json_object *root = json_object_new_object();
-
-json_object_object_add(root, "tank_gallons_per_minute", json_object_new_double(tank_sensor_payload[0]));
-json_object_object_add(root, "water_height", json_object_new_double(tank_sensor_payload[1]));
-json_object_object_add(root, "tank_gallons", json_object_new_double(tank_sensor_payload[2]));
-json_object_object_add(root, "tank_per_full", json_object_new_double(tank_sensor_payload[3]));
-json_object_object_add(root, "tank_total_gallons_24", json_object_new_double(tank_sensor_payload[4]));
-json_object_object_add(root, "cycle_count", json_object_new_double(tank_sensor_payload[10]));
-json_object_object_add(root, "air_temp", json_object_new_double(tank_sensor_payload[11]));
-json_object_object_add(root, "float_state_1", json_object_new_double(tank_sensor_payload[12]));
-json_object_object_add(root, "float_state_2", json_object_new_double(tank_sensor_payload[13]));
-json_object_object_add(root, "float_state_3", json_object_new_double(tank_sensor_payload[14]));
-json_object_object_add(root, "float_state_4", json_object_new_double(tank_sensor_payload[15]));
+for (i=0; i<=TANKMON_LEN-1; i++) {
+   json_object_object_add(root, tankmon_ClientData_var_name [i], json_object_new_double(tankMon_.data_payload[i]));
+}
 
 const char *json_string = json_object_to_json_string(root);
 
@@ -511,7 +490,7 @@ pubmsg.payload = (void *)json_string; // Make sure to cast the const pointer to 
 pubmsg.payloadlen = strlen(json_string);
 pubmsg.qos = QOS;
 pubmsg.retained = 0;
-MQTTClient_publishMessage(client, "Formatted Tank Data", &pubmsg, &token);
+MQTTClient_publishMessage(client, TANKMON_JSONID, &pubmsg, &token);
 //printf("Waiting for publication of %s\non topic %s for client with ClientID: %s\n", json_string, TANK_TOPIC, TANK_MONID);
 MQTTClient_waitForCompletion(client, token, TIMEOUT);
 //printf("Message with delivery token %d delivered\n", token);
@@ -534,7 +513,7 @@ int stopGallons = 0;
 int tankstartGallons = 0;
 int tankstopGallons = 0;
 
-if (well_sensor_payload[2] == 1) {
+if (wellMon_.well.well_pump_3_on  == 1) {
       pumpState = ON;
    }
    else {
@@ -543,14 +522,14 @@ if (well_sensor_payload[2] == 1) {
    
    if ((pumpState == ON) && (lastpumpState == OFF)){
       startGallons = dailyGallons;
-      //tankstartGallons = tank_sensor_payload[2];
+      //tankstartGallons = tankmon_data_payload[2];
       time(&start_t);
       lastpumpState = ON;
    }
    else if ((pumpState == OFF) && (lastpumpState == ON)){
       fptr = fopen(flowdata, "a");
       stopGallons = dailyGallons - startGallons ;
-      //tankstopGallons = tank_sensor_payload[2];
+      //tankstopGallons = tankmon_data_payload[2];
       time(&end_t);
       diff_t = difftime(end_t, start_t);
       fprintf(fptr, "Last Pump Cycle Gallons Used: %d   ", stopGallons);

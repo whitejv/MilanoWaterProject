@@ -10,7 +10,7 @@ sleep 10
 nohup /home/pi/MilanoWaterProject/bin/wellmonitor -P > /dev/null 2>&1 &
 echo "Done"
 echo "Starting Flow Monitor App"
-nohup /home/pi/MilanoWaterProject/bin/flowmonitor -P > /dev/null 2>&1 &
+nohup /home/pi/MilanoWaterProject/bin/irrigationmonitor -P > /dev/null 2>&1 &
 echo "Done"
 sleep 10
 echo "Starting Monitor App"
