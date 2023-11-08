@@ -12,7 +12,7 @@ sudo apt-get install -y libssl-dev xutils-dev
 # Install FTP Daemon and configure it
 # Adjusted the path to the vsftpd.conf file
 sudo apt-get install -y vsftpd
-sudo cp $USER_HOME/MilanoWaterProject/misc/vsftpd.conf /etc/
+sudo cp $USER_HOME/MilanoWaterProject/misc/vsftpd.conf /etc/.
 sudo service vsftpd restart
 
 # Install JSON Lib, CMake, Mosquitto MQTT Service
@@ -32,6 +32,10 @@ sudo make install
 cd /etc/mosquitto
 echo "listener 1883
 allow_anonymous true" | sudo tee -a mosquitto.conf
+cd ~
+
+#Update PIP
+pip install --upgrade pip
 
 # Install Python LIBs & Py Rainbird Project
 git clone https://github.com/allenporter/pyrainbird.git
@@ -39,5 +43,11 @@ cd pyrainbird
 pip install -r requirements_dev.txt --ignore-requires-python
 pip install . --ignore-requires-python
 pip install paho-mqtt
+cd ../
+
+# Create Directories for Project
+mkdir -p FTP/files
+chmod a-w FTP
+mkdir MWPLogData
 
 echo "Setup script has finished executing."

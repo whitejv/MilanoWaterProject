@@ -6,6 +6,11 @@
 
 - -> From the Raspbery Logo --> Preferences --> Raspberry PI Configuration --> Interface Tab --> VNC: Enable
 
+## Update all Packages (if necessary)
+- -> sudo apt update
+- -> sudo apt full-upgrade
+- -> sudo reboot
+  
 ## The Remainder of the Setup & Configuration Can Be Done via Remote Connection 
 
 ## Intsall Git (if using Rapi-Lite)
@@ -65,7 +70,24 @@
         - -> sudo nano mosquitto.conf
         - ->>> add: listener 1883
         - ->>> add: allow_anonymous true
+        - -> cd ~
+        
+        ## Update PIP
+        - ->pip install --upgrade pip
+        
+        ## Install the Python LIBs & Py Rainbird Project
+        - -> git clone https://github.com/allenporter/pyrainbird.git
+        - -> cd pyrainbird
+        - -> pip install -r requirements_dev.txt --ignore-requires-python
+        - -> pip install . --ignore-requires-python
+        - -> pip install paho-mqtt
+        - -> cd ../
 
+        ## Create Project Directories
+        - -> mkdir -p FTP/files
+        - -> chmod a-w FTP
+        - -> mkdir MWPLogData        
+        
 ## Depricated - Install Wiringpi (needed by Blynk) - Only Needed if PI is using GPIO
 
         #### New Method (works for 32bit and may work for 64bit)
@@ -95,18 +117,9 @@
 - -> make clean
 - -> make
 === clean build means succesful install
- 
-## Install the Python LIBs & Py Rainbird Project
-- -> git clone https://github.com/allenporter/pyrainbird.git
-- -> pip install -r pyrainbird/requirements_dev.txt --ignore-requires-python
-- -> pip install . --ignore-requires-python
-- -> pip install paho-mqtt
 
 ## Configure the Project
 - -> cd ~
-- -> mkdir -p FTP/files
-- -> chmod a-w FTP
-- -> mkdir MWPLogData
 - -> cd MilanoWaterProject
   
 ### CMake Process
@@ -147,7 +160,13 @@
 - -> Open Terminal on Mac/Windows/Raspberry PI/Linus
 - -> Login to Target:  ssh pi@raspi.local
 - -> Password: raspberry
- 
+
+# Configuring VS Code SSH keys for remote development
+- -> On the MAC terminal: cd .ssh/
+- -> ssh-keygen -t ed25519 -b 4096
+- -> enter: known_hosts at the prompt
+- -> ssh-copy-id -i "/home/pi/.ssh/known_hosts.pub pi@rpi400.local
+     
 # Configuring VS Code for Debug
 - -> C++ extension for VS Code. Install the C/C++ extension by searching for 'c++' in the Extensions view (⇧⌘X).
 - -> CMake Tools extension for VS Code. Install the CMake Tools extension by searching for 'CMake tools' in the Extensions view (⇧⌘X).
