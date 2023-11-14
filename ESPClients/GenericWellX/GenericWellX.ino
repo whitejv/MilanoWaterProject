@@ -179,7 +179,7 @@ void loop()
 
   client.loop();
 
-  client.publish(WELL_CLIENT, (byte *)well_data_payload, WELL_LEN*4);
+  client.publish(WELLSENS_TOPICID, (byte *)well_data_payload, WELL_LEN*4);
 
 const size_t capacity = JSON_OBJECT_SIZE(10);
 StaticJsonDocument<capacity> jsonDoc;
@@ -199,7 +199,7 @@ jsonDoc["ErrState"] = ErrState;
 char jsonBuffer[256];
 size_t n = serializeJson(jsonDoc, jsonBuffer);
 
-client.publish("Well JSON", jsonBuffer, n);
+client.publish(WELLSENS_JSONID, jsonBuffer, n);
 
   Serial.print("Well Pump Data: ");
   for (i = 0; i <= 20; ++i)

@@ -3,7 +3,8 @@
 #include <Wire.h>
 #include <IPAddress.h>
 #include <PubSubClient.h>
-#include <ArduinoJson.h>
+//#include <ArduinoJson.h>
+#include <cJSON.h>
 #include <water.h>
 
 #if defined(ARDUINO_ESP8266_GENERIC) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_ESP8266_THING_DEV)
@@ -44,7 +45,7 @@ GPIO16 - //Good - Disc 3 (no pull-up)
 IPAddress prodMqttServerIP(192, 168, 1, 250);
 IPAddress devMqttServerIP(192, 168, 1, 249);
 
-int extendedSeneor = 0;
+int extendedSensor = 0;
 int sensor = 0;
 int InitiateReset = 0;
 int ErrState = 0;
@@ -55,7 +56,6 @@ const int WDT_TIMEOUT = 10;
 unsigned int masterCounter = 0;
 const int discInput1 = DISCINPUT1;
 const int discInput2 = DISCINPUT2;
-const int discInput3 = DISCINPUT3;
 int ioInput = 0;
 long currentMillis = 0;
 long previousMillis = 0;
@@ -104,63 +104,76 @@ void IRAM_ATTR pulseCounter() {
 }
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println("Booting");
+    Serial.begin(115200);
+    Serial.println("Booting");
 
   #if defined(ARDUINO_FEATHER_ESP32)
-  Serial.printf("Configuring WDT...");
-  esp_task_wdt_init(WDT_TIMEOUT, true);
-  esp_task_wdt_add(NULL);
-  Serial.printf("Complete\n");
-  Wire.begin();
-#elif defined(ARDUINO_ESP8266_GENERIC) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_ESP8266_THING_DEV)
-  pinMode(LED_BUILTIN, OUTPUT);
-  const int configPin1 = CONFIGPIN1;
-  const int configPin2 = CONFIGPIN2;
-  pinMode(configPin1, INPUT_PULLUP);
-  pinMode(configPin2, INPUT_PULLUP);
-  pinMode(discInput1, INPUT_PULLUP);
-  pinMode(discInput2, INPUT_PULLUP);
-  pinMode(discInput3, INPUT_PULLUP);
-  sensors.begin();// Start the DS18B20 sensor
-  pinMode(FLOWSENSOR, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(FLOWSENSOR), pulseCounter, FALLING);
-#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
-  i2c_init(i2c_default, 100 * 1000);
-  gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
-  gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
-  Wire.begin();
-#endif
-  delay(3000); //give some time for things to get settled
-  // Read the config pins and get configuation data
-  //Serial.print(digitalRead(configPin1));
-  //Serial.print(digitalRead(configPin2));
-  sensor = digitalRead(configPin3 <<2 | configPin2)<<1 | digitalRead(configPin1) ;
-  Serial.print(sensor);
+    Serial.printf("Configuring WDT...");
+    esp_task_wdt_init(WDT_TIMEOUT, true);
+    esp_task_wdt_add(NULL);
+    Serial.printf("Complete\n");
+    Wire.begin();
+  #elif defined(ARDUINO_ESP8266_GENERIC) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_ESP8266_THING_DEV)
+    pinMode(LED_BUILTIN, OUTPUT);
+    const int configPin1 = CONFIGPIN1;
+    const int configPin2 = CONFIGPIN2;
+    const int configPin3 = CONFIGPIN3;
+    pinMode(configPin1, INPUT_PULLUP);
+    pinMode(configPin2, INPUT_PULLUP);
+    pinMode(configPin3, INPUT_PULLUP);
 
-/* 
- * Sensors 0-3 are standard sensors
- * Sensors 4-7 are extended sensors with additional data words
- */
+    sensors.begin();// Start the DS18B20 sensor
+    pinMode(FLOWSENSOR, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(FLOWSENSOR), pulseCounter, FALLING);
+  #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+    i2c_init(i2c_default, 100 * 1000);
+    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
+    Wire.begin();
+  #endif
+    delay(3000); //give some time for things to get settled
+    // Read the config pins and get configuation data
+    //Serial.print(digitalRead(configPin1));
+    //Serial.print(digitalRead(configPin2));
+    sensor = digitalRead(configPin3) <<2 | digitalRead(configPin2)<<1 | digitalRead(configPin1) ;
+    Serial.print(" #");
+    Serial.print(sensor);
+
+  /* 
+  * Sensors 0-3 are standard sensors
+  * Sensors 4-7 are extended sensors with additional data words
+  */
 
 
-  if (sensor > 3){ extendedSensor == 1} ;
-  Serial.print("  Sensor ID: ");
-  Serial.println(flowSensorConfig[sensor].sensorName);
-
-  
-  strcpy(messageName, flowSensorConfig[sensor].messageid);
-  strcpy(messageNameJSON, flowSensorConfig[sensor].jsonid);
- 
-  if ( extendedSensor == 1 ) {
-    if (!ads.begin()) {
-       Serial.println("Failed to initialize ADS.");
-       while (1);
+    if (sensor >= 4){ 
+      extendedSensor = 1;
+      Serial.print("Extended ") ;
     }
-  }
-  setupWiFi();
-  setupOTA();
-  connectToMQTTServer();
+    Serial.print(" Sensor ID: ");
+    Serial.println(flowSensorConfig[sensor].sensorName);
+
+    
+    strcpy(messageName, flowSensorConfig[sensor].messageid);
+    strcpy(messageNameJSON, flowSensorConfig[sensor].jsonid);
+  
+    if ( extendedSensor == 1 ) {
+      if (!ads.begin()) {
+        Serial.println("Failed to initialize ADS.");
+        while (1);
+      }
+        pinMode(discInput1, INPUT_PULLUP); //in extended mode there is only one onboard GPIO
+    }                                      //expect you to use a GPIO board on I2C
+    else {
+      pinMode(discInput1, INPUT_PULLUP); //in normal mode the sensor board can support 2 GPIOs
+      pinMode(discInput2, INPUT_PULLUP);
+    }
+    setupWiFi();
+    setupOTA();
+    connectToMQTTServer();
+
+    if (client.setBufferSize(1024) == FALSE ) {
+      Serial.println("Failed to allocate large MQTT send buffer - JSON messages may fail to send.");
+    }
 
 }
 
@@ -176,7 +189,7 @@ void loop() {
      readDigitalInput() ;
      if ( extendedSensor == 1) {
         readAnalogInputX();
-        readDigitalInputX();
+        //readDigitalInputX();
      }
      processMqttClient();
      publishFlowData();
@@ -204,6 +217,8 @@ void setupWiFi() {
   Serial.print("WiFi connected -- ");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+  Serial.print("ESP Board MAC Address:  ");
+  Serial.println(WiFi.macAddress());
 }
 
 void setupOTA(){
@@ -367,17 +382,22 @@ void readAnalogInputX() {
   adc1 = ads.readADC_SingleEnded(1);
   adc2 = ads.readADC_SingleEnded(2);
   adc3 = ads.readADC_SingleEnded(3);
-  //genericSens_.generic.adc_sensor = adc0;
+
+  genericSens_.generic.adc_x1 = adc0;
+  genericSens_.generic.adc_x2 = adc1;
+  genericSens_.generic.adc_x3 = adc2;
+  genericSens_.generic.adc_x4 = adc3;
+
   volts0 = ads.computeVolts(adc0);
   volts1 = ads.computeVolts(adc1);
   volts2 = ads.computeVolts(adc2);
   volts3 = ads.computeVolts(adc3);
 
-  Serial.println("-----------------------------------------------------------");
-  Serial.print("AIN0: "); Serial.print(adc0); Serial.print("  "); Serial.print(volts0); Serial.println("V");
-  Serial.print("AIN1: "); Serial.print(adc1); Serial.print("  "); Serial.print(volts1); Serial.println("V");
-  Serial.print("AIN2: "); Serial.print(adc2); Serial.print("  "); Serial.print(volts2); Serial.println("V");
-  Serial.print("AIN3: "); Serial.print(adc3); Serial.print("  "); Serial.print(volts3); Serial.println("V");
+  //Serial.println("-----------------------------------------------------------");
+  //Serial.print("AIN0: "); Serial.print(adc0); Serial.print("  "); Serial.print(volts0); Serial.println("V");
+  //Serial.print("AIN1: "); Serial.print(adc1); Serial.print("  "); Serial.print(volts1); Serial.println("V");
+  //Serial.print("AIN2: "); Serial.print(adc2); Serial.print("  "); Serial.print(volts2); Serial.println("V");
+  //Serial.print("AIN3: "); Serial.print(adc3); Serial.print("  "); Serial.print(volts3); Serial.println("V");
 }
 void readDigitalInput() {
 
@@ -399,30 +419,45 @@ void publishFlowData() {
 }
 
 void publishJsonData() {
-  int i;
-  const size_t capacity = JSON_OBJECT_SIZE(20);
-  StaticJsonDocument<capacity> jsonDoc;
 
-  for (i=0; i<=GENERICSENS_LEN-1; i++) {
-    jsonDoc[genericsens_ClientData_var_name [i]] = genericSens_.data_payload[i];
-  }
+    int i;
+    
+    // Create a new cJSON object
+    cJSON *jsonDoc = cJSON_CreateObject();
 
-  char jsonBuffer[2048];
-  size_t n = serializeJson(jsonDoc, jsonBuffer);
-  //Serial.printf(flowSensorConfig[sensor].jsonid);
-  //Serial.printf("   %d",n);
-  //Serial.printf("\n");
-  //Serial.printf(jsonBuffer);
-  client.publish(flowSensorConfig[sensor].jsonid, jsonBuffer, n);
+    //Serial.printf("message length   %d", flowSensorConfig[sensor].messagelen);
+    for (i = 0; i < flowSensorConfig[sensor].messagelen; i++) {
+        // Add data to the cJSON object
+        cJSON_AddNumberToObject(jsonDoc, genericsens_ClientData_var_name[i], genericSens_.data_payload[i]);
+    }
+
+    // Serialize the cJSON object to a string
+    char *jsonBuffer = cJSON_Print(jsonDoc);
+    if (jsonBuffer != NULL) {
+        size_t n = strlen(jsonBuffer);
+        //Serial.printf(flowSensorConfig[sensor].jsonid);
+        //Serial.printf("   %d", n);
+        //Serial.printf("\n");
+        //Serial.printf(jsonBuffer);
+        //Serial.printf("\n");
+        
+        // Publish the JSON data
+        if (client.publish(flowSensorConfig[sensor].jsonid, jsonBuffer, n) == FALSE) {
+          Serial.printf("JSON Message Failed to Publish");
+          Serial.printf("\n");
+        }
+        // Free the serialized data buffer
+        free(jsonBuffer);
+    }
+
+    // Delete the cJSON object
+    cJSON_Delete(jsonDoc);
 }
 void printFlowData() {
   Serial.printf(messageName);
-  for (int i = 0; i <= 5; ++i) {
+  //Serial.printf("message length   %d",flowSensorConfig[sensor].messagelen); 
+  for (int i = 0; i<=flowSensorConfig[sensor].messagelen-1; ++i) {
     Serial.printf(" %x", genericSens_.data_payload[i]);
-  }
-  Serial.printf("%f ", *((float *)&genericSens_.data_payload[6]));
-  for (int i = 7; i <= 8; ++i) {
-    Serial.printf("%x ", genericSens_.data_payload[i]);
   }
   Serial.printf("\n");
 }
