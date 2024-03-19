@@ -190,6 +190,33 @@ mylib/fast:
 	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f mylib/CMakeFiles/mylib.dir/build.make mylib/CMakeFiles/mylib.dir/build
 .PHONY : mylib/fast
 
+flowmon.o: flowmon.c.o
+
+.PHONY : flowmon.o
+
+# target to build an object file
+flowmon.c.o:
+	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f mylib/CMakeFiles/mylib.dir/build.make mylib/CMakeFiles/mylib.dir/flowmon.c.o
+.PHONY : flowmon.c.o
+
+flowmon.i: flowmon.c.i
+
+.PHONY : flowmon.i
+
+# target to preprocess a source file
+flowmon.c.i:
+	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f mylib/CMakeFiles/mylib.dir/build.make mylib/CMakeFiles/mylib.dir/flowmon.c.i
+.PHONY : flowmon.c.i
+
+flowmon.s: flowmon.c.s
+
+.PHONY : flowmon.s
+
+# target to generate assembly for a file
+flowmon.c.s:
+	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f mylib/CMakeFiles/mylib.dir/build.make mylib/CMakeFiles/mylib.dir/flowmon.c.s
+.PHONY : flowmon.c.s
+
 logMsg.o: logMsg.c.o
 
 .PHONY : logMsg.o
@@ -257,6 +284,9 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... mylib"
+	@echo "... flowmon.o"
+	@echo "... flowmon.i"
+	@echo "... flowmon.s"
 	@echo "... logMsg.o"
 	@echo "... logMsg.i"
 	@echo "... logMsg.s"

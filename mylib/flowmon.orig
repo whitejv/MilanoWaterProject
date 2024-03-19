@@ -1,0 +1,79 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include "unistd.h"
+//#include "../include/water.h"
+
+// Define constants outside the function for clarity and reusability
+#define CALIBRATION_FACTOR 0.5
+#define PULSE_COUNT_THRESHOLD 100
+#define MAX_SAMPLES 30
+#define NO_PULSE_RESET_TIME 60
+
+static float dailyGallons = 0;  
+static float flowRateValueArray[MAX_SAMPLES] = {0};
+static int flowIndex = 0;
+static int validSampleCount = 0;
+static int timerNoPulse = 0;
+
+void resetFlowData() {
+    timerNoPulse = 0;
+    validSampleCount = 0;
+    for (int i = 0; i < MAX_SAMPLES; ++i) {
+        flowRateValueArray[i] = 0.0;
+    }
+}
+
+void updateFlowRate(float flowRateGPM) {
+    flowRateValueArray[flowIndex++] = flowRateGPM;
+    flowIndex = flowIndex % MAX_SAMPLES;
+    if (flowIndex == 0) {
+        validSampleCount = 1;
+    }
+}
+
+float calculateAverageFlowRate() {
+    float avgflowRate = 0;
+    for (int i = 0; i < MAX_SAMPLES; ++i) {
+        avgflowRate += flowRateValueArray[i];
+    }
+    return avgflowRate / MAX_SAMPLES;
+}
+
+void flowmon(int newDataFlag, int milliseconds, int pulseCount, float *pAvgflowRateGPM, float *pDailyGallons) {
+    // Manage the Reset When Pulses Have Stopped for 1 minute
+    if (timerNoPulse == 0) {
+        timerNoPulse++;
+        if (timerNoPulse > NO_PULSE_RESET_TIME) {
+            printf("No pulse detected for 1 minute. Resetting flow data.\n");
+            resetFlowData();
+        }
+    }
+
+    if (newDataFlag == 1) {
+        printf("Pulse count: %d, Elapsed time: %d\n", pulseCount, milliseconds);
+        if (pulseCount <= PULSE_COUNT_THRESHOLD && milliseconds < 5000 && milliseconds != 0) {
+            timerNoPulse = 0;
+            float flowRate = ((pulseCount / (milliseconds/1000)) / .5) / CALIBRATION_FACTOR;
+            flowRate = ((flowRate * .00026417)/(milliseconds/1000)) * 60;  //GPM
+            printf("Flow rate: %.2f GPM\n", flowRate);
+            float flowRateGPM = flowRate * 30;
+            dailyGallons = dailyGallons + flowRate ;
+            *pDailyGallons = dailyGallons;
+            printf("Flow rate: %.2f GPM\n", flowRateGPM);
+            printf("Daily Gallons: %.2f\n", dailyGallons);
+            if (flowRateGPM > 2.0) {
+                updateFlowRate(flowRateGPM);
+                if (validSampleCount == 1) {
+                    *pAvgflowRateGPM = calculateAverageFlowRate();
+                    printf("Average flow rate: %.2f GPM\n", *pAvgflowRateGPM);
+                }
+            }
+        }
+    } else {
+        // Reset pulse count and elapsed time if no new data
+        pulseCount = 0;
+        milliseconds = 0;
+    }
+}

@@ -254,6 +254,19 @@ wellmonitor/fast:
 .PHONY : wellmonitor/fast
 
 #=============================================================================
+# Target rules for targets named housemonitor
+
+# Build rule for target.
+housemonitor: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 housemonitor
+.PHONY : housemonitor
+
+# fast build rule for target.
+housemonitor/fast:
+	$(MAKE) $(MAKESILENT) -f HouseMonitor/CMakeFiles/housemonitor.dir/build.make HouseMonitor/CMakeFiles/housemonitor.dir/build
+.PHONY : housemonitor/fast
+
+#=============================================================================
 # Target rules for targets named alert
 
 # Build rule for target.
@@ -307,6 +320,7 @@ help:
 	@echo "... clean-all"
 	@echo "... alert"
 	@echo "... blynk"
+	@echo "... housemonitor"
 	@echo "... irrigationmonitor"
 	@echo "... monitor"
 	@echo "... mylib"

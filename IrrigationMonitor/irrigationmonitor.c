@@ -56,19 +56,10 @@ int main(int argc, char* argv[])
    int PriorSecondsFromMidnight =0;
    float irrigationPressure = 0;
    float temperatureF;
-   float calibrationFactor = .5;
-   float flowRate = 0.0;
+
    float dailyGallons = 0;
-   float flowRateGPM = 0;
    float avgflowRateGPM = 0;
-   float avgflowRate = 0;
-   static int   flowIndex = 0;
-   static float flowRateValueArray[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-   int pulseCount = 0;
-   int millsElapsed = 0;
-   int millsTotal = 0;
-   int dailyPulseCount = 0;
-   int newPulseData = 0;
+    
    int pumpState = 0;
    int lastpumpState = 0;
    int startGallons = 0;
@@ -174,8 +165,7 @@ int main(int argc, char* argv[])
 
    log_message("IrrigationMonitor Entering Main Loop\n") ;
    
-   while(1)
-   {
+   while(1) {
       time(&t);
       localtime_r(&t, &timenow);
       
@@ -199,59 +189,15 @@ int main(int argc, char* argv[])
       //printf("seconds since midnight: %d\n", SecondsFromMidnight);
       PriorSecondsFromMidnight = SecondsFromMidnight ;
       
-      
-      
       /*
-       * Compute Monitor Values Based on Inputs from
-       * Sensor Data and Format for easy use with Blynk
-       */
-      
-      
-      newPulseData = irrigationSens_.irrigation.new_data_flag ;
-      if ( newPulseData == 1){
-         
-         millsElapsed = irrigationSens_.irrigation.milliseconds ;
-         pulseCount = irrigationSens_.irrigation.pulse_count ;
-         
-         if ((millsElapsed < 5000) && (millsElapsed != 0)) {     //ignore the really long intervals
-            //dailyPulseCount = dailyPulseCount + pulseCount ;
-            millsElapsed = irrigationSens_.irrigation.milliseconds ;
-            //millsTotal = millsTotal + millsElapsed;
-            flowRate = ((pulseCount / (millsElapsed/1000)) / .5) / calibrationFactor;
-            flowRate = ((flowRate * .00026417)/(millsElapsed/1000)) * 60;  //GPM
-            flowRateGPM = flowRate * 30;
-            dailyGallons = dailyGallons + flowRate ;
-            
-            if (flowRateGPM > 4.0) {
-               flowRateValueArray[flowIndex++] = flowRateGPM;
-               flowIndex = flowIndex % 10;
-            }
-            avgflowRate = 0 ;
-            for( i=0; i<=9; ++i){
-               avgflowRate += flowRateValueArray[i];
-               //printf("flowRateValueArray[%d]: %f avgflowRate: %f\n", i, flowRateValueArray[i], avgflowRate );
-            }
-            avgflowRateGPM = avgflowRate/10;
-            /*
-             printf("Pulse Count: %d   Daily Pulse Count: %d\n", pulseCount, dailyPulseCount);
-             printf("Milliseconds Elapsed: %d   Milliseconds Total:  %d\n", millsElapsed, millsTotal);
-             printf("Flow Rate: %f  Flow Rate GPM:  %f   Daily Gallons:  %f\n", flowRate, flowRateGPM,  dailyGallons);
-             printf("Average Flow Rate: %f\n", avgflowRateGPM);
-            */ 
-         }    
-      } else {
-         pulseCount = 0;
-         millsElapsed = 0 ;
-      }
-      
-      
+      * Call the flow monitor function
+      */
+      flowmon(irrigationSens_.irrigation.new_data_flag, irrigationSens_.irrigation.milliseconds, irrigationSens_.irrigation.pulse_count, &avgflowRateGPM, &dailyGallons, .5) ;
+
       irrigationPressure = (irrigationSens_.irrigation.adc_sensor * .1336) - 10.523 ;
       
-      //temperatureF = *((float *)&flow_data_payload[17]);
-      
       memcpy(&temperatureF, &irrigationSens_.irrigation.temp_w1, sizeof(float));
-      
-      
+        
       /*
        * If irrigation pump is running try and determine what Controller & Zone is active
        */

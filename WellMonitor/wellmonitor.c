@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
       time(&t);
 
      
-      raw_voltage1_adc = wellSens_.well.raw_current_sense_well1;
+      raw_voltage1_adc = wellSens_.well.adc_x1;
       if (raw_voltage1_adc > 1000) {
          pump1_on = 1 ;
       }
@@ -155,21 +155,21 @@ int main(int argc, char *argv[])
          pump1_on = 0;
       }
 
-      raw_voltage2_adc = wellSens_.well.raw_current_sense_well2;
+      raw_voltage2_adc = wellSens_.well.adc_x2;
       if (raw_voltage2_adc > 1000) {
          pump2_on = 1 ;
       }
       else {
          pump2_on = 0;
       }     
-      raw_voltage3_adc = wellSens_.well.raw_current_sense_well3;
+      raw_voltage3_adc = wellSens_.well.adc_x3;
       if (raw_voltage3_adc > 1000) {
          pump3_on = 1 ;
       }
       else {
          pump3_on = 0;
       }
-      raw_voltage4_adc = wellSens_.well.raw_current_sense_irrigation_pump;
+      raw_voltage4_adc = wellSens_.well.adc_x4;
       if (raw_voltage4_adc > 750) {
          pump4_on = 1 ;
       }
@@ -182,16 +182,16 @@ int main(int argc, char *argv[])
        */
 
 
-      PressSwitState = !(wellSens_.well.house_tank_pressure_switch_on);
-      SepticAlert = !(wellSens_.well.septic_alert_on);
+      PressSwitState = !((wellSens_.well.GPIO_x1 & 0x02)>1);
+      SepticAlert = !(wellSens_.well.GPIO_x1 & 0x01);
 
       /*
        * Convert Raw Temp Sensor to degrees farenhiet
        */
 
-      raw_temp = wellSens_.well.raw_temp_celcius;
-      AmbientTempC = raw_temp ;
-      AmbientTempF = (AmbientTempC * 1.8) + 32.0;
+      raw_temp = wellSens_.well.temp;
+      //AmbientTempC = raw_temp ;
+      AmbientTempF = raw_temp;
       //printf("Ambient Temp:%f  \n", AmbientTempF);
 
       /*

@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "FlowMonitor/flowmonitor"
+			"path" : "Blynk/blynk"
 		}
 	],
 	"backtrace" : 1,
@@ -18,7 +18,7 @@
 		],
 		"files" : 
 		[
-			"FlowMonitor/CMakeLists.txt"
+			"Blynk/CMakeLists.txt"
 		],
 		"nodes" : 
 		[
@@ -28,31 +28,49 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 10,
+				"line" : 4,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 14,
+				"line" : 11,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 11,
+				"line" : 5,
 				"parent" : 0
 			},
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 13,
+				"line" : 6,
 				"parent" : 0
 			},
 			{
 				"command" : 4,
 				"file" : 0,
-				"line" : 12,
+				"line" : 7,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 8,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 9,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 10,
 				"parent" : 0
 			}
 		]
@@ -63,24 +81,39 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-g"
+					"fragment" : "-DLINUX -g"
 				}
 			],
 			"includes" : 
 			[
 				{
 					"backtrace" : 5,
-					"path" : "/usr/include/json-c"
+					"path" : "/home/pi/blynk-library/src/Blynk"
+				},
+				{
+					"backtrace" : 6,
+					"path" : "/home/pi/MilanoWaterProject/Blynk/utility"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/pi/blynk-library/src"
+				},
+				{
+					"backtrace" : 8,
+					"path" : "/home/pi/blynk-library/linux"
 				}
 			],
-			"language" : "C",
+			"language" : "CXX",
 			"sourceIndexes" : 
 			[
-				0
+				0,
+				1,
+				2,
+				3
 			]
 		}
 	],
-	"id" : "flowmonitor::@a4111c1479804cd59e4a",
+	"id" : "blynk::@85d371cfb24311502f54",
 	"install" : 
 	{
 		"destinations" : 
@@ -100,7 +133,7 @@
 		"commandFragments" : 
 		[
 			{
-				"fragment" : "-g",
+				"fragment" : "-DLINUX -g",
 				"role" : "flags"
 			},
 			{
@@ -114,11 +147,11 @@
 			},
 			{
 				"backtrace" : 3,
-				"fragment" : "-L/home/pi/MilanoWaterProject/FlowMonitor/../mylib",
+				"fragment" : "-L/home/pi/MilanoWaterProject/Blynk/../mylib",
 				"role" : "libraryPath"
 			},
 			{
-				"fragment" : "-Wl,-rpath,/home/pi/paho.mqtt.c/build/output/lib:/home/pi/MilanoWaterProject/FlowMonitor/../mylib:",
+				"fragment" : "-Wl,-rpath,/home/pi/paho.mqtt.c/build/output/lib:/home/pi/MilanoWaterProject/Blynk/../mylib:",
 				"role" : "libraries"
 			},
 			{
@@ -153,21 +186,16 @@
 			{
 				"fragment" : "-Wl,-Bdynamic",
 				"role" : "libraries"
-			},
-			{
-				"backtrace" : 4,
-				"fragment" : "-ljson-c",
-				"role" : "libraries"
 			}
 		],
-		"language" : "C"
+		"language" : "CXX"
 	},
-	"name" : "flowmonitor",
-	"nameOnDisk" : "flowmonitor",
+	"name" : "blynk",
+	"nameOnDisk" : "blynk",
 	"paths" : 
 	{
-		"build" : "FlowMonitor",
-		"source" : "FlowMonitor"
+		"build" : "Blynk",
+		"source" : "Blynk"
 	},
 	"sourceGroups" : 
 	[
@@ -175,7 +203,10 @@
 			"name" : "Source Files",
 			"sourceIndexes" : 
 			[
-				0
+				0,
+				1,
+				2,
+				3
 			]
 		}
 	],
@@ -184,7 +215,25 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "FlowMonitor/flowmonitor.c",
+			"path" : "Blynk/main.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Blynk/utility/BlynkDebug.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Blynk/utility/BlynkHandlers.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Blynk/utility/BlynkTimer.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

@@ -135,7 +135,7 @@
 			"path" : "mylib/CMakeLists.txt"
 		},
 		{
-			"path" : "FlowMonitor/CMakeLists.txt"
+			"path" : "IrrigationMonitor/CMakeLists.txt"
 		},
 		{
 			"isCMake" : true,
@@ -192,7 +192,40 @@
 			"path" : "/usr/share/cmake-3.18/Modules/FindPackageMessage.cmake"
 		},
 		{
+			"path" : "HouseMonitor/CMakeLists.txt"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/usr/share/cmake-3.18/Modules/FindPkgConfig.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/usr/share/cmake-3.18/Modules/FindPackageHandleStandardArgs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/usr/share/cmake-3.18/Modules/FindPackageMessage.cmake"
+		},
+		{
 			"path" : "SysAlert/CMakeLists.txt"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/usr/share/cmake-3.18/Modules/FindPkgConfig.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/usr/share/cmake-3.18/Modules/FindPackageHandleStandardArgs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/usr/share/cmake-3.18/Modules/FindPackageMessage.cmake"
 		},
 		{
 			"path" : "SysTest/CMakeLists.txt"

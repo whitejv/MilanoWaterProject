@@ -4,6 +4,7 @@ project(mylib)
 set(SOURCES
     logMsg.c
     logTest.c
+    flowmon.c
 )
 
 add_library(mylib STATIC ${SOURCES})
