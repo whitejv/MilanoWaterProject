@@ -14,9 +14,18 @@
 #include <ArduinoOTA.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+//#include <Adafruit_ADS1X15.h>
+//#include <Adafruit_ADT7410.h>
+//#include <SparkFun_TCA9534.h>
+#elif defined(ARDUINO_FEATHER_ESP32)
+#include <WiFi.h>
+#include <esp_task_wdt.h>
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#include <WiFi.h>
+#include "pico/stdlib.h"
+#include "hardware/i2c.h"
+#include "pico/binary_info.h"
 #endif
-
-#define fwVersion 1111
 
 /*
 GPIO00 - //Good - Config 3
@@ -38,13 +47,17 @@ GPIO16 - //Good - Disc 3 (no pull-up)
 IPAddress prodMqttServerIP(192, 168, 1, 250);
 IPAddress devMqttServerIP(192, 168, 1, 249);
 
-
+int GPIOSens = FALSE;
+int tempSens = FALSE;
 int extendedSensor = 0;
 int sensor = 0;
+int secondADC = FALSE;
 int InitiateReset = 0;
 int ErrState = 0;
 int ErrCount = 0;
+int WDT_Interval = 0;
 const int ERRMAX = 10;
+const int WDT_TIMEOUT = 10;
 unsigned int masterCounter = 0;
 const int discInput1 = DISCINPUT1;
 const int discInput2 = DISCINPUT2;
@@ -52,8 +65,7 @@ int ioInput = 0;
 long currentMillis = 0;
 long previousMillis = 0;
 long millisecond = 0;
-int loopInterval = 500;
-int flowInterval = 2000;
+int interval = 2000;
 volatile byte pulseCount;
 byte pulse1Sec = 0;
 unsigned long timerOTA;
@@ -71,16 +83,32 @@ const int oneWireBus = TEMPSENSOR;
 OneWire oneWire(oneWireBus);
 DallasTemperature sensors(&oneWire);
 
-/* Forward declaration of functions to solve circular dependencies */
+//Adafruit_ADS1115 ads;  /* Use this for the 16-bit version */
+//Adafruit_ADS1015 ads1;     /* 0x48 Use this for the 12-bit version */
+//Adafruit_ADS1115 ads2;     /* 0x49 Use this for the 12-bit version */
+//Adafruit_ADT7410 tempsensor = Adafruit_ADT7410(); // Create the ADT7410 temperature sensor object
 
+//GPIO Extender Definition  b0-b4 are general use inputs, b5&6 are general outputs, b7 is case fan control
+//TCA9534 extendedGPIO1;
+//#define NUM_GPIO 8
+//bool currentPinMode[NUM_GPIO] = {GPIO_IN, GPIO_IN, GPIO_IN, GPIO_IN, GPIO_IN, GPIO_OUT, GPIO_OUT, GPIO_OUT};
+//bool gpioStatus[NUM_GPIO];
+
+/* Forward declaration of functions to solve circular dependencies */
+void updateWatchdog();
+void updateMasterCounter();
 void updateFlowData();
 void updateTemperatureData();
+void processMqttClient();
 void publishFlowData();
 void publishJsonData();
 void printFlowData();
 void printClientState(int state);
 void readAnalogInput();
 void readDigitalInput();
+void readAnalogInputX();
+void readDigitalInputX();
+void readTempInputX();
 void setupOTA();
 void setupWiFi();
 void connectToMQTTServer();
@@ -94,7 +122,13 @@ void setup() {
     Serial.begin(115200);
     Serial.println("Booting");
 
-  #if defined(ARDUINO_ESP8266_GENERIC) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_ESP8266_THING_DEV)
+  #if defined(ARDUINO_FEATHER_ESP32)
+    Serial.printf("Configuring WDT...");
+    esp_task_wdt_init(WDT_TIMEOUT, true);
+    esp_task_wdt_add(NULL);
+    Serial.printf("Complete\n");
+    Wire.begin();
+  #elif defined(ARDUINO_ESP8266_GENERIC) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_ESP8266_THING_DEV)
     pinMode(LED_BUILTIN, OUTPUT);
     const int configPin1 = CONFIGPIN1;
     const int configPin2 = CONFIGPIN2;
@@ -106,6 +140,11 @@ void setup() {
     sensors.begin();// Start the DS18B20 sensor
     pinMode(FLOWSENSOR, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(FLOWSENSOR), pulseCounter, FALLING);
+  #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+    i2c_init(i2c_default, 100 * 1000);
+    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
+    Wire.begin();
   #endif
     delay(3000); //give some time for things to get settled
     // Read the config pins and get configuation data
@@ -132,13 +171,45 @@ void setup() {
     strcpy(messageName, flowSensorConfig[sensor].messageid);
     strcpy(messageNameJSON, flowSensorConfig[sensor].jsonid);
   
-    if ( extendedSensor == 1 ) {
-       
-    }                                      
-    else {
+    //if ( extendedSensor == 1 ) {
+       //ads1.setGain(GAIN_TWOTHIRDS);    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
+       //ads2.setGain(GAIN_TWOTHIRDS);    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
+
+      // Starting ads1 at 0x48 I²C position
+      //if (!ads1.begin(0x48)) {
+        //Serial.println("Failed to initialize ADS1.");
+        //while (1);
+      //}
+
+      // Starting ads2 at 0x49 I²C position
+      //if (ads2.begin(0x49) == TRUE) {
+         //secondADC = TRUE;
+      //}
+      //else {
+        //Serial.println("No ADC #2 Detected (optional)");
+      //}
+      // Temp Sensor is 0x4B (if present)
+      //if (tempsensor.begin(0x4b) == TRUE ) {
+         //tempSens = TRUE;
+      //}
+      //else {
+        //Serial.println("No Temp Sensor Detected (optional)") ;
+      //}
+      //pinMode(discInput1, INPUT_PULLUP); //in extended mode there is only one onboard GPIO
+      // GPIO Sensor is 0x27 (if present)
+      //if (extendedGPIO1.begin() == TRUE ) {
+         //GPIOSens = TRUE;
+         //extendedGPIO1.pinMode(currentPinMode);//Use GPIO_OUT and GPIO_IN instead of OUTPUT and INPUT_PULLUP
+      //}
+      //else {
+        //Serial.println("No GPIO Sensor Detected(optional)") ;
+      //}
+   // }                                      
+    //else {
       pinMode(discInput1, INPUT_PULLUP); //in normal mode the sensor board can support 2 GPIOs
       pinMode(discInput2, INPUT_PULLUP);
-    }
+   // }
+    
     setupWiFi();
     setupOTA();
     connectToMQTTServer();
@@ -147,34 +218,28 @@ void setup() {
       Serial.println("Failed to allocate large MQTT send buffer - JSON messages may fail to send.");
     }
 
-    genericSens_.generic.fw_version = fwVersion ;
-
 }
 
 void loop() {
 
   ArduinoOTA.handle();
-
-  if (millis() - timerOTA > loopInterval) {
-
-     ESP.wdtFeed();
-
+  if (millis() - timerOTA > 500) {
+     updateWatchdog();
+     updateMasterCounter();
      updateFlowData();
-     updateTemperatureData();
-     readAnalogInput() ;
-     readDigitalInput() ;
+     //updateTemperatureData();
+     //readAnalogInput() ;
+     //readDigitalInput() ;
+     //if ( extendedSensor == 1) {
+        //readAnalogInputX();
+        //readDigitalInputX();
+        //readTempInputX();
+     //}
+     processMqttClient();
      publishFlowData();
      publishJsonData();
      printFlowData();
      timerOTA = millis();
-     
-     client.loop();
-     
-     ++masterCounter;
-     if (masterCounter > 28800) {  //Force a reboot every 8 hours
-       while (1) {};
-     }
-     genericSens_.generic.cycle_count = masterCounter;
   }
   checkConnectionAndLogState();
 
@@ -294,9 +359,24 @@ void connectToMQTTServer(){
   }
 }
 
+void updateWatchdog() {
+  if (WDT_Interval++ > WDT_TIMEOUT) { WDT_Interval = 0; }
+  #if defined (ARDUINO_FEATHER_ESP32)
+  esp_task_wdt_reset();
+  #endif
+}
+
+void updateMasterCounter() {
+  ++masterCounter;
+  if (masterCounter > 28800) {  //Force a reboot every 8 hours
+    while (1) {};
+  }
+  genericSens_.generic.cycle_count = masterCounter;
+}
+
 void updateFlowData() {
   currentMillis = millis();
-  if (((currentMillis - previousMillis) > flowInterval) && pulseCount > 0 ) {
+  if (((currentMillis - previousMillis) > interval) && pulseCount > 0 ) {
     pulse1Sec = pulseCount;
     millisecond = millis() - previousMillis ;
     genericSens_.generic.pulse_count = pulse1Sec ;
@@ -315,14 +395,88 @@ void updateTemperatureData() {
   genericSens_.generic.temp = (int)temperatureF;
   memcpy(&genericSens_.generic.temp_w1,  &temperatureF, sizeof(temperatureF));
 }
-
+/*
 void readAnalogInput() {
   const int analogInPin = A0; 
   genericSens_.generic.adc_sensor = analogRead(analogInPin);
   //Serial.println(flow_data_payload[3]);
 }
 
+void readAnalogInputX() {
+  //Serial.println("ADC Range: +/- 6.144V (1 bit = 3mV/ADS1015, 0.1875mV/ADS1115)");
 
+  // The ADC input range (or gain) can be changed via the following
+  // functions, but be careful never to exceed VDD +0.3V max, or to
+  // exceed the upper and lower limits if you adjust the input range!
+  // Setting these values incorrectly may destroy your ADC!
+  //                                                                ADS1015  ADS1115
+  //                                                                -------  -------
+  // ads.setGain(GAIN_TWOTHIRDS);  // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)
+  // ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
+  // ads.setGain(GAIN_TWO);        // 2x gain   +/- 2.048V  1 bit = 1mV      0.0625mV
+  // ads.setGain(GAIN_FOUR);       // 4x gain   +/- 1.024V  1 bit = 0.5mV    0.03125mV
+  // ads.setGain(GAIN_EIGHT);      // 8x gain   +/- 0.512V  1 bit = 0.25mV   0.015625mV
+  // ads.setGain(GAIN_SIXTEEN);    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
+
+
+  int16_t adc0, adc1, adc2, adc3, adc4, adc5, adc6, adc7;
+  float volts0, volts1, volts2, volts3, volts4, volts5, volts6, volts7;
+
+  adc0 = ads1.readADC_SingleEnded(0);
+  adc1 = ads1.readADC_SingleEnded(1);
+  adc2 = ads1.readADC_SingleEnded(2);
+  adc3 = ads1.readADC_SingleEnded(3);
+
+  genericSens_.generic.adc_x1 = adc0;
+  genericSens_.generic.adc_x2 = adc1;
+  genericSens_.generic.adc_x3 = adc2;
+  genericSens_.generic.adc_x4 = adc3;
+  
+  if ( secondADC == TRUE ) {
+      adc4 = ads2.readADC_SingleEnded(0);
+      adc5 = ads2.readADC_SingleEnded(1);
+      adc6 = ads2.readADC_SingleEnded(2);
+      adc7 = ads2.readADC_SingleEnded(3);
+
+      genericSens_.generic.adc_x5 = adc4;
+      genericSens_.generic.adc_x6 = adc5;
+      genericSens_.generic.adc_x7 = adc6;
+      genericSens_.generic.adc_x8 = adc7;
+  }
+  /*
+  volts0 = ads1.computeVolts(adc0);
+  volts1 = ads1.computeVolts(adc1);
+  volts2 = ads1.computeVolts(adc2);
+  volts3 = ads1.computeVolts(adc3);
+  volts4 = ads2.computeVolts(adc4);
+  volts5 = ads2.computeVolts(adc5);
+  volts6 = ads2.computeVolts(adc6);
+  volts7 = ads2.computeVolts(adc7);
+
+  Serial.println("-----------------------------------------------------------");
+  Serial.print("AIN0: "); Serial.print(adc0); Serial.print("  "); Serial.print(volts0); Serial.println("V");
+  Serial.print("AIN1: "); Serial.print(adc1); Serial.print("  "); Serial.print(volts1); Serial.println("V");
+  Serial.print("AIN2: "); Serial.print(adc2); Serial.print("  "); Serial.print(volts2); Serial.println("V");
+  Serial.print("AIN3: "); Serial.print(adc3); Serial.print("  "); Serial.print(volts3); Serial.println("V");
+  Serial.println("+++++++++++++++++++");
+  Serial.print("AIN4: "); Serial.print(adc4); Serial.print("  "); Serial.print(volts4); Serial.println("V");
+  Serial.print("AIN5: "); Serial.print(adc5); Serial.print("  "); Serial.print(volts5); Serial.println("V");
+  Serial.print("AIN6: "); Serial.print(adc6); Serial.print("  "); Serial.print(volts6); Serial.println("V");
+  Serial.print("AIN7: "); Serial.print(adc7); Serial.print("  "); Serial.print(volts7); Serial.println("V");
+  
+}*/
+/*
+void readTempInputX() {
+  if (tempSens == TRUE) {
+    float c = tempsensor.readTempC();
+    float f = c * 9.0 / 5.0 + 32;
+    
+    //Serial.print("Temp: "); Serial.print(c); Serial.print("*C\t");
+    //Serial.print(f); Serial.println("*F");
+
+    memcpy(&genericSens_.generic.GPIO_x2, &f, sizeof(float));
+  }
+}
 void readDigitalInput() {
 
   // Read the config pins and get configuation data
@@ -332,6 +486,32 @@ void readDigitalInput() {
   genericSens_.generic.gpio_sensor = ioInput ;
   //Serial.print("IO Input: ");
   //Serial.println(ioInput);
+}
+void readDigitalInputX() {
+//There are two ways to read from a port, either by returning the full register value as a uint8_t, or passing in an array of 8 boolean's to be modified by the function with the statuses of each pin
+  uint8_t portValue = extendedGPIO1.digitalReadPort(gpioStatus);
+  
+  Serial.print("uint8_t: ");
+  Serial.println(portValue, BIN);
+  Serial.print("Bool array: ");
+  for (uint8_t arrayPosition = 0; arrayPosition < NUM_GPIO; arrayPosition++) {
+    Serial.print(arrayPosition);
+    Serial.print(": ");
+    switch (gpioStatus[arrayPosition])
+    {
+      case true:
+        Serial.print("HI ");
+        break;
+      case false:
+        Serial.print("LO ");
+        break;
+    }
+  }
+  Serial.println("\n");
+}
+*/
+void processMqttClient() {
+  client.loop();
 }
 
 void publishFlowData() {
