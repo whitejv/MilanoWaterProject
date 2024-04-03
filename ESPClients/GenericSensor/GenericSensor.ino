@@ -16,7 +16,16 @@
 #include <DallasTemperature.h>
 #endif
 
-#define fwVersion 1111
+#define fwVersion 1112
+/*
+ * Revision Log
+ *
+ * 1111 - Original GenericSensor Code
+ * 1112 - Fixed bug that resulted in bad flow meter pulse counts
+ *        & changed Interrupt type to RISING
+ *
+ *
+ */
 
 /*
 GPIO00 - //Good - Config 3
@@ -53,7 +62,7 @@ long currentMillis = 0;
 long previousMillis = 0;
 long millisecond = 0;
 int loopInterval = 500;
-int flowInterval = 2000;
+int flowInterval = 1000;
 volatile byte pulseCount;
 byte pulse1Sec = 0;
 unsigned long timerOTA;
@@ -104,8 +113,10 @@ void setup() {
     pinMode(configPin3, INPUT_PULLUP);
 
     sensors.begin();// Start the DS18B20 sensor
-    pinMode(FLOWSENSOR, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(FLOWSENSOR), pulseCounter, FALLING);
+    //pinMode(FLOWSENSOR, INPUT_PULLUP);
+    //attachInterrupt(digitalPinToInterrupt(FLOWSENSOR), pulseCounter, FALLING);
+    pinMode(FLOWSENSOR, INPUT);
+    attachInterrupt(digitalPinToInterrupt(FLOWSENSOR), pulseCounter, RISING);
   #endif
     delay(3000); //give some time for things to get settled
     // Read the config pins and get configuation data
@@ -298,6 +309,7 @@ void updateFlowData() {
   currentMillis = millis();
   if (((currentMillis - previousMillis) > flowInterval) && pulseCount > 0 ) {
     pulse1Sec = pulseCount;
+    pulseCount = 0;
     millisecond = millis() - previousMillis ;
     genericSens_.generic.pulse_count = pulse1Sec ;
     genericSens_.generic.milliseconds = millisecond ;
@@ -306,7 +318,6 @@ void updateFlowData() {
   } else {
     genericSens_.generic.new_data_flag = 0 ;
   }
-  pulseCount = 0;
 }
 
 void updateTemperatureData() {
