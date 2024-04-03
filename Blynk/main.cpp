@@ -122,12 +122,12 @@ void loop()
    Blynk.setProperty(6, "color", ledcolorPalette[monitor_.monitor.pump_led_color_2]);  // Set LED Label to HEX colour
    Blynk.setProperty(7, "color", ledcolorPalette[monitor_.monitor.pump_led_color_3]);  // Set LED Label to HEX colour
    Blynk.setProperty(20, "color", ledcolorPalette[monitor_.monitor.pump_led_color_4]); // Set LED Label to HEX colour
-
+/*
    Blynk.setProperty(12, "color", ledcolorPalette[floatLedcolor[1]]); // Set LED Label to HEX colour
    Blynk.setProperty(13, "color", ledcolorPalette[floatLedcolor[2]]); // Set LED Label to HEX colour
    Blynk.setProperty(14, "color", ledcolorPalette[floatLedcolor[3]]); // Set LED Label to HEX colour
    Blynk.setProperty(15, "color", ledcolorPalette[floatLedcolor[4]]); // Set LED Label to HEX colour
-
+*/
    Blynk.setProperty(4, "color", ledcolorPalette[monitor_.monitor.press_led_color]);
    Blynk.setProperty(21, "color", ledcolorPalette[monitor_.monitor.septic_relay_alert_color]); // Set LED Label to HEX colour
 
@@ -316,7 +316,7 @@ int main(int argc, char *argv[])
    while (true)
    {
 
-      //loop();
+      loop();
       Blynk.run() ;
       tmr.run();
    }

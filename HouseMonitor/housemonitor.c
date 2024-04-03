@@ -13,6 +13,7 @@ int verbose = FALSE;
 float dailyGallons = 0;
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
+float avgflowRateGPM = 0;
 
 /* Function Declarations */
 
@@ -142,7 +143,9 @@ int main(int argc, char* argv[])
       //printf("seconds since midnight: %d\n", SecondsFromMidnight);
       PriorSecondsFromMidnight = SecondsFromMidnight ;
 
-      GallonsPumped() ;
+      flowmon(houseSens_.house.new_data_flag, houseSens_.house.milliseconds, houseSens_.house.pulse_count, &avgflowRateGPM, &dailyGallons, 1.955) ;
+      houseMon_.house.house_gallons_per_minute =  avgflowRateGPM;
+      houseMon_.house.houseTotalFlow = dailyGallons;
       
       memcpy(&temperatureF, &houseSens_.house.temp_w1 , sizeof(float));
 
@@ -165,65 +168,6 @@ int main(int argc, char* argv[])
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);
    return rc;
-}
-
-void GallonsPumped(void){
-   int i=0;
-   float calibrationFactor = .5;
-   float flowRate = 0.0;
-   
-   float flowRateGPM = 0;
-   static float avgflowRateGPM = 0;
-   static float avgflowRate = 0;
-   static int   flowIndex = 0;
-   static float flowRateValueArray[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-   int pulseCount = 0;
-   int millsElapsed = 0;
-   int millsTotal = 0;
-   int dailyPulseCount = 0;
-   int newPulseData = 0;
-
-   newPulseData = houseSens_.house.new_data_flag;
-   if ( newPulseData == 1){
-      
-      millsElapsed = houseSens_.house.milliseconds;
-      pulseCount = houseSens_.house.pulse_count;
-      
-      if ((millsElapsed < 5000) && (millsElapsed != 0)) {     //ignore the really long intervals
-         //dailyPulseCount = dailyPulseCount + pulseCount ;
-         millsElapsed = houseSens_.house.milliseconds ;
-         //millsTotal = millsTotal + millsElapsed;
-         flowRate = ((pulseCount / (millsElapsed/1000)) / .5) / calibrationFactor;
-         flowRate = ((flowRate * .00026417)/(millsElapsed/1000)) * 60;  //GPM
-         flowRateGPM = flowRate * 30;
-         dailyGallons = dailyGallons + flowRate ;
-         
-         if (flowRateGPM > 4.0) {
-            flowRateValueArray[flowIndex++] = flowRateGPM;
-            flowIndex = flowIndex % 10;
-         }
-         avgflowRate = 0 ;
-         for( i=0; i<=9; ++i){
-            avgflowRate += flowRateValueArray[i];
-            //printf("flowRateValueArray[%d]: %f avgflowRate: %f\n", i, flowRateValueArray[i], avgflowRate );
-         }
-         avgflowRateGPM = avgflowRate/10;
-         
-         /*
-         printf("Pulse Count: %d   Daily Pulse Count: %d\n", pulseCount, dailyPulseCount);
-         printf("Milliseconds Elapsed: %d   Milliseconds Total:  %d\n", millsElapsed, millsTotal);
-         printf("Flow Rate: %f  Flow Rate GPM:  %f   Daily Gallons:  %f\n", flowRate, flowRateGPM,  dailyGallons);
-         printf("Average Flow Rate: %f\n", avgflowRateGPM);
-         */  
-      }    
-   } 
-   else {
-      pulseCount = 0;
-      millsElapsed = 0 ;
-   }
-
-   houseMon_.house.house_gallons_per_minute =    avgflowRateGPM;
-   houseMon_.house.houseTotalFlow = dailyGallons;
 }
 
 void MyMQTTSetup(char* mqtt_address){

@@ -192,7 +192,7 @@ int main(int argc, char* argv[])
       /*
       * Call the flow monitor function
       */
-      flowmon(irrigationSens_.irrigation.new_data_flag, irrigationSens_.irrigation.milliseconds, irrigationSens_.irrigation.pulse_count, &avgflowRateGPM, &dailyGallons, .5) ;
+      flowmon(irrigationSens_.irrigation.new_data_flag, irrigationSens_.irrigation.milliseconds, irrigationSens_.irrigation.pulse_count, &avgflowRateGPM, &dailyGallons, .935) ;
 
       irrigationPressure = (irrigationSens_.irrigation.adc_sensor * .1336) - 10.523 ;
       
