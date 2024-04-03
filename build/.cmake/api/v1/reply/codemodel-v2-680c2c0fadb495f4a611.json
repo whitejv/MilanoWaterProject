@@ -15,7 +15,8 @@
 						5,
 						6,
 						7,
-						8
+						8,
+						9
 					],
 					"hasInstallRule" : true,
 					"minimumCMakeVersion" : 
@@ -23,7 +24,11 @@
 						"string" : "3.2"
 					},
 					"projectIndex" : 0,
-					"source" : "."
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						2
+					]
 				},
 				{
 					"build" : "mylib",
@@ -36,11 +41,11 @@
 					"source" : "mylib",
 					"targetIndexes" : 
 					[
-						4
+						6
 					]
 				},
 				{
-					"build" : "FlowMonitor",
+					"build" : "IrrigationMonitor",
 					"hasInstallRule" : true,
 					"minimumCMakeVersion" : 
 					{
@@ -48,10 +53,10 @@
 					},
 					"parentIndex" : 0,
 					"projectIndex" : 2,
-					"source" : "FlowMonitor",
+					"source" : "IrrigationMonitor",
 					"targetIndexes" : 
 					[
-						2
+						4
 					]
 				},
 				{
@@ -66,7 +71,7 @@
 					"source" : "TankMonitor",
 					"targetIndexes" : 
 					[
-						5
+						7
 					]
 				},
 				{
@@ -81,7 +86,7 @@
 					"source" : "Monitor",
 					"targetIndexes" : 
 					[
-						3
+						5
 					]
 				},
 				{
@@ -96,7 +101,22 @@
 					"source" : "WellMonitor",
 					"targetIndexes" : 
 					[
-						7
+						9
+					]
+				},
+				{
+					"build" : "HouseMonitor",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.2"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 6,
+					"source" : "HouseMonitor",
+					"targetIndexes" : 
+					[
+						3
 					]
 				},
 				{
@@ -107,7 +127,7 @@
 						"string" : "3.2"
 					},
 					"parentIndex" : 0,
-					"projectIndex" : 6,
+					"projectIndex" : 7,
 					"source" : "SysAlert",
 					"targetIndexes" : 
 					[
@@ -122,11 +142,11 @@
 						"string" : "3.2"
 					},
 					"parentIndex" : 0,
-					"projectIndex" : 7,
+					"projectIndex" : 8,
 					"source" : "SysTest",
 					"targetIndexes" : 
 					[
-						6
+						8
 					]
 				},
 				{
@@ -137,7 +157,7 @@
 						"string" : "3.2"
 					},
 					"parentIndex" : 0,
-					"projectIndex" : 8,
+					"projectIndex" : 9,
 					"source" : "Blynk",
 					"targetIndexes" : 
 					[
@@ -158,13 +178,18 @@
 						5,
 						6,
 						7,
-						8
+						8,
+						9
 					],
 					"directoryIndexes" : 
 					[
 						0
 					],
-					"name" : "MilanoWaterProject"
+					"name" : "MilanoWaterProject",
+					"targetIndexes" : 
+					[
+						2
+					]
 				},
 				{
 					"directoryIndexes" : 
@@ -175,7 +200,7 @@
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
-						4
+						6
 					]
 				},
 				{
@@ -183,11 +208,11 @@
 					[
 						2
 					],
-					"name" : "flowmonitor",
+					"name" : "irrigationmonitor",
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
-						2
+						4
 					]
 				},
 				{
@@ -199,7 +224,7 @@
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
-						5
+						7
 					]
 				},
 				{
@@ -211,7 +236,7 @@
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
-						3
+						5
 					]
 				},
 				{
@@ -223,13 +248,25 @@
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
-						7
+						9
 					]
 				},
 				{
 					"directoryIndexes" : 
 					[
 						6
+					],
+					"name" : "housemonitor",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						7
 					],
 					"name" : "alert",
 					"parentIndex" : 0,
@@ -241,19 +278,19 @@
 				{
 					"directoryIndexes" : 
 					[
-						7
+						8
 					],
 					"name" : "test",
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
-						6
+						8
 					]
 				},
 				{
 					"directoryIndexes" : 
 					[
-						8
+						9
 					],
 					"name" : "blynk",
 					"parentIndex" : 0,
@@ -266,24 +303,38 @@
 			"targets" : 
 			[
 				{
-					"directoryIndex" : 6,
+					"directoryIndex" : 7,
 					"id" : "alert::@a26940e6795c3495de2a",
-					"jsonFile" : "target-alert-Debug-50f8f8a19c33d228c867.json",
+					"jsonFile" : "target-alert-Debug-6de613d2e0c86cd2c189.json",
 					"name" : "alert",
+					"projectIndex" : 7
+				},
+				{
+					"directoryIndex" : 9,
+					"id" : "blynk::@85d371cfb24311502f54",
+					"jsonFile" : "target-blynk-Debug-73faac9b01bca7d4ba7a.json",
+					"name" : "blynk",
+					"projectIndex" : 9
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "clean-all::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-clean-all-Debug-cbe2939647fd17c15151.json",
+					"name" : "clean-all",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "housemonitor::@126e6bb064a97f8a4b87",
+					"jsonFile" : "target-housemonitor-Debug-19948f43050b929259c8.json",
+					"name" : "housemonitor",
 					"projectIndex" : 6
 				},
 				{
-					"directoryIndex" : 8,
-					"id" : "blynk::@85d371cfb24311502f54",
-					"jsonFile" : "target-blynk-Debug-4352aa2c9cf2878875ed.json",
-					"name" : "blynk",
-					"projectIndex" : 8
-				},
-				{
 					"directoryIndex" : 2,
-					"id" : "flowmonitor::@a4111c1479804cd59e4a",
-					"jsonFile" : "target-flowmonitor-Debug-98089ae2ecc5e2e07ea0.json",
-					"name" : "flowmonitor",
+					"id" : "irrigationmonitor::@54b9876c88b3409f62aa",
+					"jsonFile" : "target-irrigationmonitor-Debug-a1d7a23e8d4aa1705390.json",
+					"name" : "irrigationmonitor",
 					"projectIndex" : 2
 				},
 				{
@@ -296,7 +347,7 @@
 				{
 					"directoryIndex" : 1,
 					"id" : "mylib::@dfa37860ca8938dd2adf",
-					"jsonFile" : "target-mylib-Debug-42c983bc6e85b3a13517.json",
+					"jsonFile" : "target-mylib-Debug-7d34a8d5466033e2951a.json",
 					"name" : "mylib",
 					"projectIndex" : 1
 				},
@@ -308,11 +359,11 @@
 					"projectIndex" : 3
 				},
 				{
-					"directoryIndex" : 7,
+					"directoryIndex" : 8,
 					"id" : "test::@eca1a43536d1c841c5e7",
 					"jsonFile" : "target-test-Debug-fda1caedb293085fda0b.json",
 					"name" : "test",
-					"projectIndex" : 7
+					"projectIndex" : 8
 				},
 				{
 					"directoryIndex" : 5,

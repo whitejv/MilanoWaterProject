@@ -65,7 +65,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
       if (verbose) {for(i=0; i < ALERT_LEN; i++) {printf("%0x ", alert_.data_payload[i]);}}
       printf("*\n");
    }
-   else if ( strcmp(topicName, "mwp/rainbird/response/controller1/active_zone") == 0) {
+   else if ( strcmp(topicName, "mwp/response/rainbird/controller1/active_zone") == 0) {
       memcpy(rainbird_payload, message->payload, message->payloadlen);
       if (verbose) {printf("%s ", rainbird_payload);}
       
@@ -78,7 +78,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
       
       printf("F\n");
    }
-      else if ( strcmp(topicName, "mwp/rainbird/response/controller2/active_zone") == 0) {
+      else if ( strcmp(topicName, "mwp/response/rainbird/controller2/active_zone") == 0) {
       memcpy(rainbird_payload, message->payload, message->payloadlen);
       if (verbose) {printf("%s ", rainbird_payload);}
       

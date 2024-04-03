@@ -1,6 +1,7 @@
 {
     "version": "0.2.0",
     "configurations": [
+        
         {
             "name": "C/C++: gcc-10 build and debug active file",
             "type": "cppdbg",

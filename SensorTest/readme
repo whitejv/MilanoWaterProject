@@ -1,0 +1,108 @@
+Based on the information provided, your test language serves as a simplified DSL (Domain-Specific Language) for scripting tests on a Water Monitoring System. The language provides a set of commands, parameters, and other details necessary for performing different kinds of operations and verifications. Here's an outline:
+
+### Command Types:
+
+- `s`: **Set** a parameter to a specific value.
+- `r`: **Read** the value of a parameter and print it.
+- `v`: **Verify** that a parameter has an expected value within a given tolerance.
+- `c`: **Compare** a parameter's value against a specific value and report whether they match.
+- `d`: **Delay** the execution of the test for a specified time.
+
+### Operations:
+
+- `set`: Set the value of a given parameter.
+- `read`: Read the value of a given parameter.
+- `verify`: Verify the value of a parameter.
+- `compare`: Compare the value of a parameter.
+- `delay`: Pause the test for a specific amount of time.
+
+### Parameters:
+
+- `parameter ID`: The ID that uniquely identifies each parameter you wish to test. These might be sensor readings, status flags, etc.
+
+### Value Types:
+
+- `d`: Decimal integer value.
+- `f`: Floating-point value.
+- `x`: Hexadecimal value.
+
+### Values and Tolerances:
+
+- `value`: The value you either set for a parameter or expect a parameter to have.
+- `tolerance`: A range within which the parameter value should fall for a verification to be considered successful (only applicable to the `verify` command and float type).
+
+### Test File Example:
+
+```
+s set TankLevel d 50
+r read WellFlowRate f
+v verify AlertStatus x 0x1A 0
+c compare TankLevel d 50
+d delay d 5000
+```
+
+In this example:
+
+1. The `TankLevel` is set to a decimal value of 50.
+2. The `WellFlowRate` is read and printed, and it is of float type.
+3. The `AlertStatus` is verified to be equal to the hexadecimal value 0x1A with zero tolerance.
+4. The `TankLevel` is compared against a decimal value of 50.
+5. The execution of the test is delayed by 5000 milliseconds.
+
+The test language is designed for simplicity and ease of use, catering specifically to the domain of water monitoring systems. It provides the ability to script a series of test steps with clear semantics, making it easier to automate the testing process.
+
+Test File syntax:										
+Water Monitoring System Test Tool - Test File Syntax
+
+The test file provides a series of commands to perform tests on the Water Monitoring System. Each line in the test file represents a single test command with the following format:
+
+COMMAND_TYPE OPERATION PARAMETER VALUE [TOLERANCE]
+
+Command Types:
+
+s : Set a parameter to a specific value
+r : Read a parameter and print its value
+v : Verify a parameter against an expected value with an optional tolerance
+c : Compare a parameter to a specific value and report if they match
+d : Delay the test execution for a specified duration
+Operations:
+
+set : Set a parameter to a specific value
+read : Read a parameter and print its value
+verify : Verify a parameter against an expected value with an optional tolerance
+compare: Compare a parameter to a specific value and report if they match
+delay : Delay the test execution for a specified duration
+Parameters:
+
+parameter ID: The name of the parameter to test
+Value Types:
+
+d: Decimal (integer)
+f: Float
+x: Hexadecimal
+Values and Tolerances:
+
+value : The expected value or the value to set for the test
+tolerance: The acceptable tolerance for float tests (only applicable for float type and the 'verify' command)
+Example Test File:
+
+s set TankLevel d 50
+r read WellFlowRate f
+v verify AlertStatus x 0x1A 0
+c compare TankLevel d 50
+d delay d 5000
+
+In this example test file:
+
+Set the 'TankLevel' parameter to the integer value 50.
+Read the 'WellFlowRate' parameter and print its float value.
+Verify the 'AlertStatus' parameter against the hexadecimal value 0x1A with no tolerance.
+Compare the 'TankLevel' parameter to the integer value 50 and report if they match.
+Delay the test execution for 5000 milliseconds (5 seconds).
+										
+
+s	set	    parameter ID		d,f,x		value				
+r	read	parameter ID		d,f,x       value     						
+v	verify	parameter ID		d,f,x		value	tolerance			
+c	compare	parameter ID		d,f,x		value				
+d	delay	delay		        d,f,x		value				

@@ -15,7 +15,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-addr2line"
+			"value" : "/usr/bin/addr2line"
 		},
 		{
 			"name" : "CMAKE_AR",
@@ -31,7 +31,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-ar"
+			"value" : "/usr/bin/ar"
 		},
 		{
 			"name" : "CMAKE_BUILD_TYPE",
@@ -155,11 +155,11 @@
 				},
 				{
 					"name" : "HELPSTRING",
-					"value" : "No help, variable specified on the command line."
+					"value" : "CXX compiler"
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-g++"
+			"value" : "/usr/bin/c++"
 		},
 		{
 			"name" : "CMAKE_CXX_COMPILER_AR",
@@ -175,7 +175,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-gcc-ar-10"
+			"value" : "/usr/bin/gcc-ar-10"
 		},
 		{
 			"name" : "CMAKE_CXX_COMPILER_RANLIB",
@@ -191,7 +191,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-gcc-ranlib-10"
+			"value" : "/usr/bin/gcc-ranlib-10"
 		},
 		{
 			"name" : "CMAKE_CXX_FLAGS",
@@ -283,11 +283,11 @@
 				},
 				{
 					"name" : "HELPSTRING",
-					"value" : "No help, variable specified on the command line."
+					"value" : "C compiler"
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-gcc"
+			"value" : "/usr/bin/cc"
 		},
 		{
 			"name" : "CMAKE_C_COMPILER_AR",
@@ -303,7 +303,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-gcc-ar-10"
+			"value" : "/usr/bin/gcc-ar-10"
 		},
 		{
 			"name" : "CMAKE_C_COMPILER_RANLIB",
@@ -319,7 +319,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-gcc-ranlib-10"
+			"value" : "/usr/bin/gcc-ranlib-10"
 		},
 		{
 			"name" : "CMAKE_C_FLAGS",
@@ -416,18 +416,6 @@
 			],
 			"type" : "FILEPATH",
 			"value" : "CMAKE_DLLTOOL-NOTFOUND"
-		},
-		{
-			"name" : "CMAKE_EDIT_COMMAND",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Path to cache edit program executable."
-				}
-			],
-			"type" : "INTERNAL",
-			"value" : "/usr/bin/cmake-gui"
 		},
 		{
 			"name" : "CMAKE_EXECUTABLE_FORMAT",
@@ -643,7 +631,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-ld"
+			"value" : "/usr/bin/ld"
 		},
 		{
 			"name" : "CMAKE_MAKE_PROGRAM",
@@ -755,7 +743,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-nm"
+			"value" : "/usr/bin/nm"
 		},
 		{
 			"name" : "CMAKE_NUMBER_OF_MAKEFILES",
@@ -767,7 +755,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "9"
+			"value" : "10"
 		},
 		{
 			"name" : "CMAKE_OBJCOPY",
@@ -783,7 +771,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-objcopy"
+			"value" : "/usr/bin/objcopy"
 		},
 		{
 			"name" : "CMAKE_OBJDUMP",
@@ -799,7 +787,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-objdump"
+			"value" : "/usr/bin/objdump"
 		},
 		{
 			"name" : "CMAKE_PLATFORM_INFO_INITIALIZED",
@@ -863,7 +851,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-ranlib"
+			"value" : "/usr/bin/ranlib"
 		},
 		{
 			"name" : "CMAKE_READELF",
@@ -879,7 +867,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-readelf"
+			"value" : "/usr/bin/readelf"
 		},
 		{
 			"name" : "CMAKE_ROOT",
@@ -1099,7 +1087,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/arm-linux-gnueabihf-strip"
+			"value" : "/usr/bin/strip"
 		},
 		{
 			"name" : "CMAKE_UNAME",
@@ -1674,7 +1662,7 @@
 			"value" : "/home/pi/MilanoWaterProject/Blynk"
 		},
 		{
-			"name" : "flowmonitor_BINARY_DIR",
+			"name" : "housemonitor_BINARY_DIR",
 			"properties" : 
 			[
 				{
@@ -1683,10 +1671,10 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/pi/MilanoWaterProject/build/FlowMonitor"
+			"value" : "/home/pi/MilanoWaterProject/build/HouseMonitor"
 		},
 		{
-			"name" : "flowmonitor_SOURCE_DIR",
+			"name" : "housemonitor_SOURCE_DIR",
 			"properties" : 
 			[
 				{
@@ -1695,7 +1683,31 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/pi/MilanoWaterProject/FlowMonitor"
+			"value" : "/home/pi/MilanoWaterProject/HouseMonitor"
+		},
+		{
+			"name" : "irrigationmonitor_BINARY_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/pi/MilanoWaterProject/build/IrrigationMonitor"
+		},
+		{
+			"name" : "irrigationmonitor_SOURCE_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/pi/MilanoWaterProject/IrrigationMonitor"
 		},
 		{
 			"name" : "monitor_BINARY_DIR",
@@ -1772,30 +1784,6 @@
 			],
 			"type" : "INTERNAL",
 			"value" : "/usr/lib/arm-linux-gnueabihf"
-		},
-		{
-			"name" : "subscriber_BINARY_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "/home/pi/MilanoWaterProject/build/WellMonitor"
-		},
-		{
-			"name" : "subscriber_SOURCE_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "/home/pi/MilanoWaterProject/WellMonitor"
 		},
 		{
 			"name" : "tankmonitor_BINARY_DIR",

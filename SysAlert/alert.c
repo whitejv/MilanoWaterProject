@@ -8,20 +8,17 @@
 #include "unistd.h"
 #include "MQTTClient.h"
 #include "../include/water.h"
+#include <stdbool.h> // Required for using 'bool' type
+
+typedef enum {
+    CONDITION_EQUAL,
+    CONDITION_NOT_EQUAL,
+    CONDITION_GREATER_THAN,
+    CONDITION_LESS_THAN,
+    // Add more conditions as needed
+} TriggerCondition;
 
 int verbose = FALSE;
-
-typedef struct {
-    uint16_t alarmState;     // 16-bit field for Alarm state
-    uint16_t internalState;  // 16-bit field for internal state
-    uint16_t timer;          // 16-bit field for timer
-    uint16_t timeOut;        // 16-bit field for timeOut
-} AlarmStructure;
-
-#define ALARM_COUNT 20
-AlarmStructure alarms[ALARM_COUNT];
-
-int alarmSummary = 0;
 enum AlarmInternalState
 {
    inactive = 0,
@@ -31,14 +28,44 @@ enum AlarmInternalState
    timeout = 4
 };
 
+typedef struct {
+    int alarmState;      // Alarm state
+    int alarmStatePrior; // Last Alarm State
+    int internalState;   // field for internal state
+    int timer;           // field for timer
+    int timeOut;         // field for timeOut
+    int triggerDelay ;   // field for triggerDelay
+    int occurencesHour ;
+    int occurencesDay  ;
+    const int TIMEOUT_RESET_VALUE ;
+    const int TIMER_INCREMENT ;
+    const int TRIGGER_VALUE ;
+    const int TRIGGER_DELAY ;
+} AlarmStructure;
+
+#define ALARM_COUNT 20
+AlarmStructure alarms[ALARM_COUNT+1] = {0, inactive, 0, 10, 1, 10, 1, 5,
+                                        0, inactive, 0, 10, 1, 10, 1, 5,
+                                        0, inactive, 0, 10, 1, 10, 1, 5,
+                                        0, inactive, 0, 10, 1, 10, 1, 5,
+                                        0, inactive, 0, 10, 1, 10, 1, 5,
+                                        0, inactive, 0, 10, 1, 10, 1, 30,
+                                        0, inactive, 0, 10, 1, 10, 1, 30,
+                                        0, inactive, 0, 10, 1, 10, 1, 5,
+                                        0, inactive, 0, 10, 1, 10, 1, 5,
+                                        0, inactive, 0, 10, 1, 10, 1, 5};
+
+int alarmSummary = 0;
+
+
 MQTTClient client;
 MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
 MQTTClient_message pubmsg = MQTTClient_message_initializer;
 MQTTClient_deliveryToken token;
 
 void MyMQTTPublish(void) ;
-void processAlarmWellPumpsNotStarting(void) ;
-void processAlarmTankCriticallyLow(void) ;
+void processAlarmWellPumpsNotStarting(AlarmStructure* p_alarm ) ;
+void processAlarmTankCriticallyLow(AlarmStructure* p_alarm) ;
 
 MQTTClient_deliveryToken deliveredtoken;
 
@@ -65,7 +92,7 @@ int main(int argc, char *argv[])
 {
    int i = 0;
    int j = 0;
-
+   int stepcount = 0;
    time_t t;
    time(&t);
 
@@ -137,18 +164,10 @@ int main(int argc, char *argv[])
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELLMON_TOPICID, WELLMON_CLIENTID, QOS);
-   log_message("Alert: Subscribing to topic: %s for client: %s\n", WELLMON_TOPICID, WELLMON_CLIENTID);
-   MQTTClient_subscribe(client, WELLMON_TOPICID, QOS);
 
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TANKMON_TOPICID, TANKMON_CLIENTID, QOS);
-   log_message("Alert: Subscribing to topic: %s for client: %s\n", TANKMON_TOPICID, TANKMON_CLIENTID);
-   MQTTClient_subscribe(client, TANKMON_TOPICID, QOS);
-
-   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", IRRIGATIONMON_TOPICID, IRRIGATIONMON_CLIENTID, QOS);
-   log_message("Alert: Subscribing to topic: %s for client: %s\n", IRRIGATIONMON_TOPICID, IRRIGATIONMON_CLIENTID);
-   MQTTClient_subscribe(client, IRRIGATIONMON_TOPICID, QOS);
-
+   printf("Subscribing to all monitor topics: %s\nfor client: %s using QoS: %d\n\n", "mwp/data/monitor/#", IRRIGATIONMON_CLIENTID, QOS);
+   log_message("Alert: Subscribing to topic: %s for client: %s\n", "mwp/data/monitor/#", IRRIGATIONMON_CLIENTID);
+   MQTTClient_subscribe(client, "mwp/data/monitor/#", QOS);
 
    /*
     * Main Loop
@@ -158,36 +177,61 @@ int main(int argc, char *argv[])
 
    while (1)
    {
-
-
+      /*
+      printf("Step: %d\n", stepcount);  
+      switch (stepcount)
+      {
+         case 5:
+            printf("trigger case\n");
+            wellMon_.well.House_tank_pressure_switch_on = ON;
+            wellMon_.well.well_pump_1_on = OFF;
+            wellMon_.well.well_pump_2_on = OFF;
+            tankMoney = ON ;
+            break;
+         case 16:
+            printf("inactive case\n");
+            wellMon_.well.House_tank_pressure_switch_on = OFF;
+            wellMon_.well.well_pump_1_on = ON;
+            //wellMon_.well.well_pump_2_on = OFF;
+            tankMoney = OFF ;
+            break;
+         
+      }
+      stepcount = stepcount + 1;
+      */
 
       alarmSummary = 0;
 
-/**	1 -	Critical	Tank Critically Low	*/
-      processAlarmTankCriticallyLow();
-    
-      /**	2- 	Critical	Irrigation Pump Temp Low/High	*/
-
+      /**	1 -	Critical	Tank Critically Low	*/
+      //printf("Tank Float 2: %d\n", tankMoney);
+      processAlarmGeneric(&alarms[1], CONDITION_EQUAL, tankMon_.tank.float2, ON);
+      /**	2 - Critical	Irrigation Pump Temp Low	*/
+      //printf("irrigation pump temp: %d\n", irrigationMon_.irrigation.PumpTemp);
+      processAlarmGeneric(&alarms[2], CONDITION_LESS_THAN, irrigationMon_.irrigation.PumpTemp, 35);
       /**	3 -	Critical	House Water Pressure Low	*/
-
+      //printf("house water pressure: %d\n", houseMon_.house.housePressure);
+      processAlarmGeneric(&alarms[3], CONDITION_LESS_THAN, houseMon_.house.housePressure, 25);
       /**	4 -	Critical	Septic System Alert	*/
-
-      /**	5 - 	Critical	Irrigation Pump Run Away	*/
-
+      //printf("septic alert: %d\n", wellMon_.well.septic_alert_on);
+      processAlarmGeneric(&alarms[4], CONDITION_EQUAL, wellMon_.well.septic_alert_on, ON);
+      /**	5 - Critical	Irrigation Pump Run Away	*/
+      //printf("irrigation pump run away: %d\n", tankMoney);
+      //processAlarmGeneric(&alarms[5], CONDITION_LESS_THAN, irrigationMon_.irrigation.FlowPerMin, 2);
       /**	6 -	Critical	Well 3 Pump Run Away	*/
+      //printf("well pump run away: %d\n", tankMoney);
+      //processAlarmGeneric(&alarms[6], CONDITION_LESS_THAN, tankMon_.tank.tank_gallons_per_minute, 2);
+      /**	7 -	Warn	Well Pumps Not Starting	*/
+      processAlarmWellPumpsNotStarting(&alarms[7]);
+      /**	7 - 	Warn	Well Pumps Runtime Exceeded	*/
 
-/**	7 -	Warn	Well Pumps Not Starting	*/
-      processAlarmWellPumpsNotStarting();
+      /**	8  -	Warn	Well Pumps Cycles Excessive	*/
 
+      /**	9 -	Info	Well Protect Circuit Active	*/
 
-      /**	8 - 	Warn	Well Pumps Runtime Exceeded	*/
-
-      /**	9  -	Warn	Well Pumps Cycles Excessive	*/
-
-      /**	10 -	Info	Well Protect Circuit Active	*/
-
-      /**	11 - 	Warn	Tank Overfill Condition	*/
-
+      /**	10 - 	Warn	Tank Overfill Condition	*/
+      //printf("tank overfill: %d\n", tankMon_.tank.tank_gallons);
+      processAlarmGeneric(&alarms[10], CONDITION_GREATER_THAN, tankMon_.tank.tank_gallons, 2300);
+      
       /*
        * Load Up the Data
        */
@@ -231,7 +275,7 @@ int main(int argc, char *argv[])
       sleep(1);
    }
    log_message("Alert: Exiting Main Loop\n");
-   MQTTClient_unsubscribe(client, WELLMON_TOPICID);
+   MQTTClient_unsubscribe(client, "mwp/data/monitor/#");
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);
    return rc;
@@ -242,7 +286,8 @@ void MyMQTTPublish() {
    time_t t;
    time(&t);
 
-   char *alarm_names[20] = {"Low Water Alert",
+   char *alarm_names[21] = {"unused",
+                            "Low Water Alert",
                             "Irrigation Pump Temp",
                             "House Water Pressure Low",
                             "Septic System Alert",
@@ -255,7 +300,6 @@ void MyMQTTPublish() {
                             "Tank Overfill Condition",
                             "I2C Faults Detected",
                             "Zone Use Excessive",
-                            "undefined",
                             "undefined",
                             "undefined",
                             "undefined",
@@ -285,7 +329,7 @@ void MyMQTTPublish() {
     * Publish JSON Message Only if an Alarm is active 
     */
    
-   if (alarmSummary == 1) {
+   //if (alarmSummary == 1) {
       json_object *root = json_object_new_object();
 
       for (i = 0; i < ALARM_COUNT; i++) {
@@ -294,7 +338,7 @@ void MyMQTTPublish() {
          json_object_object_add(alarm_obj, "internal_state", json_object_new_int(alarms[i].internalState));
          json_object_object_add(root, alarm_names[i], alarm_obj);
       }
-
+   
       const char *json_string = json_object_to_json_string(root);
 
       pubmsg.payload = (void *)json_string;
@@ -305,125 +349,131 @@ void MyMQTTPublish() {
       MQTTClient_waitForCompletion(client, token, TIMEOUT);
 
       json_object_put(root); // Free the memory allocated to the JSON object
-   }
+   //}
 }
 
+// Refactor the function to improve readability
+void processAlarmWellPumpsNotStarting(AlarmStructure* alarm) {
+    
+    if (alarm == NULL) return; // Add null pointer check for safety
 
-void processAlarmWellPumpsNotStarting() {
-   
-   switch (alarms[7].internalState)
-   {
-   case (timeout):
-      if (alarms[7].timeOut == 0)
-      {
-         alarms[7].internalState  = inactive;
-      }
-      else
-      {
-         alarms[7].timeOut--;
-      }
-      break;
-   case (inactive):
-      if (wellMon_.well.House_tank_pressure_switch_on == ON)
-      {
-         alarms[7].internalState  = trigger;
-         alarms[7].timer  = 0;
-      }
-      break;
-   case (trigger):
-      if (alarms[7].timer >= alarms[7].timeOut)
-      {
-         if ((wellMon_.well.House_tank_pressure_switch_on == ON && (wellMon_.well.well_pump_1_on == OFF || wellMon_.well.well_pump_2_on == OFF)))
-         {
-            alarms[7].internalState  = active;
-            alarms[7].timer  = 0;
-         }
-      }
-      else
-      {
-         alarms[7].timer ++;
-      }
-      break;
-   case (active):
-      if ((wellMon_.well.House_tank_pressure_switch_on == ON && (wellMon_.well.well_pump_1_on == OFF || wellMon_.well.well_pump_2_on == OFF)))
-      {
-         alarms[7].alarmState = 1;
-      }
-      else
-      {
-         alarms[7].internalState = reset;
-      }
-      break;
-   case (reset):
-      if (wellMon_.well.House_tank_pressure_switch_on == OFF) {
-         alarms[7].alarmState = 0;
-         alarms[7].timer  = 0;
-         alarms[7].timeOut = 10;
-         alarms[7].internalState = timeout;
-      }
-      break;
-   default:
-      break;
-   }
+    switch (alarm->internalState) {
+        case timeout:
+            if (alarm->timeOut == 0) {
+                alarm->internalState = inactive;
+            } else {
+                alarm->timeOut -= alarm->TIMER_INCREMENT;
+            }
+            break;
+        case inactive:
+            if (wellMon_.well.House_tank_pressure_switch_on == ON) {
+                alarm->internalState = trigger;
+                alarm->timer = 0;
+            }
+            break;
+        case trigger:
+            if (alarm->timer >= alarm->TRIGGER_DELAY) {
+                if (wellMon_.well.House_tank_pressure_switch_on == ON && 
+                   (wellMon_.well.well_pump_1_on == OFF || wellMon_.well.well_pump_2_on == OFF)) {
+                    alarm->internalState = active;
+                    alarm->timer = 0;
+                }
+            } else {
+                alarm->timer += alarm->TIMER_INCREMENT;
+            }
+            break;
+        case active:
+            if (wellMon_.well.House_tank_pressure_switch_on == ON && 
+               (wellMon_.well.well_pump_1_on == OFF || wellMon_.well.well_pump_2_on == OFF)) {
+                alarm->alarmState = 1;
+                log_message("Well Pumps 1, 2 not starting.");
+            } else {
+                alarm->internalState = reset;
+            }
+            break;
+        case reset:
+            if (wellMon_.well.House_tank_pressure_switch_on == OFF) {
+                alarm->alarmState = 0;
+                alarm->timer = alarm->TRIGGER_DELAY;
+                alarm->timeOut = alarm->TIMEOUT_RESET_VALUE;
+                alarm->internalState = timeout;
+            }
+            break;
+        default:
+            // Optionally log an error or handle unexpected internalState
+            break;
+    }
 }
-void processAlarmTankCriticallyLow(){
-   switch (alarms[1].internalState)
-   {
-      case timeout:
-         if (alarms[1].timeOut == 0)
-         {
-               alarms[1].internalState = inactive;
-         }
-         else
-         {
-               alarms[1].timeOut--;
-         }
-         break;
+void processAlarmGeneric(AlarmStructure* alarm, TriggerCondition condition, int triggerValue, int comparisonValue) {
+    if (alarm == NULL) return;
 
-      case inactive:
-         if (tankMon_.tank.float2 == ON)
-         {
-               alarms[1].internalState = trigger;
-               alarms[1].timer = 0;
-         }
-         break;
+    bool triggerConditionMet = false;
 
-      case trigger:
-         if (alarms[1].timer >= 60) // check if the sensor state has been ON for 60 seconds
-         {
-               alarms[1].internalState = active;
-               alarms[1].timer = 0;
-         }
-         else
-         {
-               alarms[1].timer++;
-         }
-         break;
+    // Determine if the trigger condition is met
+    switch (condition) {
+        case CONDITION_EQUAL:
+            triggerConditionMet = (triggerValue == comparisonValue);
+            
+            break;
+        case CONDITION_NOT_EQUAL:
+            triggerConditionMet = (triggerValue != comparisonValue);
+            
+            break;
+        case CONDITION_GREATER_THAN:
+            triggerConditionMet = (triggerValue > comparisonValue);
+            
+            break;
+        case CONDITION_LESS_THAN:
+            triggerConditionMet = (triggerValue < comparisonValue);
+            
+            break;
+        // Add more conditions as needed
+    }
 
-      case active:
-         if (tankMon_.tank.float2 == ON)
-         {
-               alarms[1].alarmState = 1; // alarm triggered
-               log_message("Water Level in Tank is Critically Low");
-         }
-         else
-         {
-               alarms[1].internalState = reset;
-         }
-         break;
+    // State machine logic
+    switch (alarm->internalState) {
+        case timeout:
+            if (alarm->timeOut == 0) {
+                alarm->internalState = inactive;
+            } else {
+                alarm->timeOut -= alarm->TIMER_INCREMENT;
+            }
+            break;
 
-      case reset:
-         if (tankMon_.tank.float2 == OFF)
-         {
-               alarms[1].alarmState = 0; // reset alarm
-               alarms[1].timer = 0;
-               alarms[1].timeOut = 60; // reset timeout
-               alarms[1].internalState = timeout;
-         }
-         break;
+        case inactive:
+            if (triggerConditionMet) {
+                alarm->internalState = trigger;
+                alarm->timer = alarm->TRIGGER_DELAY;
+            }
+            break;
 
-      default:
-         break;
-   }
+        case trigger:
+            if (alarm->timer >= alarm->TRIGGER_DELAY) {
+                alarm->internalState = active;
+                alarm->timer = 0;
+            } else {
+                alarm->timer += alarm->TIMER_INCREMENT;
+            }
+            break;
 
+        case active:
+            if (triggerConditionMet) {
+                alarm->alarmState = 1; // Alarm triggered
+                // Log message or perform additional actions
+            } else {
+                alarm->internalState = reset;
+            }
+            break;
+
+        case reset:
+            alarm->alarmState = 0;
+            alarm->timer = alarm->TRIGGER_DELAY;
+            alarm->timeOut = alarm->TIMEOUT_RESET_VALUE;
+            alarm->internalState = timeout;
+            break;
+
+        default:
+            // Error handling or logging for unexpected internalState
+            break;
+    }
 }

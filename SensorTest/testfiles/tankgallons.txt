@@ -1,0 +1,5 @@
+**
+** Test the tank gallons measurements
+**
+s   tank_baro_pressure_sensor x 8000
+r   tank_gallons  f

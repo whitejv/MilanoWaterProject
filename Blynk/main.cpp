@@ -207,13 +207,6 @@ void loop()
 
     */
 
-   if (alert_.alert.alert1 == 1 && OneTime == 0)
-   {
-      OneTime = 1;
-      Blynk.logEvent("pump_no_start");
-      printf("pump_no_start\n");
-   }
-
 }
 
 int main(int argc, char *argv[])

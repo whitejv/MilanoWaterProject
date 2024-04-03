@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "SysAlert/alert"
+			"path" : "IrrigationMonitor/irrigationmonitor"
 		}
 	],
 	"backtrace" : 1,
@@ -13,11 +13,12 @@
 			"add_executable",
 			"install",
 			"target_link_directories",
-			"target_link_libraries"
+			"target_link_libraries",
+			"target_include_directories"
 		],
 		"files" : 
 		[
-			"SysAlert/CMakeLists.txt"
+			"IrrigationMonitor/CMakeLists.txt"
 		],
 		"nodes" : 
 		[
@@ -27,25 +28,31 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 3,
+				"line" : 10,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 6,
+				"line" : 14,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 4,
+				"line" : 11,
 				"parent" : 0
 			},
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 5,
+				"line" : 13,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 12,
 				"parent" : 0
 			}
 		]
@@ -59,6 +66,13 @@
 					"fragment" : "-g"
 				}
 			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 5,
+					"path" : "/usr/include/json-c"
+				}
+			],
 			"language" : "C",
 			"sourceIndexes" : 
 			[
@@ -66,7 +80,7 @@
 			]
 		}
 	],
-	"id" : "alert::@a26940e6795c3495de2a",
+	"id" : "irrigationmonitor::@54b9876c88b3409f62aa",
 	"install" : 
 	{
 		"destinations" : 
@@ -100,11 +114,11 @@
 			},
 			{
 				"backtrace" : 3,
-				"fragment" : "-L/home/pi/MilanoWaterProject/SysAlert/../mylib",
+				"fragment" : "-L/home/pi/MilanoWaterProject/IrrigationMonitor/../mylib",
 				"role" : "libraryPath"
 			},
 			{
-				"fragment" : "-Wl,-rpath,/home/pi/paho.mqtt.c/build/output/lib:/home/pi/MilanoWaterProject/SysAlert/../mylib:",
+				"fragment" : "-Wl,-rpath,/home/pi/paho.mqtt.c/build/output/lib:/home/pi/MilanoWaterProject/IrrigationMonitor/../mylib:",
 				"role" : "libraries"
 			},
 			{
@@ -139,16 +153,21 @@
 			{
 				"fragment" : "-Wl,-Bdynamic",
 				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "-ljson-c",
+				"role" : "libraries"
 			}
 		],
 		"language" : "C"
 	},
-	"name" : "alert",
-	"nameOnDisk" : "alert",
+	"name" : "irrigationmonitor",
+	"nameOnDisk" : "irrigationmonitor",
 	"paths" : 
 	{
-		"build" : "SysAlert",
-		"source" : "SysAlert"
+		"build" : "IrrigationMonitor",
+		"source" : "IrrigationMonitor"
 	},
 	"sourceGroups" : 
 	[
@@ -165,7 +184,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "SysAlert/alert.c",
+			"path" : "IrrigationMonitor/irrigationmonitor.c",
 			"sourceGroupIndex" : 0
 		}
 	],
