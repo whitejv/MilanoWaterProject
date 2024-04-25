@@ -245,12 +245,12 @@ int main(int argc, char* argv[])
       
       if (verbose) {
          for (i=0; i<=IRRIGATIONMON_LEN-1; i++) {
-            printf("%.3f ", irrigationSens_.data_payload[i]);
+            printf("%.3f ", irrigationMon_.data_payload[i]);
          }
          printf("%s", ctime(&t));
       }
       
-      pubmsg.payload = irrigationSens_.data_payload;
+      pubmsg.payload = irrigationMon_.data_payload;
       pubmsg.payloadlen = IRRIGATIONMON_LEN * 4;
       pubmsg.qos = QOS;
       pubmsg.retained = 0;

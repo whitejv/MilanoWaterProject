@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <json-c/json.h>
 #include "unistd.h"
 #include "MQTTClient.h"
 #include "../include/water.h"
@@ -264,22 +265,22 @@ int main(int argc, char *argv[])
        * Convert the Discrete data
        */
 
-      Float100State = tankMon_.tank.float2;
+      Float100State = tankMon_.tank.float1;
       //Float90State = tank_sensor_payload[13];
       //Float50State = tank_sensor_payload[14];
-      Float25State = tankMon_.tank.float1;
+      Float25State = tankMon_.tank.float2;
       PressSwitState = wellMon_.well.House_tank_pressure_switch_on;
       SepticAlert = wellMon_.well.septic_alert_on ;
 
       if (Float100State == 1)
       {
          floatstate[1] = 255;
-         floatLedcolor[1] = GREEN;
+         floatLedcolor[1] = RED;
       }
       else
       {
          floatstate[1] = 255;
-         floatLedcolor[1] = RED;
+         floatLedcolor[1] = GREEN;
       }
 /*
       if (Float90State == 1)
@@ -306,13 +307,13 @@ int main(int argc, char *argv[])
 */
       if (Float25State == 1)
       {
-         floatstate[4] = 255;
-         floatLedcolor[4] = GREEN;
+         floatstate[2] = 255;
+         floatLedcolor[2] = RED;
       }
       else
       {
-         floatstate[4] = 255;
-         floatLedcolor[4] = RED;
+         floatstate[2] = 255;
+         floatLedcolor[2] = GREEN;
       }
 
       if (PressSwitState == 1)
@@ -389,13 +390,13 @@ int main(int argc, char *argv[])
        */
       A43floatState = 0;
       A21floatState = 0;
-      A43floatState = floatstate[4] << 16 | floatstate[3];
+      //A43floatState = floatstate[4] << 16 | floatstate[3];
       A21floatState = floatstate[2] << 16 | floatstate[1];
 
       AllfloatLedcolor = 0;
-      AllfloatLedcolor = floatLedcolor[4] << 24 |
-                         floatLedcolor[3] << 16 |
-                         floatLedcolor[2] << 8 |
+      //AllfloatLedcolor = floatLedcolor[4] << 24 |
+                         //floatLedcolor[3] << 16 |
+      AllfloatLedcolor = floatLedcolor[2] << 8 |
                          floatLedcolor[1];
       PumpRunCount = 0;
       PumpRunCount = MyPumpStats[4].RunCount << 24 |
@@ -446,6 +447,23 @@ int main(int argc, char *argv[])
          printf("Failed to publish message, return code %d\n", rc);
          rc = EXIT_FAILURE;
       }
+      json_object *root = json_object_new_object();
+      for (i=0; i<=MONITOR_LEN-1; i++) {
+         json_object_object_add(root, monitor_ClientData_var_name [i], json_object_new_double(monitor_.data_payload[i]));
+      }
+
+      const char *json_string = json_object_to_json_string(root);
+
+      pubmsg.payload = (void *)json_string; // Make sure to cast the const pointer to void pointer
+      pubmsg.payloadlen = strlen(json_string);
+      pubmsg.qos = QOS;
+      pubmsg.retained = 0;
+      MQTTClient_publishMessage(client, MONITOR_JSONID, &pubmsg, &token);
+      //printf("Waiting for publication of %s\non topic %s for client with ClientID: %s\n", json_string, MONITOR_TOPIC, MONITOR_MONID);
+      MQTTClient_waitForCompletion(client, token, TIMEOUT);
+      //printf("Message with delivery token %d delivered\n", token);
+
+      json_object_put(root); // Free the memory allocated to the JSON object
 
       /*
        * Run at this interval

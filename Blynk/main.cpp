@@ -105,16 +105,16 @@ void loop()
    PumpRunCount[2] = (BitPackedPayload & 0x0000ff00) >> 8;
    PumpRunCount[1] = (BitPackedPayload & 0x000000ff);
 
-   BitPackedPayload = monitor_.monitor.float_state_43;
-   floatState[4] = (BitPackedPayload & 0xffff0000) >> 16;
-   floatState[3] = (BitPackedPayload & 0x0000ffff);
+   //BitPackedPayload = monitor_.monitor.float_state_43;
+   //floatState[4] = (BitPackedPayload & 0xffff0000) >> 16;
+   //floatState[3] = (BitPackedPayload & 0x0000ffff);
    BitPackedPayload = monitor_.monitor.float_state_21;
    floatState[2] = (BitPackedPayload & 0xffff0000) >> 16;
    floatState[1] = (BitPackedPayload & 0x0000ffff);
 
    BitPackedPayload = monitor_.monitor.all_float_led_colors;
-   floatLedcolor[4] = (BitPackedPayload & 0xff000000) >> 24;
-   floatLedcolor[3] = (BitPackedPayload & 0x00ff0000) >> 16;
+   //floatLedcolor[4] = (BitPackedPayload & 0xff000000) >> 24;
+   //floatLedcolor[3] = (BitPackedPayload & 0x00ff0000) >> 16;
    floatLedcolor[2] = (BitPackedPayload & 0x0000ff00) >> 8;
    floatLedcolor[1] = (BitPackedPayload & 0x000000ff);
 
@@ -122,12 +122,12 @@ void loop()
    Blynk.setProperty(6, "color", ledcolorPalette[monitor_.monitor.pump_led_color_2]);  // Set LED Label to HEX colour
    Blynk.setProperty(7, "color", ledcolorPalette[monitor_.monitor.pump_led_color_3]);  // Set LED Label to HEX colour
    Blynk.setProperty(20, "color", ledcolorPalette[monitor_.monitor.pump_led_color_4]); // Set LED Label to HEX colour
-/*
+
    Blynk.setProperty(12, "color", ledcolorPalette[floatLedcolor[1]]); // Set LED Label to HEX colour
    Blynk.setProperty(13, "color", ledcolorPalette[floatLedcolor[2]]); // Set LED Label to HEX colour
-   Blynk.setProperty(14, "color", ledcolorPalette[floatLedcolor[3]]); // Set LED Label to HEX colour
-   Blynk.setProperty(15, "color", ledcolorPalette[floatLedcolor[4]]); // Set LED Label to HEX colour
-*/
+   //Blynk.setProperty(14, "color", ledcolorPalette[floatLedcolor[3]]); // Set LED Label to HEX colour
+   //Blynk.setProperty(15, "color", ledcolorPalette[floatLedcolor[4]]); // Set LED Label to HEX colour
+
    Blynk.setProperty(4, "color", ledcolorPalette[monitor_.monitor.press_led_color]);
    Blynk.setProperty(21, "color", ledcolorPalette[monitor_.monitor.septic_relay_alert_color]); // Set LED Label to HEX colour
 
@@ -141,10 +141,10 @@ void loop()
    Blynk.virtualWrite(V5, monitor_.monitor.pump_current_sense_1);           // Pump Current Sense P1
    Blynk.virtualWrite(V6, monitor_.monitor.pump_current_sense_2);           // Pump Current Sense P2
    Blynk.virtualWrite(V7, monitor_.monitor.pump_current_sense_3);           // Pump Current Sense P3
-   Blynk.virtualWrite(V8, irrigationMon_.irrigation.PumpTemp);             // irrigation pump temperature
-   //Blynk.virtualWrite(V9, (int)well_sensor_payload[12]);    // Faults
-   Blynk.virtualWrite(V10, (int)tankMon_.tank.cycle_count);  // Cycle Count
-   Blynk.virtualWrite(V11, tankMon_.tank.air_temp);       // System Temperature f
+   Blynk.virtualWrite(V8,  (int)irrigationMon_.irrigation.cycle_count);     // irrigation Cycles
+   Blynk.virtualWrite(V9,  (int)wellMon_.well.cycle_count);                 // Well Cycles
+   Blynk.virtualWrite(V10, (int)tankMon_.tank.cycle_count);                 // Tank Count
+   Blynk.virtualWrite(V11, wellMon_.well.system_temp);       // System Temperature f
    Blynk.virtualWrite(V12, floatState[4]);                      // Float 1 Hi
    Blynk.virtualWrite(V13, floatState[3]);                      // Float 2 90%
    Blynk.virtualWrite(V14, floatState[2]);                      // Float 3 50%
@@ -152,7 +152,7 @@ void loop()
    Blynk.virtualWrite(V16, irrigationMon_.irrigation.FlowPerMin);             // Gallons per Minute (Rolling Average)
    Blynk.virtualWrite(V17, irrigationMon_.irrigation.TotalFlow);             // Daily Total Gallons
    Blynk.virtualWrite(V18, irrigationMon_.irrigation.Pressure);             // irrigation System Pressure PSI
-   //Blynk.virtualWrite(V19, formatted_sensor_payload[17]);       // House Water Press
+   Blynk.virtualWrite(V19, houseMon_.house.housePressure);       // House Water Press
    Blynk.virtualWrite(V20, monitor_.monitor.pump_current_sense_4);          // Pump Current Sense P4
    Blynk.virtualWrite(V21, monitor_.monitor.press_relay_sense);         // Home Tank Pressure Relay Sense
    Blynk.virtualWrite(V22, PumpRunCount[1]);                    // Pump Run Count P1
@@ -164,8 +164,8 @@ void loop()
    Blynk.virtualWrite(V28, (monitor_.monitor.pump_run_time_3 / 60.)); // PumpRunTime P3
    Blynk.virtualWrite(V29, (monitor_.monitor.pump_run_time_4 / 60.)); // PumpRunTime P4
    Blynk.virtualWrite(V30, irrigationMon_.irrigation.PumpTemp);           // irrigation pump temperature
-   Blynk.virtualWrite(V31, monitor_.monitor.pump_run_time_4); // PumpRunTime P4
-   Blynk.virtualWrite(V32, irrigationMon_.irrigation.PumpTemp);           // irrigation pump temperature
+   Blynk.virtualWrite(V31, tankMon_.tank.tank_gallons_per_minute);        // Well 3 Gallons per Minute
+   Blynk.virtualWrite(V32, tankMon_.tank.tank_total_gallons_24);          // Well 3 Total Gallons
    /*
 
     Blynk.virtualWrite(V0, blynk_payload[0]);  //Press Sensor Val

@@ -106,8 +106,6 @@ int main(int argc, char* argv[])
    float TankPerFull = 0;
    float Tank_Area = 0;
    int Float100State = 0;
-   int Float90State = 0;
-   int Float50State = 0;
    int Float25State = 0;
 
    int opt;
@@ -206,14 +204,17 @@ int main(int argc, char* argv[])
       tankMon_.tank.tank_per_full =  TankPerFull;
 
       flowmon(tankSens_.tank.new_data_flag, tankSens_.tank.milliseconds, tankSens_.tank.pulse_count, &avgflowRateGPM, &dailyGallons, .98) ;
-      tankMon_. tank.tank_gallons_per_minute =  avgflowRateGPM;
-      tankMon_. tank.tank_total_gallons_24 =    dailyGallons;
+      tankMon_.tank.tank_gallons_per_minute =  avgflowRateGPM;
+      tankMon_.tank.tank_total_gallons_24 =    dailyGallons;
       
       memcpy(&temperatureF, &tankSens_.data_payload[6], sizeof(float));
+      tankMon_.tank.air_temp =    temperatureF;
 
-      tankMon_.data_payload[5] =    temperatureF;
-      tankMon_.data_payload[6] =    Float100State;
-      tankMon_.data_payload[7] =    Float25State;
+      Float100State = tankSens_.tank.gpio_sensor & 0x01;
+      Float25State = (tankSens_.tank.gpio_sensor & 0x02) >> 1;
+      
+      tankMon_.tank.float1 =    Float100State;
+      tankMon_.tank.float2 =    Float25State;
       tankMon_.data_payload[8] =    tankSens_.data_payload[8]  ;
       tankMon_.data_payload[9] =    0;
       

@@ -182,8 +182,8 @@ int main(int argc, char *argv[])
        */
 
 
-      PressSwitState = !((wellSens_.well.GPIO_x1 & 0x02)>1);
-      SepticAlert = !(wellSens_.well.GPIO_x1 & 0x01);
+      SepticAlert = !((wellSens_.well.GPIO_x1 & 0x02)>1);
+      PressSwitState = !(wellSens_.well.GPIO_x1 & 0x01);
 
       /*
        * Convert Raw Temp Sensor to degrees farenhiet

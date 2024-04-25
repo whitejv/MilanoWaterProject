@@ -52,7 +52,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
    }
    else if ( strcmp(topicName, WELLMON_TOPICID) == 0) {
       memcpy(wellMon_.data_payload, message->payload, message->payloadlen);
-      if (verbose) {for(i=0; i < WELLMON_LEN; i++) {printf("%0x ", wellMon_.data_payload[i]);}}
+      if (verbose) {for(i=0; i < WELLMON_LEN; i++) {printf("%0f ", wellMon_.data_payload[i]);}}
       printf(">\n");
    } 
    else if ( strcmp(topicName, IRRIGATIONMON_TOPICID) == 0) {
