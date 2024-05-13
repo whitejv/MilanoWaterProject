@@ -186,7 +186,7 @@
 ### CMake: Configure
 - -> Now that you've selected a kit and a variant, open the Command Palette (⇧⌘P)
 - -> run the CMake: Configure command to configure your project. This generates build files in the project's build folder using the kit and variant you selected.
-# Adding NVME to a Raspberry 5
+# Adding NVME to a Raspberry PI 5
 ## Install compatible NVME module on X1001(geekworm) module (see wiki.geekworm.com/X1001)
 ### Install OS on NVME and configure
 - ->On the RPI 5 Use Raspberry PI Imager to write the OS to the NVME
@@ -197,6 +197,7 @@
 - ---->sudo apt update
 - ---->sudo apt upgrade
 - ---->sudo rpi-eeprom-update -a
+- ---->Add PCIE_PROBE=1 to the eeprom, (Run sudo rpi-eeprom-config --edit command, then add this line, then press CTRL+O to write change to file, press CTRL+X to exit, then reboot)
 - ->sudo nano /boot/firmware/config.txt
 - ---->add the following line:  dtparam=pciex1_gen=3
 - ->sudo reboot
