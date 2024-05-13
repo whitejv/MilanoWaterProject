@@ -186,7 +186,25 @@
 ### CMake: Configure
 - -> Now that you've selected a kit and a variant, open the Command Palette (⇧⌘P)
 - -> run the CMake: Configure command to configure your project. This generates build files in the project's build folder using the kit and variant you selected.
- 
+# Adding NVME to a Raspberry 5
+## Install compatible NVME module on X1001(geekworm) module (see wiki.geekworm.com/X1001)
+### Install OS on NVME and configure
+- ->On the RPI 5 Use Raspberry PI Imager to write the OS to the NVME
+- ->Using sudo raspi-config advanced option to change the boot order to NVME first
+- ->sudo reboot
+- ->remove the sd card and reboot again to make sure the RPI 5 is booting from NVME
+- ->Update and Ensure latest Boot Loader
+- ---->sudo apt update
+- ---->sudo apt upgrade
+- ---->sudo rpi-eeprom-update -a
+- ->sudo nano /boot/firmware/config.txt
+- ---->add the following line:  dtparam=pciex1_gen=3
+- ->sudo reboot
+- ->Run raspberry pi diagnostics and test SD Card
+- ->Show Log and verify read/write speeds
+- ---->Sequential write speed 697191 KB/sec (target 10000) - PASS
+- ---->Random write speed 121362 IOPS (target 500) - PASS
+- ---->Random read speed 41269 IOPS (target 1500) - PASS
 # Compute Module 4 Installation 
 ## On the CM4 (see Jeff Geerling How to flash Raspberry Pi OS onto the Compute Module 4 eMMC with usbboot)
 - -> Remove Cover, Place Jumper, Plug in USB to LINUX System, Power On
