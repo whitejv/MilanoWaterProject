@@ -3,8 +3,8 @@
 ## This project provides IOT control and monitoring of my home water system.
 
 ## Enable Remote Access
-
-- -> From the Raspbery Logo --> Preferences --> Raspberry PI Configuration --> Interface Tab --> VNC: Enable
+- -> On the MAC --> ssh pi@xxx.local --> PW: raspberry --> sudo raspi_config --> Select Interfaces and enable VNC
+- -> On the RPI --> From the Raspbery Logo --> Preferences --> Raspberry PI Configuration --> Interface Tab --> VNC: Enable
 
 ## Update all Packages (if necessary)
 - -> sudo apt update
@@ -39,9 +39,10 @@
         -    ->>local_enable=YES
         -    ->>write_enable=YES
         -    ->>local_umask=022
-        -    ->>chroot_local_user=YES
-        -    ->>user_sub_token=$USER
-        -    ->>local_root=/home/$USER/FTP
+        - The following lines will restrict user to home director; uncomment if needed
+        -    ->>#chroot_local_user=YES
+        -    ->>#user_sub_token=$USER
+        -    ->>#local_root=/home/$USER/FTP
         -    -> mkdir -p /home/<user>/FTP/files
         -    -> chmod a-w /home/<user>/FTP
         - -> sudo service vsftpd restart
@@ -160,7 +161,9 @@
 - -> Open Terminal on Mac/Windows/Raspberry PI/Linus
 - -> Login to Target:  ssh pi@raspi.local
 - -> Password: raspberry
-
+## Configure FTP
+- -> See above for configuring the FTP deamon
+  
 # Configuring VS Code SSH keys for remote development
 - -> On the MAC terminal: cd .ssh/
 - -> ssh-keygen -t ed25519 -b 4096
