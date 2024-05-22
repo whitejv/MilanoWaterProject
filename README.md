@@ -39,12 +39,13 @@
         -    ->>local_enable=YES
         -    ->>write_enable=YES
         -    ->>local_umask=022
-        - The following lines will restrict user to home director; uncomment if needed
+        - Uncomment the following lines if needed to restrict user to home director;
         -    ->>#chroot_local_user=YES
         -    ->>#user_sub_token=$USER
         -    ->>#local_root=/home/$USER/FTP
-        -    -> mkdir -p /home/<user>/FTP/files
-        -    -> chmod a-w /home/<user>/FTP
+        - Create the necessary directories if needed
+        -    ->>#mkdir -p /home/<user>/FTP/files
+        -    ->>#chmod a-w /home/<user>/FTP
         - -> sudo service vsftpd restart
         
         ### Install JSON Lib
