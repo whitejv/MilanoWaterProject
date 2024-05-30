@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <math.h>
 #include <time.h>
 #include <json-c/json.h>
@@ -13,6 +14,13 @@ float dailyGallons = 0;
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
 float avgflowRateGPM = 0;
+
+int pumpState = 0;
+int lastpumpState = 0;
+int startGallons = 0;
+int stopGallons = 0;
+int tankstartGallons = 0;
+int tankstopGallons = 0;
 
 typedef struct {
     double value;  // Fused measurement value
@@ -111,8 +119,9 @@ int main(int argc, char* argv[])
    int opt;
    const char *mqtt_ip;
    int mqtt_port;
-
-   while ((opt = getopt(argc, argv, "vPD")) != -1) {
+   int training_mode = FALSE;
+   char training_filename[256];
+   while ((opt = getopt(argc, argv, "vPDT:")) != -1) {
       switch (opt) {
          case 'v':
                verbose = TRUE;
@@ -125,8 +134,22 @@ int main(int argc, char* argv[])
                mqtt_ip = DEV_MQTT_IP;
                mqtt_port = DEV_MQTT_PORT;
                break;
+         case 'T':
+            {
+                training_mode = TRUE;
+                
+                if (optarg != NULL && strlen(optarg) > 0) {
+                    snprintf(training_filename, 256, "%s%s", trainingdata, optarg);
+                    // Use training_mode and training_filename as needed
+                } else {
+                    fprintf(stderr, "Error: No filename provided for the -T option.\n");
+                    fprintf(stderr, "Usage: %s [-v] [-P | -D] [-T filename]\n", argv[0]);
+                    return 1;
+                }
+            }
+            break;
          default:
-               fprintf(stderr, "Usage: %s [-v] [-P | -D]\n", argv[0]);
+               fprintf(stderr, "Usage: %s [-v] [-P | -D] [-T filename\n", argv[0]);
                return 1;
       }
    }
@@ -221,6 +244,16 @@ int main(int argc, char* argv[])
       MyMQTTPublish() ;
 
       PumpStats() ;
+      if (training_mode && pumpState == ON) {
+         FILE *file = fopen(training_filename, "a");
+         if (file != NULL) {
+            time_t current_time = time(NULL);
+            fprintf(file, "%ld, %f, %f, %f\n", current_time, wellMon_.well.amp_pump_3, avgflowRateGPM, 1.0);
+            fclose(file);
+         } else {
+            fprintf(stderr, "Error opening file: %s\n", training_filename);
+         }
+      }
    /*
     * Run at this interval
     */
@@ -388,6 +421,7 @@ MQTTClient_waitForCompletion(client, token, TIMEOUT);
 json_object_put(root); // Free the memory allocated to the JSON object
 
 }
+
 void PumpStats() {
 
 FILE *fptr;
@@ -396,12 +430,6 @@ time_t start_t, end_t;
 double diff_t;
 
 time(&t);
-int pumpState = 0;
-int lastpumpState = 0;
-int startGallons = 0;
-int stopGallons = 0;
-int tankstartGallons = 0;
-int tankstopGallons = 0;
 
 if (wellMon_.well.well_pump_3_on  == 1) {
       pumpState = ON;

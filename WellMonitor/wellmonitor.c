@@ -213,6 +213,14 @@ int main(int argc, char *argv[])
       wellMon_.well.septic_alert_on = SepticAlert;
       wellMon_.well.cycle_count = wellSens_.well.cycle_count;
       wellMon_.well.fw_version = wellSens_.well.fw_version;
+      wellMon_.well.amp_pump_1 = wellSens_.well.adc_x1;
+      wellMon_.well.amp_pump_2 = wellSens_.well.adc_x2;
+      wellMon_.well.amp_pump_3 = wellSens_.well.adc_x3;
+      wellMon_.well.amp_pump_4 = wellSens_.well.adc_x4;
+      wellMon_.well.amp_5 = wellSens_.well.adc_x5;
+      wellMon_.well.amp_6 = wellSens_.well.adc_x6;
+      wellMon_.well.amp_7 = wellSens_.well.adc_x7;
+      wellMon_.well.amp_8 = wellSens_.well.adc_x8;
 
       /*
        * Load Up the Payload
