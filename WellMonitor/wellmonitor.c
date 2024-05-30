@@ -12,6 +12,7 @@ int verbose = FALSE;
 
 MQTTClient_deliveryToken deliveredtoken;
 
+
 void delivered(void *context, MQTTClient_deliveryToken dt)
 {
    // printf("Message with token value %d delivery confirmed\n", dt);

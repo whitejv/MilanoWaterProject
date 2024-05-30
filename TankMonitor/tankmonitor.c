@@ -55,6 +55,7 @@ float moving_average(float new_sample, float samples[], uint8_t *sample_index, u
 double x = 0; // Estimated state
 double P = 1; // Estimated state covariance
 double z = 0; // Measurement
+
 /* Kalman Filter Functions */
 void predict()
 {

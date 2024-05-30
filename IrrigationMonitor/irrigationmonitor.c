@@ -14,6 +14,7 @@ int verbose = FALSE;
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
 
+
 int find_active_station(Controller* controller) {
     for (int i = 0; i < MAX_ZONES; i++) {
         if (controller->states[i].status == 1) {
