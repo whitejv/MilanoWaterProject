@@ -8,6 +8,7 @@
 #define PI 3.1415926535897932384626433832795
 #define Tank_Radius_sqd 16 // radius of tank in Feet Squared - Example my tank is 8ft diameter so 4ft radius = 16 when sqd
 
+
 #define GREEN 0
 #define BLUE 1
 #define ORANGE 2
@@ -34,6 +35,7 @@ const char password[] = "6jhz7ai7pqy5";
 #define pumpdata "/home/pi/MWPLogData/pumpdata.txt"
 #define flowdata "/home/pi/MWPLogData/flowdata.txt"
 #define flowfile "/home/pi/MWPLogData/flowfile.txt"
+#define trainingdata "/home/pi/MWPLogData/trainingdata/"
 
 /*
  *  Rainbird command and response data
@@ -940,24 +942,32 @@ char* housemon_ClientData_var_name [] = {
 * Type: data
 * MQTT Client ID: Well Monitor Client
 * MQTT Topic ID: 
-* MSG Length: 10
+* MSG Length: 18
 *  word #        data type            variable                description        min        max        nominal
-*  0        float            well_pump_1_on                Well Pump 1 On                        
-*  1        float            well_pump_2_on                Well Pump 2 On                        
-*  2        float            well_pump_3_on                Well Pump 3 On                        
-*  3        float            irrigation_pump_on                Irrigation Pump On                        
-*  4        float            house_water_pressure                House Water Pressure                        
-*  5        float            system_temp                System Temp                        
-*  6        float            House_tank_pressure_switch_on                House Tank Pressure Switch On                        
-*  7        float            septic_alert_on                Septic Alert On                        
+*  0        float            well_pump_1_on                Well Pump 1 On        0        1        
+*  1        float            well_pump_2_on                Well Pump 2 On        0        1        
+*  2        float            well_pump_3_on                Well Pump 3 On        0        1        
+*  3        float            irrigation_pump_on                Irrigation Pump On        0        1        
+*  4        float            house_water_pressure                House Water Pressure        0        100        
+*  5        float            system_temp                System Temp        0        150        
+*  6        float            House_tank_pressure_switch_on                House Tank Pressure Switch On        0        1        
+*  7        float            septic_alert_on                Septic Alert On        0        1        
 *  8        float            cycle_count                Cycle Count        0        28800        
 *  9        float            fw_version                 FW Version 4 Hex                         
+*  10        float            amp_pump_1                amp count pump 1        0        1024        
+*  11        float            amp_pump_2                amp count pump 2        0        1024        
+*  12        float            amp_pump_3                amp count pump 3        0        1024        
+*  13        float            amp_pump_4                amp count pump 4        0        1024        
+*  14        float            amp_5                amp count 5        0        1024        
+*  15        float            amp_6                amp count 6        0        1024        
+*  16        float            amp_7                amp count 7        0        1024        
+*  17        float            amp_8                amp count 8        0        1024        
 */
 
 const char WELLMON_CLIENTID[] =    "Well Monitor Client" ;
 const char WELLMON_TOPICID[] =  "mwp/data/monitor/well/W001D";
 const char WELLMON_JSONID[] =  "mwp/json/data/monitor/well/W001D";
-#define WELLMON_LEN 10
+#define WELLMON_LEN 18
 
 union   WELLMON_  {
    float     data_payload[WELLMON_LEN] ;
@@ -973,6 +983,14 @@ union   WELLMON_  {
       float   septic_alert_on    ;
       float   cycle_count    ;
       float   fw_version    ;
+      float   amp_pump_1    ;
+      float   amp_pump_2    ;
+      float   amp_pump_3    ;
+      float   amp_pump_4    ;
+      float   amp_5    ;
+      float   amp_6    ;
+      float   amp_7    ;
+      float   amp_8    ;
    }  well  ;
 }  ;
 union  WELLMON_  wellMon_  ;
@@ -988,6 +1006,14 @@ char* wellmon_ClientData_var_name [] = {
     "W001D:septic_alert_on",
     "W001D:cycle_count",
     "W001D:fw_version",
+    "W001D:amp_pump_1",
+    "W001D:amp_pump_2",
+    "W001D:amp_pump_3",
+    "W001D:amp_pump_4",
+    "W001D:amp_5",
+    "W001D:amp_6",
+    "W001D:amp_7",
+    "W001D:amp_8",
 }  ;
 
 /*

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <math.h>
 #include <time.h>
 #include <json-c/json.h>
@@ -9,10 +10,17 @@
 #include "../include/water.h"
 
 int verbose = FALSE;
-
 float dailyGallons = 0;
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
+float avgflowRateGPM = 0;
+
+int pumpState = 0;
+int lastpumpState = 0;
+int startGallons = 0;
+int stopGallons = 0;
+int tankstartGallons = 0;
+int tankstopGallons = 0;
 
 typedef struct {
     double value;  // Fused measurement value
@@ -47,6 +55,7 @@ float moving_average(float new_sample, float samples[], uint8_t *sample_index, u
 double x = 0; // Estimated state
 double P = 1; // Estimated state covariance
 double z = 0; // Measurement
+
 /* Kalman Filter Functions */
 void predict()
 {
@@ -106,15 +115,14 @@ int main(int argc, char* argv[])
    float TankPerFull = 0;
    float Tank_Area = 0;
    int Float100State = 0;
-   int Float90State = 0;
-   int Float50State = 0;
    int Float25State = 0;
 
    int opt;
    const char *mqtt_ip;
    int mqtt_port;
-
-   while ((opt = getopt(argc, argv, "vPD")) != -1) {
+   int training_mode = FALSE;
+   char training_filename[256];
+   while ((opt = getopt(argc, argv, "vPDT:")) != -1) {
       switch (opt) {
          case 'v':
                verbose = TRUE;
@@ -127,8 +135,22 @@ int main(int argc, char* argv[])
                mqtt_ip = DEV_MQTT_IP;
                mqtt_port = DEV_MQTT_PORT;
                break;
+         case 'T':
+            {
+                training_mode = TRUE;
+                
+                if (optarg != NULL && strlen(optarg) > 0) {
+                    snprintf(training_filename, 256, "%s%s", trainingdata, optarg);
+                    // Use training_mode and training_filename as needed
+                } else {
+                    fprintf(stderr, "Error: No filename provided for the -T option.\n");
+                    fprintf(stderr, "Usage: %s [-v] [-P | -D] [-T filename]\n", argv[0]);
+                    return 1;
+                }
+            }
+            break;
          default:
-               fprintf(stderr, "Usage: %s [-v] [-P | -D]\n", argv[0]);
+               fprintf(stderr, "Usage: %s [-v] [-P | -D] [-T filename\n", argv[0]);
                return 1;
       }
    }
@@ -187,16 +209,9 @@ int main(int argc, char* argv[])
       PriorSecondsFromMidnight = SecondsFromMidnight ;
       
       waterHeightPress = GallonsInTankPress() ;
-      //waterHeightUltra = GallonsInTankUltra() ;
+   
       //printf("Water Height Press: %f\n", waterHeightPress);
-      //printf("Water Height Ultra: %f\n", waterHeightUltra);
 
-      //use Kalman filter to fuse the two measurments into one measurement
-      //fused = fuseMeasurements(waterHeightPress, waterHeightUltra, .05, .05);
-
-      //printf("Fused Measurement: %f\n", fused.value);
-      //printf("Fused Measurement Error: %f\n", fused.error);
-      //waterHeight = fused.value;
       waterHeight = waterHeightPress;
       /*
        * Use the Equation (PI*R^2*WaterHeight)*VoltoGal to compute Water Gallons in tank
@@ -207,31 +222,39 @@ int main(int argc, char* argv[])
       TankPerFull = TankGallons / MaxTankGal * 100;
       // printf("Percent Gallons in Tank = %f\n", TankPerFull);
      
-     // tankMon.tank.water_height =  waterHeight;
+     
       tankMon_.tank.water_height =  waterHeight;
       tankMon_.tank.tank_gallons =  TankGallons;
       tankMon_.tank.tank_per_full =  TankPerFull;
 
-      GallonsPumped() ;
- 
-      //Float100State = tank_data_payload[6] ;
-      //Float90State = tank_data_payload[7]  ;
-      //Float50State = tank_data_payload[4]  ;
-      //Float25State = tank_data_payload[5]  ;
-
-      //temperatureF = *((float *)&flow_data_payload[17]);
+      flowmon(tankSens_.tank.new_data_flag, tankSens_.tank.milliseconds, tankSens_.tank.pulse_count, &avgflowRateGPM, &dailyGallons, .98) ;
+      tankMon_.tank.tank_gallons_per_minute =  avgflowRateGPM;
+      tankMon_.tank.tank_total_gallons_24 =    dailyGallons;
       
       memcpy(&temperatureF, &tankSens_.data_payload[6], sizeof(float));
+      tankMon_.tank.air_temp =    temperatureF;
 
-      tankMon_.data_payload[5] =    temperatureF;
-      tankMon_.data_payload[6] =    Float100State;
-      tankMon_.data_payload[7] =    Float25State;
+      Float100State = tankSens_.tank.gpio_sensor & 0x01;
+      Float25State = (tankSens_.tank.gpio_sensor & 0x02) >> 1;
+      
+      tankMon_.tank.float1 =    Float100State;
+      tankMon_.tank.float2 =    Float25State;
       tankMon_.data_payload[8] =    tankSens_.data_payload[8]  ;
       tankMon_.data_payload[9] =    0;
       
       MyMQTTPublish() ;
 
       PumpStats() ;
+      if (training_mode && pumpState == ON) {
+         FILE *file = fopen(training_filename, "a");
+         if (file != NULL) {
+            time_t current_time = time(NULL);
+            fprintf(file, "%ld, %f, %f, %f\n", current_time, wellMon_.well.amp_pump_3, avgflowRateGPM, 1.0);
+            fclose(file);
+         } else {
+            fprintf(stderr, "Error opening file: %s\n", training_filename);
+         }
+      }
    /*
     * Run at this interval
     */
@@ -301,25 +324,7 @@ float GallonsInTankPress(void) {
    return waterHeight;
 
 }
-/*
-float GallonsInTankUltra(void) {
-   float waterHeight = 0;
-   float UltraSensorRawValue = 0;
-   float UltraSensorValue = 0;
 
-   memcpy(&UltraSensorRawValue, &tankgal_data_payload[0], sizeof(float)) ;
-   //printf("UltraSensorRawValue: %f\n", UltraSensorRawValue);
- 
-   UltraSensorValue = UltraSensorRawValue ;;
-
-   waterHeight = (6.3783+.7480) - (UltraSensorValue/30.48); // Full top of water + sensor to top of water - sensor reading distance to water in ft
-   
-   //printf("Water Height = %f\n", waterHeight);
-   
-   return waterHeight;
-
-}
-*/
 // Update the Kalman filter with a new sensor measurement
 void updateKalmanFilter(KalmanFilter* filter, double measurement, double measurementError) {
     // Update the estimate based on the measurement and its error
@@ -330,87 +335,6 @@ void updateKalmanFilter(KalmanFilter* filter, double measurement, double measure
 
     // Calculate the new Kalman gain for the next iteration
     filter->gain = filter->error / (filter->error + measurementError);
-}
-
-// Fuse two sensor measurements using a Kalman filter
-FusedMeasurement fuseMeasurements(double measurement1, double measurement2, double measurementError1, double measurementError2) {
-    KalmanFilter filter;
-    FusedMeasurement fused;
-
-    // Initialize the Kalman filter
-    filter.gain = 0.5;  // Initial gain (can be adjusted based on noise characteristics)
-    filter.value = measurement1;  // Initial estimate
-    filter.error = measurementError1;  // Initial estimation error
-
-    // Update the Kalman filter with the second measurement
-    updateKalmanFilter(&filter, measurement2, measurementError2);
-
-    // Set the fused measurement value
-    fused.value = filter.value;
-
-    // Calculate the fused measurement error (can be adjusted based on noise characteristics)
-    fused.error = (measurementError1 + measurementError2) / 2.0;
-
-    return fused;
-}
-
-void GallonsPumped(void){
-   int i=0;
-   float calibrationFactor = .5;
-   float flowRate = 0.0;
-   
-   float flowRateGPM = 0;
-   static float avgflowRateGPM = 0;
-   static float avgflowRate = 0;
-   static int   flowIndex = 0;
-   static float flowRateValueArray[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-   int pulseCount = 0;
-   int millsElapsed = 0;
-   int millsTotal = 0;
-   int dailyPulseCount = 0;
-   int newPulseData = 0;
-
-   newPulseData = tankSens_.tank.new_data_flag;
-   if ( newPulseData == 1){
-      
-      millsElapsed = tankSens_.tank.milliseconds;
-      pulseCount = tankSens_.tank.pulse_count;
-      
-      if ((millsElapsed < 5000) && (millsElapsed != 0)) {     //ignore the really long intervals
-         //dailyPulseCount = dailyPulseCount + pulseCount ;
-         millsElapsed = tankSens_.tank.milliseconds ;
-         //millsTotal = millsTotal + millsElapsed;
-         flowRate = ((pulseCount / (millsElapsed/1000)) / .5) / calibrationFactor;
-         flowRate = ((flowRate * .00026417)/(millsElapsed/1000)) * 60;  //GPM
-         flowRateGPM = flowRate * 30;
-         dailyGallons = dailyGallons + flowRate ;
-         
-         if (flowRateGPM > 4.0) {
-            flowRateValueArray[flowIndex++] = flowRateGPM;
-            flowIndex = flowIndex % 10;
-         }
-         avgflowRate = 0 ;
-         for( i=0; i<=9; ++i){
-            avgflowRate += flowRateValueArray[i];
-            //printf("flowRateValueArray[%d]: %f avgflowRate: %f\n", i, flowRateValueArray[i], avgflowRate );
-         }
-         avgflowRateGPM = avgflowRate/10;
-         
-         /*
-         printf("Pulse Count: %d   Daily Pulse Count: %d\n", pulseCount, dailyPulseCount);
-         printf("Milliseconds Elapsed: %d   Milliseconds Total:  %d\n", millsElapsed, millsTotal);
-         printf("Flow Rate: %f  Flow Rate GPM:  %f   Daily Gallons:  %f\n", flowRate, flowRateGPM,  dailyGallons);
-         printf("Average Flow Rate: %f\n", avgflowRateGPM);
-         */  
-      }    
-   } 
-   else {
-      pulseCount = 0;
-      millsElapsed = 0 ;
-   }
-
-   tankMon_. tank.tank_gallons_per_minute =    avgflowRateGPM;
-   tankMon_. tank.tank_total_gallons_24 =    dailyGallons;
 }
 
 void MyMQTTSetup(char* mqtt_address){
@@ -498,6 +422,7 @@ MQTTClient_waitForCompletion(client, token, TIMEOUT);
 json_object_put(root); // Free the memory allocated to the JSON object
 
 }
+
 void PumpStats() {
 
 FILE *fptr;
@@ -506,12 +431,6 @@ time_t start_t, end_t;
 double diff_t;
 
 time(&t);
-int pumpState = 0;
-int lastpumpState = 0;
-int startGallons = 0;
-int stopGallons = 0;
-int tankstartGallons = 0;
-int tankstopGallons = 0;
 
 if (wellMon_.well.well_pump_3_on  == 1) {
       pumpState = ON;

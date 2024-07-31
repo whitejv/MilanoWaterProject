@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <math.h>
 #include <time.h>
 #include <json-c/json.h>
@@ -12,6 +13,7 @@ int verbose = FALSE;
 
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
+
 
 int find_active_station(Controller* controller) {
     for (int i = 0; i < MAX_ZONES; i++) {
@@ -73,7 +75,7 @@ int main(int argc, char* argv[])
    int rainbirdRecvRequest = FALSE;
    int rainbirdDelay = RAINBIRD_COMMAND_DELAY ; //wait 10 seconds to query results
    int rainbirdReqDelay = RAINBIRD_REQUEST_DELAY  ; //wait 20 seconds to query results
-   
+
    
    MQTTClient client;
    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -83,8 +85,9 @@ int main(int argc, char* argv[])
    int opt;
    const char *mqtt_ip;
    int mqtt_port;
-
-   while ((opt = getopt(argc, argv, "vPD")) != -1) {
+   int training_mode = FALSE;
+   char training_filename[256];
+   while ((opt = getopt(argc, argv, "vPDT:")) != -1) {
       switch (opt) {
          case 'v':
                verbose = TRUE;
@@ -97,8 +100,22 @@ int main(int argc, char* argv[])
                mqtt_ip = DEV_MQTT_IP;
                mqtt_port = DEV_MQTT_PORT;
                break;
+         case 'T':
+            {
+                training_mode = TRUE;
+                
+                if (optarg != NULL && strlen(optarg) > 0) {
+                    snprintf(training_filename, 256, "%s%s", trainingdata, optarg);
+                    // Use training_mode and training_filename as needed
+                } else {
+                    fprintf(stderr, "Error: No filename provided for the -T option.\n");
+                    fprintf(stderr, "Usage: %s [-v] [-P | -D] [-T filename]\n", argv[0]);
+                    return 1;
+                }
+            }
+            break;
          default:
-               fprintf(stderr, "Usage: %s [-v] [-P | -D]\n", argv[0]);
+               fprintf(stderr, "Usage: %s [-v] [-P | -D] [-T filename]\n", argv[0]);
                return 1;
       }
    }
@@ -192,9 +209,9 @@ int main(int argc, char* argv[])
       /*
       * Call the flow monitor function
       */
-      flowmon(irrigationSens_.irrigation.new_data_flag, irrigationSens_.irrigation.milliseconds, irrigationSens_.irrigation.pulse_count, &avgflowRateGPM, &dailyGallons, .5) ;
+      flowmon(irrigationSens_.irrigation.new_data_flag, irrigationSens_.irrigation.milliseconds, irrigationSens_.irrigation.pulse_count, &avgflowRateGPM, &dailyGallons, .935) ;
 
-      irrigationPressure = (irrigationSens_.irrigation.adc_sensor * .1336) - 10.523 ;
+      irrigationPressure = (irrigationSens_.irrigation.adc_sensor * .1336) - 3.523 ;
       
       memcpy(&temperatureF, &irrigationSens_.irrigation.temp_w1, sizeof(float));
         
@@ -245,12 +262,12 @@ int main(int argc, char* argv[])
       
       if (verbose) {
          for (i=0; i<=IRRIGATIONMON_LEN-1; i++) {
-            printf("%.3f ", irrigationSens_.data_payload[i]);
+            printf("%.3f ", irrigationMon_.data_payload[i]);
          }
          printf("%s", ctime(&t));
       }
       
-      pubmsg.payload = irrigationSens_.data_payload;
+      pubmsg.payload = irrigationMon_.data_payload;
       pubmsg.payloadlen = IRRIGATIONMON_LEN * 4;
       pubmsg.qos = QOS;
       pubmsg.retained = 0;
@@ -357,7 +374,16 @@ int main(int argc, char* argv[])
       } else if (rainbirdRequest == TRUE) {
          rainbirdReqDelay--; 
       }
-      
+      if (training_mode && pumpState == ON) {
+         FILE *file = fopen(training_filename, "a");
+         if (file != NULL) {
+            time_t current_time = time(NULL);
+            fprintf(file, "%ld, %f, %f, %f\n", current_time, wellMon_.well.amp_pump_4, avgflowRateGPM, irrigationPressure);
+            fclose(file);
+         } else {
+            fprintf(stderr, "Error opening file: %s\n", training_filename);
+         }
+      }
       sleep(1) ;
    }
    
