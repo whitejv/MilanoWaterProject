@@ -11,15 +11,15 @@ extern int verbose;
 #define MAX_SAMPLES 20
 #define NO_PULSE_RESET_TIME 60
 
-static double dailyGallons = 0;
-static double flowRateValueArray[MAX_SAMPLES] = {0};
+static float flowThisInterval = 0;
+static float flowRateValueArray[MAX_SAMPLES] = {0};
 static int flowIndex = 0;
 static int timerNoPulse = 0;
 
 void resetFlowData() {
     timerNoPulse = 0;
     memset(flowRateValueArray, 0, sizeof(flowRateValueArray));
-    dailyGallons = 0;
+    flowThisInterval = 0.0;
 }
 
 void updateFlowRate(float flowRateGPM) {
@@ -41,7 +41,7 @@ float calculateAverageFlowRate() {
     return (count > 0) ? sum / count : 0;
 }
 
-void flowmon(int newDataFlag, int milliseconds, int pulseCount, float *pAvgflowRateGPM, float *pDailyGallons, float calibrationFactor) {
+void flowmon(int newDataFlag, int milliseconds, int pulseCount, float *pAvgflowRateGPM, float *pintervalFlow, float calibrationFactor) {
     if (newDataFlag == 1) {
         timerNoPulse = 0;
     } else {
@@ -55,18 +55,16 @@ void flowmon(int newDataFlag, int milliseconds, int pulseCount, float *pAvgflowR
 
     if (newDataFlag == 1 && pulseCount <= PULSE_COUNT_THRESHOLD && milliseconds < 5000 && milliseconds != 0) {
       
-        double elapsedTimeSec = milliseconds / 1000.0;
-        double frequency = pulseCount / elapsedTimeSec;
-        double flowRateLPM = 2 * frequency;
-        double flowRateLPMCal = flowRateLPM * calibrationFactor;
-        double flowRateGPM = flowRateLPMCal * LITRES_TO_GALLONS;
+        float elapsedTimeSec = milliseconds / 1000.0;
+        float frequency = pulseCount / elapsedTimeSec;
+        float flowRateLPM = 2 * frequency;
+        float flowRateLPMCal = flowRateLPM * calibrationFactor;
+        float flowRateGPM = flowRateLPMCal * LITRES_TO_GALLONS;
     
     // Update total gallons flowed
-        double flowThisInterval = flowRateGPM * (elapsedTimeSec / 60.0); // Convert GPM to gallons for the current interval
-        dailyGallons += flowThisInterval;
-
-        *pDailyGallons = dailyGallons;
-
+        flowThisInterval = flowRateGPM * (elapsedTimeSec / 60.0); // Convert GPM to gallons for the current interval
+        *pintervalFlow = flowThisInterval;
+        
         if (verbose) {
             printf("********************************************************\n") ;
             printf("Pulse count: %d, Elapsed time: %d\n", pulseCount, milliseconds);
@@ -77,7 +75,6 @@ void flowmon(int newDataFlag, int milliseconds, int pulseCount, float *pAvgflowR
             printf("Flow rate: %.2f GPM\n", flowRateGPM);
             printf(" \n");
             printf("Flow this interval: %.2f gallons\n", flowThisInterval);
-            printf("Daily Gallons: %.2f\n", dailyGallons);
             printf("********************************************************\n") ;  
         }
         if (flowRateGPM > 2.0) {
@@ -89,5 +86,7 @@ void flowmon(int newDataFlag, int milliseconds, int pulseCount, float *pAvgflowR
         // Reset pulse count and elapsed time if no new data
         pulseCount = 0;
         milliseconds = 0;
+        flowThisInterval = 0.0;
+        *pintervalFlow = flowThisInterval;
     }
 }

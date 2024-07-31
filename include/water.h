@@ -58,6 +58,8 @@ Controller Back_Controller = {0};
 char rainbird_payload[255];
 char rainbird_command1[] = "check1";
 char rainbird_command2[] = "check2";
+char rainbird_command3[] = "STOP";
+char rainbird_command4[] = "ADVANCE";
 
 /* Library function prototypes */
 

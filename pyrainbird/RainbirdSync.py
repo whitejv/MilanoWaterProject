@@ -1,7 +1,6 @@
 import argparse
 import asyncio
 import datetime
-import inspect
 import logging
 import os
 from typing import Any
@@ -19,11 +18,16 @@ def on_connect(client, userdata, flags, rc):
         logger.info(f"Connection to MQTT broker failed: {rc}")
 
 def on_message(client, userdata, msg):
-    if msg.payload.decode() == f"check{userdata['controller_id']}":
+    message = msg.payload.decode()
+    if message == f"check{userdata['controller_id']}":
         userdata['check_flag'] = True
+    elif message == "STOP":
+        userdata['stop_flag'] = True
+    elif message == "ADVANCE":
+        userdata['advance_flag'] = True
 
 async def check_zones(mqtt_server, controller_id):
-    userdata = {'check_flag': False, 'controller_id': controller_id}
+    userdata = {'check_flag': False, 'stop_flag': False, 'advance_flag': False, 'controller_id': controller_id}
     mqtt_client = mqtt.Client(userdata=userdata)
     mqtt_client.on_connect = on_connect
     mqtt_client.on_message = on_message
@@ -54,6 +58,30 @@ async def check_zones(mqtt_server, controller_id):
                 logger.info(f"States: {states}")  # debugging line
                 mqtt_client.publish(f"mwp/response/rainbird/controller{controller_id}/active_zone", str(states))  
                 userdata['check_flag'] = False
+
+            if userdata['stop_flag']:
+                try:
+                    await controller.stop_irrigation()  # Assuming this method exists
+                    logger.info("Irrigation stopped")
+                    mqtt_client.publish(f"mwp/response/rainbird/controller{controller_id}/status", "Irrigation Stopped")
+                except RainbirdDeviceBusyException:
+                    logger.info("Device is busy, waiting for 2 seconds before retrying.")
+                    await asyncio.sleep(2)
+                    continue
+                
+                userdata['stop_flag'] = False
+
+            if userdata['advance_flag']:
+                try:
+                    await controller.advance_zone(0)  # Adjust the parameter as needed
+                    logger.info("Advanced to the next zone")
+                    mqtt_client.publish(f"mwp/response/rainbird/controller{controller_id}/status", "Zone Advanced")
+                except RainbirdDeviceBusyException:
+                    logger.info("Device is busy, waiting for 2 seconds before retrying.")
+                    await asyncio.sleep(2)
+                    continue
+                
+                userdata['advance_flag'] = False
 
             await asyncio.sleep(1)
 

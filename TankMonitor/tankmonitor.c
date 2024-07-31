@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 
    int SecondsFromMidnight = 0 ;
    int PriorSecondsFromMidnight =0;
- 
+   float intervalFlow = 0;
    float waterHeightPress = 0;
    float waterHeightUltra = 0;
    float temperatureF;
@@ -227,7 +227,8 @@ int main(int argc, char* argv[])
       tankMon_.tank.tank_gallons =  TankGallons;
       tankMon_.tank.tank_per_full =  TankPerFull;
 
-      flowmon(tankSens_.tank.new_data_flag, tankSens_.tank.milliseconds, tankSens_.tank.pulse_count, &avgflowRateGPM, &dailyGallons, .98) ;
+      flowmon(tankSens_.tank.new_data_flag, tankSens_.tank.milliseconds, tankSens_.tank.pulse_count, &avgflowRateGPM, &intervalFlow, .98) ;
+      dailyGallons = dailyGallons + intervalFlow;
       tankMon_.tank.tank_gallons_per_minute =  avgflowRateGPM;
       tankMon_.tank.tank_total_gallons_24 =    dailyGallons;
       

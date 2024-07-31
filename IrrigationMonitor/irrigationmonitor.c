@@ -59,6 +59,7 @@ int main(int argc, char* argv[])
    float irrigationPressure = 0;
    float temperatureF;
 
+   float intervalFlow = 0;
    float dailyGallons = 0;
    float avgflowRateGPM = 0;
     
@@ -86,8 +87,11 @@ int main(int argc, char* argv[])
    const char *mqtt_ip;
    int mqtt_port;
    int training_mode = FALSE;
+   int limit_mode = FALSE;
+   float limit_gallons = 0;
+   float start_limit_gallons = 0;
    char training_filename[256];
-   while ((opt = getopt(argc, argv, "vPDT:")) != -1) {
+   while ((opt = getopt(argc, argv, "vPDL:T:")) != -1) {
       switch (opt) {
          case 'v':
                verbose = TRUE;
@@ -100,6 +104,17 @@ int main(int argc, char* argv[])
                mqtt_ip = DEV_MQTT_IP;
                mqtt_port = DEV_MQTT_PORT;
                break;
+         case 'L':
+               limit_mode = TRUE;
+               if (optarg != NULL && strlen(optarg) > 0) {
+                   limit_gallons = atof(optarg);
+                   // Use limit_mode and limit_gallons as needed
+               } else {
+                   fprintf(stderr, "Warning: Number of gallons not provided. Using default 200 for the -L option.\n");
+                   fprintf(stderr, "Usage: %s [-v] [-P | -D] [-L #ofGallons] [-T filename]\n", argv[0]);
+                   limit_gallons = 200 ;
+               }
+               break;
          case 'T':
             {
                 training_mode = TRUE;
@@ -109,13 +124,13 @@ int main(int argc, char* argv[])
                     // Use training_mode and training_filename as needed
                 } else {
                     fprintf(stderr, "Error: No filename provided for the -T option.\n");
-                    fprintf(stderr, "Usage: %s [-v] [-P | -D] [-T filename]\n", argv[0]);
+                    fprintf(stderr, "Usage: %s [-v] [-P | -D] [-L #ofGallons] [-T filename]\n", argv[0]);
                     return 1;
                 }
             }
             break;
          default:
-               fprintf(stderr, "Usage: %s [-v] [-P | -D] [-T filename]\n", argv[0]);
+               fprintf(stderr, "Usage: %s [-v] [-P | -D] [-L #ofGallons] [-T filename]\n", argv[0]);
                return 1;
       }
    }
@@ -209,8 +224,8 @@ int main(int argc, char* argv[])
       /*
       * Call the flow monitor function
       */
-      flowmon(irrigationSens_.irrigation.new_data_flag, irrigationSens_.irrigation.milliseconds, irrigationSens_.irrigation.pulse_count, &avgflowRateGPM, &dailyGallons, .935) ;
-
+      flowmon(irrigationSens_.irrigation.new_data_flag, irrigationSens_.irrigation.milliseconds, irrigationSens_.irrigation.pulse_count, &avgflowRateGPM, &intervalFlow, .935) ;
+      dailyGallons += intervalFlow ;
       irrigationPressure = (irrigationSens_.irrigation.adc_sensor * .1336) - 3.523 ;
       
       memcpy(&temperatureF, &irrigationSens_.irrigation.temp_w1, sizeof(float));
@@ -307,9 +322,10 @@ int main(int argc, char* argv[])
       else {
          pumpState = OFF;
       }
-      
+
       if ((pumpState == ON) && (lastpumpState == OFF)){
          startGallons = dailyGallons;
+         start_limit_gallons = dailyGallons;
          time(&start_t);
          lastpumpState = ON;
          /*
@@ -345,6 +361,23 @@ int main(int argc, char* argv[])
          irrigationMon_.irrigation.BackControllerActive   =    0;  
          irrigationMon_.irrigation.BackActiveZone         =    0;  
       }
+      else if (( pumpState == ON) && (limit_mode == TRUE)) {
+         if ((dailyGallons - start_limit_gallons) > limit_gallons) {
+            pubmsg.payload = rainbird_command4;
+            pubmsg.payloadlen = strlen(rainbird_command4);
+            pubmsg.qos = 0;
+            pubmsg.retained = 0;
+            deliveredtoken = 0;
+            if ((rc = MQTTClient_publishMessage(client, RAINBIRDCOMMAND_TOPICID, &pubmsg, &token)) != MQTTCLIENT_SUCCESS)
+            {
+               printf("Failed to publish rainbird command message for controller STOP, return code %d\n", rc);
+               log_message("IrrigationMonitor Error == Failed to Publish Rainbird Command Message for controller 1. Return Code: %d\n", rc);
+               rc = EXIT_FAILURE;
+            }
+            sleep(3) ;
+         }
+      }
+
       if ((rainbirdRequest == TRUE) && (rainbirdReqDelay == 0)){
          pubmsg.payload = rainbird_command1;
          pubmsg.payloadlen = strlen(rainbird_command1);

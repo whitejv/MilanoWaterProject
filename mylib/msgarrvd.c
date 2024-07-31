@@ -73,30 +73,42 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
    else if ( strcmp(topicName, "mwp/response/rainbird/controller1/active_zone") == 0) {
       memcpy(rainbird_payload, message->payload, message->payloadlen);
       if (verbose) {printf("%s ", rainbird_payload);}
-      
-      /* Process rainbird zone data */
-      
-      parse_message(rainbird_payload, &Front_Controller);
+      if (strcmp(rainbird_payload, "Irrigation stopped") == 0) {
+         if (verbose) {printf("Front Controller: Irrigation Stopped.\n");}
+      }
+      else if (strcmp(rainbird_payload, "Zone Advanced") == 0) {
+         if (verbose) {printf("Front Controller: Zone Advanced.\n");}
+      }
+      else {
+         /* Process rainbird zone data */
+         
+         parse_message(rainbird_payload, &Front_Controller);
 
-      if (verbose){printf("Front Controller: %d\n", Front_Controller.controller);}
-      if (verbose){for (int i = 0; i < MAX_ZONES; i++) {printf("Front Zone: %d, Status: %d\n", Front_Controller.states[i].station, Front_Controller.states[i].status);}}
-      
+         if (verbose){printf("Front Controller: %d\n", Front_Controller.controller);}
+         if (verbose){for (int i = 0; i < MAX_ZONES; i++) {printf("Front Zone: %d, Status: %d\n", Front_Controller.states[i].station, Front_Controller.states[i].status);}}
+      }
       printf("F\n");
    }
       else if ( strcmp(topicName, "mwp/response/rainbird/controller2/active_zone") == 0) {
       memcpy(rainbird_payload, message->payload, message->payloadlen);
       if (verbose) {printf("%s ", rainbird_payload);}
-      
-      /* Process rainbird zone data */
-      
-      parse_message(rainbird_payload, &Back_Controller);
+           
+      if (strcmp(rainbird_payload, "Irrigation stopped") == 0) {
+         if (verbose) {printf("Back Controller: Irrigation Stopped.\n");}
+      }
+      else if (strcmp(rainbird_payload, "Zone Advanced") == 0) {
+         if (verbose) {printf("Back Controller: Zone Advanced.\n");}
+      }
+      else {
+         /* Process rainbird zone data */
+         
+         parse_message(rainbird_payload, &Back_Controller);
 
-      if (verbose){printf("Back Controller: %d\n", Back_Controller.controller);}
-      if (verbose){for (int i = 0; i < MAX_ZONES; i++) {printf("Back Zone: %d, Status: %d\n", Back_Controller.states[i].station, Back_Controller.states[i].status);}}
-      
-      printf("F\n");
+         if (verbose){printf("Back Controller: %d\n", Back_Controller.controller);}
+         if (verbose){for (int i = 0; i < MAX_ZONES; i++) {printf("Back Zone: %d, Status: %d\n", Back_Controller.states[i].station, Back_Controller.states[i].status);}}
+      }
+      printf("B\n");
    }
-
 
    MQTTClient_freeMessage(&message);
    MQTTClient_free(topicName);

@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
  
 
    float temperatureF;
-  
+   float intervalFlow = 0; 
    float TankGallons = 0;
 
 
@@ -143,7 +143,8 @@ int main(int argc, char* argv[])
       //printf("seconds since midnight: %d\n", SecondsFromMidnight);
       PriorSecondsFromMidnight = SecondsFromMidnight ;
 
-      flowmon(houseSens_.house.new_data_flag, houseSens_.house.milliseconds, houseSens_.house.pulse_count, &avgflowRateGPM, &dailyGallons, 1.955) ;
+      flowmon(houseSens_.house.new_data_flag, houseSens_.house.milliseconds, houseSens_.house.pulse_count, &avgflowRateGPM, &intervalFlow, 1.955) ;
+      dailyGallons = dailyGallons + intervalFlow;
       houseMon_.house.house_gallons_per_minute =  avgflowRateGPM;
       houseMon_.house.houseTotalFlow = dailyGallons;
       
