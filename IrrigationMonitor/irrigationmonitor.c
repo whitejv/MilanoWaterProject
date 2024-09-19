@@ -294,7 +294,7 @@ int main(int argc, char* argv[])
          rc = EXIT_FAILURE;
       }
       json_object *root = json_object_new_object();
-      for (i=0; i<=WELLMON_LEN-1; i++) {
+      for (i=0; i<=IRRIGATIONMON_LEN-1; i++) {
          json_object_object_add(root, irrigationmon_ClientData_var_name [i], json_object_new_double(irrigationMon_.data_payload[i]));
       }
 

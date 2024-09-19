@@ -22,7 +22,7 @@ echo "Starting Data Monitor App"
 nohup /home/pi/MilanoWaterProject/bin/monitor -D > /dev/null 2>&1 &
 sleep 10
 echo "Starting Blynk Interface App"
-nohup /home/pi/MilanoWaterProject/bin/blynk -D > /dev/null 2>&1 &
+nohup /home/pi/MilanoWaterProject/bin/blynkWater -D > /dev/null 2>&1 &
 echo "Done"
 echo "Starting RainbirdSync for Controller 1"
 sleep 10

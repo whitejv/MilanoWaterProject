@@ -292,7 +292,7 @@
 					[
 						9
 					],
-					"name" : "blynk",
+					"name" : "blynkWater",
 					"parentIndex" : 0,
 					"targetIndexes" : 
 					[
@@ -311,9 +311,9 @@
 				},
 				{
 					"directoryIndex" : 9,
-					"id" : "blynk::@85d371cfb24311502f54",
-					"jsonFile" : "target-blynk-Debug-73faac9b01bca7d4ba7a.json",
-					"name" : "blynk",
+					"id" : "blynkWater::@85d371cfb24311502f54",
+					"jsonFile" : "target-blynkWater-Debug-c93db590b5eec2cfeba9.json",
+					"name" : "blynkWater",
 					"projectIndex" : 9
 				},
 				{
