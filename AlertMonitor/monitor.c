@@ -13,43 +13,6 @@ int verbose = FALSE;
 float TotalDailyGallons = 0;
 float TotalGPM = 0;
 
-#define MAX_CYCLE_COUNT 28000  // The cycle count rolls over at this value
-#define OFFLINE_THRESHOLD 5    // Number of iterations before flagging as offline
-
-// Structure to hold sensor data
-typedef struct {
-    int prev_cycle_count;
-    int current_cycle_count;
-    int unchanged_count;  // Tracks how many consecutive times the count has stayed the same
-    int is_offline;
-} SensorData;
-
-// Function to monitor a single sensor's cycle count and detect offline status
-void monitor_sensor(SensorData *sensor, int new_cycle_count) {
-    sensor->prev_cycle_count = sensor->current_cycle_count;
-    sensor->current_cycle_count = new_cycle_count;
-
-    // Check if the cycle count has not changed
-    if (sensor->current_cycle_count == sensor->prev_cycle_count) {
-        sensor->unchanged_count++;
-    } else {
-        sensor->unchanged_count = 0;  // Reset the count if the cycle count changes
-    }
-
-    // Flag as offline if the count hasn't changed for the threshold number of iterations
-    if (sensor->unchanged_count >= OFFLINE_THRESHOLD) {
-        sensor->is_offline = -200;
-        printf("Sensor went offline (unchanged for %d iterations)!\n", OFFLINE_THRESHOLD);
-    } else {
-        sensor->is_offline = 0;  // Sensor is online
-    }
-
-    // Rollover detection: handle normal cycle rollover behavior
-    if (sensor->prev_cycle_count > sensor->current_cycle_count &&
-        sensor->prev_cycle_count - sensor->current_cycle_count > MAX_CYCLE_COUNT / 2) {
-        printf("Sensor experienced a cycle rollover.\n");
-    }
-}
 MQTTClient_deliveryToken deliveredtoken;
 
 void delivered(void *context, MQTTClient_deliveryToken dt)
@@ -71,11 +34,6 @@ void connlost(void *context, char *cause)
    printf("     cause: %s\n", cause);
 }
 
-SensorData sensors[4] = {0, 0, 0, 0,
-                         0, 0, 0, 0,
-                         0, 0, 0, 0,
-                         0, 0, 0, 0};
-
 int main(int argc, char *argv[])
 {
    int i = 0;
@@ -86,11 +44,31 @@ int main(int argc, char *argv[])
    time(&t);
    int SecondsFromMidnight = 0;
    int PriorSecondsFromMidnight = 0;
+   u_int32_t A43floatState = 0;
+   u_int32_t A21floatState = 0;
+   u_int32_t AllfloatLedcolor = 0;
+   int Float100State = 0;
+   int Float90State = 0;
+   int Float50State = 0;
+   int Float25State = 0;
+   int PressSwitState = 0;
+   int raw_voltage1_adc = 0;
+   int raw_voltage2_adc = 0;
+   int raw_voltage3_adc = 0;
+   int raw_voltage4_adc = 0;
+   int pressState = 0;
+   int pressLedColor;
+   int floatstate[5];
+   int floatLedcolor[5];
    u_int32_t PumpRunCount = 0;
    int PumpCurrentSense[5];
    int PumpLedColor[5];
+   int SepticAlert = 0;
+   int SepticAlertColor;
+   int SepticAlertState;
 
-   log_message("Monitor: Started\n"); 
+
+   log_message("TankMonitor: Started\n"); 
 
    MQTTClient client;
    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -162,14 +140,14 @@ int main(int argc, char *argv[])
       rc = EXIT_FAILURE;
       exit(EXIT_FAILURE);
    }
-
-   printf("Subscribing to all monitor topics: %s\nfor client: %s using QoS: %d\n\n", "mwp/data/monitor/#", MONITOR_CLIENTID, QOS);
-   log_message("Monitor: Subscribing to topic: %s for client: %s\n", "mwp/data/monitor/#", MONITOR_CLIENTID);
-   MQTTClient_subscribe(client, "mwp/data/monitor/#", QOS);
-
-   //No need to subscribe to our own message
-   MQTTClient_unsubscribe(client, MONITOR_TOPICID);
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", TANKMON_TOPICID, WELLMON_CLIENTID, QOS);
+   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", TANKMON_TOPICID, WELLMON_CLIENTID);
+   MQTTClient_subscribe(client, TANKMON_TOPICID, QOS);
    
+   printf("Subscribing to topic: %s\nfor client: %s using QoS: %d\n\n", WELLMON_TOPICID, WELLMON_CLIENTID, QOS);
+   log_message("TankMonitor: Subscribing to topic: %s for client: %s\n", WELLMON_TOPICID, WELLMON_CLIENTID);
+   MQTTClient_subscribe(client, WELLMON_TOPICID, QOS);
+
    /*
     * Initialize the data file with headers
     */
@@ -220,38 +198,7 @@ int main(int argc, char *argv[])
        * Compute Monitor Values Based on Inputs from
        * Sensor Data and Format for easy use with Blynk
        */
-      monitor_.monitor.Tank_Water_Height = tankMon_.tank.water_height;
-      monitor_.monitor.Tank_Gallons = tankMon_.tank.tank_gallons;
-      monitor_.monitor.Tank_Percent_Full = tankMon_.tank.tank_per_full;   
-      monitor_.monitor.House_Pressure = houseMon_.house.housePressure;
-      //monitor_.monitor.Well3_Pressure = tankMon_.tank.xyz;
-      monitor_.monitor.Irrigation_Pressure = irrigationMon_.irrigation.Pressure;
-      monitor_.monitor.House_Gallons_Minute = houseMon_.house.house_gallons_per_minute;
-      monitor_.monitor.Well3_Gallons_Minute = tankMon_.tank.tank_gallons_per_minute;
-      monitor_.monitor.Irrigation_Gallons_Minute = irrigationMon_.irrigation.FlowPerMin;
-      monitor_.monitor.House_Gallons_Day = houseMon_.house.houseTotalFlow;
-      monitor_.monitor.Well3_Gallons_Day = tankMon_.tank.tank_total_gallons_24;
-      monitor_.monitor.Irrigation_Gallons_Day = irrigationMon_.irrigation.TotalFlow;
-      monitor_.monitor.System_Temp = wellMon_.well.system_temp;
-      monitor_.monitor.House_Water_Temp = houseMon_.house.houseSupplyTemp;
-      monitor_.monitor.Irrigation_Pump_Temp = irrigationMon_.irrigation.PumpTemp;
-      monitor_.monitor.Air_Temp = tankMon_.tank.air_temp;
-      
-      // Get Irrigation Controller and Zone
-      if (irrigationMon_.irrigation.FrontControllerActive == 1)
-      {
-         monitor_.monitor.Controller = 1;
-         monitor_.monitor.Zone = irrigationMon_.irrigation.FrontActiveZone;
-      }
-      else if (irrigationMon_.irrigation.BackControllerActive == 1)
-      {
-         monitor_.monitor.Controller = 2;
-         monitor_.monitor.Zone = irrigationMon_.irrigation.BackActiveZone;
-      }
-      else {
-         monitor_.monitor.Controller = 0;
-         monitor_.monitor.Zone = 0;
-      }
+
       // Channel 2 Voltage Sensor 16 bit data
       //raw_voltage1_adc = well_sensor_payload[0];
       if (wellMon_.well.well_pump_1_on == 1)
@@ -315,24 +262,83 @@ int main(int argc, char *argv[])
          PumpLedColor[4] = GREEN;
       }
 
-//Check to see if any sensors are offline
-      monitor_sensor(&sensors[0], wellMon_.well.cycle_count); 
-      monitor_sensor(&sensors[1], houseMon_.house.cycle_count);
-      monitor_sensor(&sensors[2], tankMon_.tank.cycle_count);
-      monitor_sensor(&sensors[3], irrigationMon_.irrigation.cycle_count);
-      
+      /*
+       * Convert the Discrete data
+       */
 
-      monitor_.monitor.Well_1_LED_Bright = PumpCurrentSense[1] + sensors[0].is_offline;
-      monitor_.monitor.Well_2_LED_Bright = PumpCurrentSense[2] + sensors[1].is_offline;
-      monitor_.monitor.Well_3_LED_Bright = PumpCurrentSense[3] + sensors[2].is_offline;
-      monitor_.monitor.Irrig_4_LED_Bright = PumpCurrentSense[4] + sensors[3].is_offline;
+      Float100State = tankMon_.tank.float1;
+      //Float90State = tank_sensor_payload[13];
+      //Float50State = tank_sensor_payload[14];
+      Float25State = tankMon_.tank.float2;
+      PressSwitState = wellMon_.well.House_tank_pressure_switch_on;
+      SepticAlert = wellMon_.well.septic_alert_on ;
 
-      monitor_.monitor.Well_1_LED_Color = PumpLedColor[1];
-      monitor_.monitor.Well_2_LED_Color = PumpLedColor[2];
-      monitor_.monitor.Well_3_LED_Color = PumpLedColor[3];
-      monitor_.monitor.Irrig_4_LED_Color = PumpLedColor[4];
+      if (Float100State == 1)
+      {
+         floatstate[1] = 255;
+         floatLedcolor[1] = RED;
+      }
+      else
+      {
+         floatstate[1] = 255;
+         floatLedcolor[1] = GREEN;
+      }
+/*
+      if (Float90State == 1)
+      {
+         floatstate[2] = 255;
+         floatLedcolor[2] = GREEN;
+      }
+      else
+      {
+         floatstate[2] = 255;
+         floatLedcolor[2] = RED;
+      }
 
-      
+      if (Float50State == 1)
+      {
+         floatstate[3] = 255;
+         floatLedcolor[3] = GREEN;
+      }
+      else
+      {
+         floatstate[3] = 255;
+         floatLedcolor[3] = RED;
+      }
+*/
+      if (Float25State == 1)
+      {
+         floatstate[2] = 255;
+         floatLedcolor[2] = RED;
+      }
+      else
+      {
+         floatstate[2] = 255;
+         floatLedcolor[2] = GREEN;
+      }
+
+      if (PressSwitState == 1)
+      {
+         pressState = 255;
+         pressLedColor = BLUE;
+      }
+      else
+      {
+         pressState = 255;
+         pressLedColor = GREEN;
+      }
+
+      if (SepticAlert == 1)
+      {
+         SepticAlertState = 255;
+         SepticAlertColor = RED;
+      }
+      else
+      {
+         SepticAlertState = 255;
+         SepticAlertColor = GREEN;
+      }
+
       /*
        * Compute Pump Stats for each pump
        */
@@ -376,10 +382,58 @@ int main(int argc, char *argv[])
           MyPumpStats[j].RunTime) ;
           */
       }
+      /*
+       * Set Firmware Version
+       * firmware = formatted_sensor_payload[20] & SubFirmware;
+       */
+      /*
+       * Bit Pack Some Data
+       */
+      A43floatState = 0;
+      A21floatState = 0;
+      //A43floatState = floatstate[4] << 16 | floatstate[3];
+      A21floatState = floatstate[2] << 16 | floatstate[1];
 
-      if (verbose) {   
-         for (i=0; i<=MONITOR_LEN-1; i++) {
-            printf("%s %f ", monitor_ClientData_var_name [i],monitor_.data_payload[i]);
+      AllfloatLedcolor = 0;
+      //AllfloatLedcolor = floatLedcolor[4] << 24 |
+                         //floatLedcolor[3] << 16 |
+      AllfloatLedcolor = floatLedcolor[2] << 8 |
+                         floatLedcolor[1];
+      PumpRunCount = 0;
+      PumpRunCount = MyPumpStats[4].RunCount << 24 |
+                     MyPumpStats[3].RunCount << 16 |
+                     MyPumpStats[2].RunCount << 8 |
+                     MyPumpStats[1].RunCount;
+      /*
+       * Load Up the Data
+       */
+
+      /* CLIENTID     "Tank Subscriber", TOPIC "Monitor Data", monitor_sensor_ */
+      monitor_.data_payload[0] = PumpCurrentSense[1];
+      monitor_.data_payload[1] = PumpCurrentSense[2];
+      monitor_.data_payload[2] = PumpCurrentSense[3];
+      monitor_.data_payload[3] = PumpCurrentSense[4];
+      monitor_.data_payload[4] = PumpLedColor[1];
+      monitor_.data_payload[5] = PumpLedColor[2];
+      monitor_.data_payload[6] = PumpLedColor[3];
+      monitor_.data_payload[7] = PumpLedColor[4];
+      monitor_.data_payload[8] = PumpRunCount;
+      monitor_.data_payload[9] = MyPumpStats[1].RunTime;
+      monitor_.data_payload[10] = MyPumpStats[2].RunTime;
+      monitor_.data_payload[11] = MyPumpStats[3].RunTime;
+      monitor_.data_payload[12] = MyPumpStats[4].RunTime;
+      monitor_.data_payload[13] = A43floatState;
+      monitor_.data_payload[14] = A21floatState;
+      monitor_.data_payload[15] = AllfloatLedcolor;
+      monitor_.data_payload[16] = SepticAlertState;
+      monitor_.data_payload[17] = SepticAlertColor;
+      monitor_.data_payload[18] = pressState;
+      monitor_.data_payload[19] = pressLedColor;
+      
+      if (verbose) {
+         for (i = 0; i <= MONITOR_LEN; i++)
+         {
+            printf("%0x ", monitor_.data_payload[i]);
          }
          printf("%s", ctime(&t));
       }
@@ -395,12 +449,10 @@ int main(int argc, char *argv[])
          rc = EXIT_FAILURE;
       }
       json_object *root = json_object_new_object();
-      for (i=0; i<=MONITOR_LEN-13; i++) {
+      for (i=0; i<=MONITOR_LEN-1; i++) {
          json_object_object_add(root, monitor_ClientData_var_name [i], json_object_new_double(monitor_.data_payload[i]));
       }
-      for (i=18; i<=MONITOR_LEN-1; i++) {
-         json_object_object_add(root, monitor_ClientData_var_name [i], json_object_new_int(monitor_.data_payload[i]));
-      }
+
       const char *json_string = json_object_to_json_string(root);
 
       pubmsg.payload = (void *)json_string; // Make sure to cast the const pointer to void pointer
@@ -421,8 +473,8 @@ int main(int argc, char *argv[])
       sleep(1);
    }
    log_message("Monitor: Exiting Main Loop\n") ;
-   MQTTClient_unsubscribe(client, "mwp/data/monitor/#");
-
+   MQTTClient_unsubscribe(client, TANKMON_TOPICID);
+   MQTTClient_unsubscribe(client, WELLMON_TOPICID);
    MQTTClient_disconnect(client, 10000);
    MQTTClient_destroy(&client);
    return rc;

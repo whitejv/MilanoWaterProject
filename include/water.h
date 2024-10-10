@@ -1019,7 +1019,7 @@ char* wellmon_ClientData_var_name [] = {
 }  ;
 
 /*
-* Block ID: M001D
+* Block ID: 
 * Block Name: monitor
 * Description: Monitor Data for Blynk
 * From: monitor
@@ -1027,84 +1027,114 @@ char* wellmon_ClientData_var_name [] = {
 * Type: data
 * MQTT Client ID: Monitor Client
 * MQTT Topic ID: 
-* MSG Length: 20
+* MSG Length: 30
 *  word #        data type            variable                description        min        max        nominal
-*  0        int            pump_current_sense_1                 PumpCurrentSense[1];                        
-*  1        int            pump_current_sense_2                 PumpCurrentSense[2];                        
-*  2        int            pump_current_sense_3                 PumpCurrentSense[3];                        
-*  3        int            pump_current_sense_4                 PumpCurrentSense[4];                        
-*  4        int            pump_led_color_1                 PumpLedColor[1];                        
-*  5        int            pump_led_color_2                 PumpLedColor[2];                        
-*  6        int            pump_led_color_3                 PumpLedColor[3];                        
-*  7        int            pump_led_color_4                 PumpLedColor[4];                        
-*  8        int            pump_run_count                 PumpRunCount;  //byte4-pump4;byte3-pump3;byte2-pump2;byte1-pump1        0        28800        
-*  9        int            pump_run_time_1                PumpRunTime{1] ; //Seconds                        
-*  10        int            pump_run_time_2                PumpRunTime{2] ; //Seconds                        
-*  11        int            pump_run_time_3                PumpRunTime{3] ; //Seconds                        
-*  12        int            pump_run_time_4                PumpRunTime{4] ; //Seconds                        
-*  13        int            float_state_43                 43floatState;  //byte34-float4;byte123-float3                        
-*  14        int            float_state_21                 21floatState;  //bytes34-float2;byte12-float1                        
-*  15        int            all_float_led_colors                 AllfloatLedcolor;  //byte4-color4;byte3-color3;byte2-color2;byte1-color1                        
-*  16        int            septic_relay_alert                Septic Relay Alert                        
-*  17        int            septic_relay_alert_color                Septic Relay Alert Color                        
-*  18        int            press_relay_sense                Pressure Relay Sense                        
-*  19        int            press_led_color                Pressure LED Color                        
+*  0        float            Tank_Water_Height                        0        8        
+*  1        float            Tank_Gallons                        0        2500        
+*  2        float            Tank_Percent_Full                        0        100        
+*  3        float            House_Pressure                        0        100        
+*  4        float            Well3_Pressure                        0        100        
+*  5        float            Irrigation_Pressure                        0        100        
+*  6        float            House_Gallons_Minute                        0        80        
+*  7        float            Well3_Gallons_Minute                        0        80        
+*  8        float            Irrigation_Gallons_Minute                        0        80        
+*  9        float            House_Gallons_Day                        0        4000        
+*  10        float            Well3_Gallons_Day                        0        4000        
+*  11        float            Irrigation_Gallons_Day                        0        4000        
+*  12        float            System_Temp                        -32        120        
+*  13        float            House_Water_Temp                        -32        120        
+*  14        float            Irrigation_Pump_Temp                        -32        120        
+*  15        float            Air_Temp                        -32        120        
+*  16        float            Spare1                        0        0        
+*  17        float            Spare2                        0        0        
+*  18        int            Well_1_LED_Bright                        0        255        
+*  19        int            Well_2_LED_Bright                        0        255        
+*  20        int            Well_3_LED_Bright                        0        255        
+*  21        int            Irrig_4_LED_Bright                        0        255        
+*  22        int            Spare1_LED_Bright                        0        255        
+*  23        int            Spare2_LED_Bright                        0        255        
+*  24        int            Well_1_LED_Color                        0        6        
+*  25        int            Well_2_LED_Color                        0        6        
+*  26        int            Well_3_LED_Color                        0        6        
+*  27        int            Irrig_4_LED_Color                        0        6        
+*  28        int            Controller                               0        6        
+*  29        int            Zone                                     0        32        
 */
 
 const char MONITOR_CLIENTID[] =    "Monitor Client" ;
-const char MONITOR_TOPICID[] =  "mwp/data/monitor/monitor/M001D";
-const char MONITOR_JSONID[] =  "mwp/json/data/monitor/monitor/M001D";
-#define MONITOR_LEN 20
+const char MONITOR_TOPICID[] =  "mwp/data/monitor/monitor/";
+const char MONITOR_JSONID[] =  "mwp/json/data/monitor/monitor/";
+#define MONITOR_LEN 30
 
 union   MONITOR_  {
-   int     data_payload[MONITOR_LEN] ;
+   float     data_payload[MONITOR_LEN] ;
 
    struct  {
-      int   pump_current_sense_1    ;
-      int   pump_current_sense_2    ;
-      int   pump_current_sense_3    ;
-      int   pump_current_sense_4    ;
-      int   pump_led_color_1    ;
-      int   pump_led_color_2    ;
-      int   pump_led_color_3    ;
-      int   pump_led_color_4    ;
-      int   pump_run_count    ;
-      int   pump_run_time_1    ;
-      int   pump_run_time_2    ;
-      int   pump_run_time_3    ;
-      int   pump_run_time_4    ;
-      int   float_state_43    ;
-      int   float_state_21    ;
-      int   all_float_led_colors    ;
-      int   septic_relay_alert    ;
-      int   septic_relay_alert_color    ;
-      int   press_relay_sense    ;
-      int   press_led_color    ;
+      float   Tank_Water_Height    ;
+      float   Tank_Gallons    ;
+      float   Tank_Percent_Full    ;
+      float   House_Pressure    ;
+      float   Well3_Pressure    ;
+      float   Irrigation_Pressure    ;
+      float   House_Gallons_Minute    ;
+      float   Well3_Gallons_Minute    ;
+      float   Irrigation_Gallons_Minute    ;
+      float   House_Gallons_Day    ;
+      float   Well3_Gallons_Day    ;
+      float   Irrigation_Gallons_Day    ;
+      float   System_Temp    ;
+      float   House_Water_Temp    ;
+      float   Irrigation_Pump_Temp    ;
+      float   Air_Temp    ;
+      float   Spare1    ;
+      float   Spare2    ;
+      float  Well_1_LED_Bright    ;
+      float    Well_2_LED_Bright    ;
+      float    Well_3_LED_Bright    ;
+      float   Irrig_4_LED_Bright    ;
+      float    Spare1_LED_Bright    ;
+      float    Spare2_LED_Bright    ;
+      float    Well_1_LED_Color    ;
+      float   Well_2_LED_Color    ;
+      float    Well_3_LED_Color    ;
+      float   Irrig_4_LED_Color    ;
+      float   Controller   ;
+      float   Zone    ;
    }  monitor  ;
 }  ;
 union  MONITOR_  monitor_  ;
 
 char* monitor_ClientData_var_name [] = { 
-    "M001D:pump_current_sense_1",
-    "M001D:pump_current_sense_2",
-    "M001D:pump_current_sense_3",
-    "M001D:pump_current_sense_4",
-    "M001D:pump_led_color_1",
-    "M001D:pump_led_color_2",
-    "M001D:pump_led_color_3",
-    "M001D:pump_led_color_4",
-    "M001D:pump_run_count",
-    "M001D:pump_run_time_1",
-    "M001D:pump_run_time_2",
-    "M001D:pump_run_time_3",
-    "M001D:pump_run_time_4",
-    "M001D:float_state_43",
-    "M001D:float_state_21",
-    "M001D:all_float_led_colors",
-    "M001D:septic_relay_alert",
-    "M001D:septic_relay_alert_color",
-    "M001D:press_relay_sense",
-    "M001D:press_led_color",
+    "Tank_Water_Height",
+    "Tank_Gallons",
+    "Tank_Percent_Full",
+    "House_Pressure",
+    "Well3_Pressure",
+    "Irrigation_Pressure",
+    "House_Gallons_Minute",
+    "Well3_Gallons_Minute",
+    "Irrigation_Gallons_Minute",
+    "House_Gallons_Day",
+    "Well3_Gallons_Day",
+    "Irrigation_Gallons_Day",
+    "System_Temp",
+    "House_Water_Temp",
+    "Irrigation_Pump_Temp",
+    "Air_Temp",
+    "Spare1",
+    "Spare2",
+    "Well_1_LED_Bright",
+    "Well_2_LED_Bright",
+    "Well_3_LED_Bright",
+    "Irrig_4_LED_Bright",
+    "Spare1_LED_Bright",
+    "Spare2_LED_Bright",
+    "Well_1_LED_Color",
+    "Well_2_LED_Color",
+    "Well_3_LED_Color",
+    "Irrig_4_LED_Color",
+    "Controller",
+    "Zone"
 }  ;
 
 /*
@@ -1194,6 +1224,95 @@ char* alert_ClientData_var_name [] = {
     "A001D:alert18",
     "A001D:alert19",
     "A001D:alert20",
+}  ;
+
+/*
+* Block ID: L001D
+* Block Name: log
+* Description: Log Data
+* From: log
+* Category: log
+* Type: data
+* MQTT Client ID: Log Client
+* MQTT Topic ID: 
+* MSG Length: 10
+*  word #        data type            variable                description        min        max        nominal
+*  0        int            pump                Pump Number 1,2,3 Wells & 4 Irrigation                        
+*  1        int            param1                Additional source desc - 1 front 2 back 3 outback                        
+*  2        int            param2                Additional source desc - 1-22 zones                        
+*  3        int            intervalFlow                Gallons Flowed in Interval                        
+*  4        int            pressure                Static Pressure                        
+*  5        int            amperage                Integer Represents Amps                        
+*  6        int            temperature                Temperature                        
+*  7        int            timestamp                unix timestamp                        
+*  8        int            unused                                        
+*  9        int            unused                                        
+*  10        int            unused                                        
+*  11        int            unused                                        
+*  12        int            unused                                        
+*  13        int            unused                                        
+*  14        int            unused                                        
+*  15        int            unused                                        
+*  16        int            unused                                        
+*  17        int            unused                                        
+*  18        int            unused                                        
+*  19        int            unused                                        
+*/
+
+const char LOG_CLIENTID[] =    "Log Client" ;
+const char LOG_TOPICID[] =  "mwp/data/log/log/L001D";
+const char LOG_JSONID[] =  "mwp/json/data/log/log/L001D";
+#define LOG_LEN 10
+
+union   LOG_  {
+   int     data_payload[LOG_LEN] ;
+
+   struct  {
+      int   pump    ;
+      int   param1    ;
+      int   param2    ;
+      int   intervalFlow    ;
+      int   pressure    ;
+      int   amperage    ;
+      int   temperature    ;
+      int   timestamp    ;
+      int   unused1    ;
+      int   unused2    ;
+      int   unused3    ;
+      int   unused4    ;
+      int   unused5    ;
+      int   unused6    ;
+      int   unused7    ;
+      int   unused8    ;
+      int   unused9    ;
+      int   unused10    ;
+      int   unused11    ;
+      int   unused12    ;
+   }  log  ;
+}  ;
+union  LOG_  log_  ;
+
+char* log_ClientData_var_name [] = { 
+    "L001D:pump",
+    "L001D:param1",
+    "L001D:param2",
+    "L001D:intervalFlow",
+    "L001D:pressure",
+    "L001D:amperage",
+    "L001D:temperature",
+    "L001D:timestamp",
+    "L001D:unused",
+    "L001D:unused",
+    "L001D:unused",
+    "L001D:unused",
+    "L001D:unused",
+    "L001D:unused",
+    "L001D:unused",
+    "L001D:unused",
+    "L001D:unused",
+    "L001D:unused",
+    "L001D:unused",
+    "L001D:unused",
 }  ;
 
 //#define MilanoWaterProject\IrrigationHeader.h  (created and maintained in Excel)

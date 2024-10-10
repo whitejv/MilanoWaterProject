@@ -99,27 +99,6 @@ install/fast: preinstall/fast
 	/usr/bin/cmake -P cmake_install.cmake
 .PHONY : install/fast
 
-# Special rule for the target list_install_components
-list_install_components:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
-.PHONY : list_install_components
-
-# Special rule for the target list_install_components
-list_install_components/fast: list_install_components
-
-.PHONY : list_install_components/fast
-
-# Special rule for the target edit_cache
-edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	/usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
-.PHONY : edit_cache
-
-# Special rule for the target edit_cache
-edit_cache/fast: edit_cache
-
-.PHONY : edit_cache/fast
-
 # Special rule for the target install/local
 install/local: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
@@ -142,6 +121,27 @@ rebuild_cache:
 rebuild_cache/fast: rebuild_cache
 
 .PHONY : rebuild_cache/fast
+
+# Special rule for the target edit_cache
+edit_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
+	/usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+.PHONY : edit_cache
+
+# Special rule for the target edit_cache
+edit_cache/fast: edit_cache
+
+.PHONY : edit_cache/fast
+
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+
+.PHONY : list_install_components/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -176,127 +176,46 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
-Blynk/CMakeFiles/blynk.dir/rule:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Blynk/CMakeFiles/blynk.dir/rule
-.PHONY : Blynk/CMakeFiles/blynk.dir/rule
+Blynk/CMakeFiles/blynkWater.dir/rule:
+	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Blynk/CMakeFiles/blynkWater.dir/rule
+.PHONY : Blynk/CMakeFiles/blynkWater.dir/rule
 
 # Convenience name for target.
-blynk: Blynk/CMakeFiles/blynk.dir/rule
+blynkWater: Blynk/CMakeFiles/blynkWater.dir/rule
 
-.PHONY : blynk
+.PHONY : blynkWater
 
 # fast build rule for target.
-blynk/fast:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/build
-.PHONY : blynk/fast
+blynkWater/fast:
+	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynkWater.dir/build.make Blynk/CMakeFiles/blynkWater.dir/build
+.PHONY : blynkWater/fast
 
-main.o: main.cpp.o
+blynkWater.o: blynkWater.c.o
 
-.PHONY : main.o
-
-# target to build an object file
-main.cpp.o:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/main.cpp.o
-.PHONY : main.cpp.o
-
-main.i: main.cpp.i
-
-.PHONY : main.i
-
-# target to preprocess a source file
-main.cpp.i:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/main.cpp.i
-.PHONY : main.cpp.i
-
-main.s: main.cpp.s
-
-.PHONY : main.s
-
-# target to generate assembly for a file
-main.cpp.s:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/main.cpp.s
-.PHONY : main.cpp.s
-
-utility/BlynkDebug.o: utility/BlynkDebug.cpp.o
-
-.PHONY : utility/BlynkDebug.o
+.PHONY : blynkWater.o
 
 # target to build an object file
-utility/BlynkDebug.cpp.o:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/utility/BlynkDebug.cpp.o
-.PHONY : utility/BlynkDebug.cpp.o
+blynkWater.c.o:
+	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynkWater.dir/build.make Blynk/CMakeFiles/blynkWater.dir/blynkWater.c.o
+.PHONY : blynkWater.c.o
 
-utility/BlynkDebug.i: utility/BlynkDebug.cpp.i
+blynkWater.i: blynkWater.c.i
 
-.PHONY : utility/BlynkDebug.i
-
-# target to preprocess a source file
-utility/BlynkDebug.cpp.i:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/utility/BlynkDebug.cpp.i
-.PHONY : utility/BlynkDebug.cpp.i
-
-utility/BlynkDebug.s: utility/BlynkDebug.cpp.s
-
-.PHONY : utility/BlynkDebug.s
-
-# target to generate assembly for a file
-utility/BlynkDebug.cpp.s:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/utility/BlynkDebug.cpp.s
-.PHONY : utility/BlynkDebug.cpp.s
-
-utility/BlynkHandlers.o: utility/BlynkHandlers.cpp.o
-
-.PHONY : utility/BlynkHandlers.o
-
-# target to build an object file
-utility/BlynkHandlers.cpp.o:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/utility/BlynkHandlers.cpp.o
-.PHONY : utility/BlynkHandlers.cpp.o
-
-utility/BlynkHandlers.i: utility/BlynkHandlers.cpp.i
-
-.PHONY : utility/BlynkHandlers.i
+.PHONY : blynkWater.i
 
 # target to preprocess a source file
-utility/BlynkHandlers.cpp.i:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/utility/BlynkHandlers.cpp.i
-.PHONY : utility/BlynkHandlers.cpp.i
+blynkWater.c.i:
+	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynkWater.dir/build.make Blynk/CMakeFiles/blynkWater.dir/blynkWater.c.i
+.PHONY : blynkWater.c.i
 
-utility/BlynkHandlers.s: utility/BlynkHandlers.cpp.s
+blynkWater.s: blynkWater.c.s
 
-.PHONY : utility/BlynkHandlers.s
-
-# target to generate assembly for a file
-utility/BlynkHandlers.cpp.s:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/utility/BlynkHandlers.cpp.s
-.PHONY : utility/BlynkHandlers.cpp.s
-
-utility/BlynkTimer.o: utility/BlynkTimer.cpp.o
-
-.PHONY : utility/BlynkTimer.o
-
-# target to build an object file
-utility/BlynkTimer.cpp.o:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/utility/BlynkTimer.cpp.o
-.PHONY : utility/BlynkTimer.cpp.o
-
-utility/BlynkTimer.i: utility/BlynkTimer.cpp.i
-
-.PHONY : utility/BlynkTimer.i
-
-# target to preprocess a source file
-utility/BlynkTimer.cpp.i:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/utility/BlynkTimer.cpp.i
-.PHONY : utility/BlynkTimer.cpp.i
-
-utility/BlynkTimer.s: utility/BlynkTimer.cpp.s
-
-.PHONY : utility/BlynkTimer.s
+.PHONY : blynkWater.s
 
 # target to generate assembly for a file
-utility/BlynkTimer.cpp.s:
-	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/utility/BlynkTimer.cpp.s
-.PHONY : utility/BlynkTimer.cpp.s
+blynkWater.c.s:
+	cd /home/pi/MilanoWaterProject && $(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynkWater.dir/build.make Blynk/CMakeFiles/blynkWater.dir/blynkWater.c.s
+.PHONY : blynkWater.c.s
 
 # Help Target
 help:
@@ -310,19 +229,10 @@ help:
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
-	@echo "... blynk"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
-	@echo "... utility/BlynkDebug.o"
-	@echo "... utility/BlynkDebug.i"
-	@echo "... utility/BlynkDebug.s"
-	@echo "... utility/BlynkHandlers.o"
-	@echo "... utility/BlynkHandlers.i"
-	@echo "... utility/BlynkHandlers.s"
-	@echo "... utility/BlynkTimer.o"
-	@echo "... utility/BlynkTimer.i"
-	@echo "... utility/BlynkTimer.s"
+	@echo "... blynkWater"
+	@echo "... blynkWater.o"
+	@echo "... blynkWater.i"
+	@echo "... blynkWater.s"
 .PHONY : help
 
 

@@ -293,17 +293,17 @@ test/fast:
 .PHONY : test/fast
 
 #=============================================================================
-# Target rules for targets named blynk
+# Target rules for targets named blynkWater
 
 # Build rule for target.
-blynk: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 blynk
-.PHONY : blynk
+blynkWater: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 blynkWater
+.PHONY : blynkWater
 
 # fast build rule for target.
-blynk/fast:
-	$(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynk.dir/build.make Blynk/CMakeFiles/blynk.dir/build
-.PHONY : blynk/fast
+blynkWater/fast:
+	$(MAKE) $(MAKESILENT) -f Blynk/CMakeFiles/blynkWater.dir/build.make Blynk/CMakeFiles/blynkWater.dir/build
+.PHONY : blynkWater/fast
 
 # Help Target
 help:
@@ -319,7 +319,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... clean-all"
 	@echo "... alert"
-	@echo "... blynk"
+	@echo "... blynkWater"
 	@echo "... housemonitor"
 	@echo "... irrigationmonitor"
 	@echo "... monitor"

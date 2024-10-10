@@ -1638,6 +1638,30 @@
 			"value" : "/home/pi/MilanoWaterProject/SysAlert"
 		},
 		{
+			"name" : "blynkWater_BINARY_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/pi/MilanoWaterProject/build/Blynk"
+		},
+		{
+			"name" : "blynkWater_SOURCE_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/pi/MilanoWaterProject/Blynk"
+		},
+		{
 			"name" : "blynk_BINARY_DIR",
 			"properties" : 
 			[
