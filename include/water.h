@@ -1179,6 +1179,7 @@ union   ALERT_  {
    int     data_payload[ALERT_LEN] ;
 
    struct  {
+      int   alert0    ;
       int   alert1    ;
       int   alert2    ;
       int   alert3    ;
@@ -1198,18 +1199,17 @@ union   ALERT_  {
       int   alert17    ;
       int   alert18    ;
       int   alert19    ;
-      int   alert20    ;
    }  alert  ;
 }  ;
 union  ALERT_  alert_  ;
 
 char* alert_ClientData_var_name [] = { 
-    "A001D:alert1",
-    "A001D:alert2",
-    "A001D:alert3",
-    "A001D:alert4",
-    "A001D:alert5",
-    "A001D:alert6",
+    "ALERT0",
+    "ALERT1",
+    "ALERT2",
+    "ALERT3",
+    "ALERT4",
+    "ALERT5",
     "A001D:alert7",
     "A001D:alert8",
     "A001D:alert9",

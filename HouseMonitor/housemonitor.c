@@ -15,8 +15,13 @@ float TotalDailyGallons = 0;
 float TotalGPM = 0;
 float avgflowRateGPM = 0;
 
-/* Function Declarations */
+#define SAMPLES_COUNT 60
+float samples[SAMPLES_COUNT] = {0};
+uint8_t sample_index = 0;
+uint8_t window_size = 60; // Change this value to the desired window size (60-100)
+float PresSensorValue = 0;
 
+/* Function Declarations */
 
 void GallonsPumped(void) ;
 void PumpStats(void) ;
@@ -152,8 +157,13 @@ int main(int argc, char* argv[])
 
       houseMon_.house.houseSupplyTemp =  temperatureF;
       houseMon_.house.cycle_count =    houseSens_.house.cycle_count;
-      houseMon_.house.housePressure = houseSens_.house.adc_sensor * 0.0048828125 * 100;
+      //houseMon_.house.housePressure = houseSens_.house.adc_sensor * 0.0048828125 * 20;
+      //using moving average for now
 
+      PresSensorValue = houseSens_.house.adc_sensor * 0.0048828125 * 20;
+            
+      houseMon_.house.housePressure = moving_average(PresSensorValue, samples, &sample_index, window_size);
+      
       MyMQTTPublish() ;
 
       PumpStats() ;
@@ -298,4 +308,28 @@ if (wellMon_.well.well_pump_1_on  == 1  || wellMon_.well.well_pump_2_on == 1) {
       //TotalDailyGallons = TotalDailyGallons + (stopGallons-startGallons);
       lastpumpState = OFF ;
    }
+}
+float moving_average(float new_sample, float samples[], uint8_t *sample_index, uint8_t window_size) {
+    static float sum = 0;
+    static uint8_t n = 0;
+
+    // Remove the oldest sample from the sum
+    sum -= samples[*sample_index];
+
+    // Add the new sample to the sum
+    sum += new_sample;
+
+    // Replace the oldest sample with the new sample
+    samples[*sample_index] = new_sample;
+
+    // Update the sample index
+    *sample_index = (*sample_index + 1) % window_size;
+
+    // Update the number of samples, up to the window size
+    if (n < window_size) {
+        n++;
+    }
+
+    // Calculate and return the moving average
+    return sum / n;
 }
