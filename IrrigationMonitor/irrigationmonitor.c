@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
       */
       flowmon(irrigationSens_.irrigation.new_data_flag, irrigationSens_.irrigation.milliseconds, irrigationSens_.irrigation.pulse_count, &avgflowRateGPM, &intervalFlow, .935) ;
       dailyGallons += intervalFlow ;
-      irrigationPressure = (irrigationSens_.irrigation.adc_sensor * .1336) - 3.523 ;
+      irrigationPressure = irrigationSens_.irrigation.adc_sensor * 0.0048828125 * 20; 
       
       memcpy(&temperatureF, &irrigationSens_.irrigation.temp_w1, sizeof(float));
         
