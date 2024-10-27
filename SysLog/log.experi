@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <curl/curl.h>
+
+#define INFLUXDB_HOST "http://192.168.1.88:8086"
+#define INFLUXDB_ORG "Milano"
+#define INFLUXDB_BUCKET "MWPWater"
+#define INFLUXDB_TOKEN "RHl3fYEp8eMLtIUraVPzY4zp_hnnu2kYlR9hYrUaJLcq5mB2PvDsOi9SR0Tu_i-t_183fHb1a95BTJug-vAPVQ=="
+
+size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
+    return size * nmemb;
+}
+
+int main() {
+    CURL *curl;
+    CURLcode res;
+    char url[256];
+    char data[] = "pump_data,pump=3 param1=1,param2=2,intervalFlow=10.5,pressure=45.2,amperage=2.3,temperature=35.6";
+    struct curl_slist *headers = NULL;
+    char auth_header[256];
+
+    curl = curl_easy_init();
+    if(curl) {
+        snprintf(url, sizeof(url), "%s/api/v2/write?org=%s&bucket=%s", INFLUXDB_HOST, INFLUXDB_ORG, INFLUXDB_BUCKET);
+        snprintf(auth_header, sizeof(auth_header), "Authorization: Token %s", INFLUXDB_TOKEN);
+
+        headers = curl_slist_append(headers, auth_header);
+        headers = curl_slist_append(headers, "Content-Type: text/plain; charset=utf-8");
+        printf("url: %s\n", url);
+        printf("data: %s\n", data);
+        printf("auth_header: %s\n", auth_header);
+        printf("headers: %s\n", headers);
+        printf("curl: %p\n", curl);
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+
+        res = curl_easy_perform(curl);
+        if(res != CURLE_OK)
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        else {
+            long response_code;
+            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+            printf("InfluxDB write status: %ld\n", response_code);
+        }
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+    }
+
+    return 0;
+}

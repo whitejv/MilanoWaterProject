@@ -8,7 +8,10 @@ add_subdirectory (./WellMonitor)
 add_subdirectory (./HouseMonitor)
 add_subdirectory (./SysAlert)
 add_subdirectory (./SysTest)
+add_subdirectory (./SysLog)
 add_subdirectory (./Blynk)
+add_subdirectory (./BlynkAlert)
+add_subdirectory (./BlynkLog)
 add_custom_target(clean-all
    COMMAND ${CMAKE_BUILD_TOOL} clean
    COMMAND rm -f bin/wellmonitor
@@ -19,5 +22,8 @@ add_custom_target(clean-all
    COMMAND rm -f bin/monitor
    COMMAND rm -f bin/test
    COMMAND rm -f bin/alert
+   COMMAND rm -f bin/log
+   COMMAND rm -f bin/blynkalert
+   COMMAND rm -f bin/blynklog
    # Add more commands as needed
 )

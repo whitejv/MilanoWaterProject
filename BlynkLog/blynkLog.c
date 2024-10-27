@@ -1,5 +1,5 @@
 #define ADDRESS     "blynk.cloud:1883"   // Blynk MQTT Server
-#define CLIENTID    "Alert Blynk"               // Unique client ID for your device
+#define CLIENTID    "Log Blynk"               // Unique client ID for your device
 #define BLYNK_TOPIC       "batch_ds"
 #define BLYNK_DS "ds"
 #define BLYNK_PROP_COLOR "prop/color"

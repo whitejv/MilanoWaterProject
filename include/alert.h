@@ -51,3 +51,18 @@ AlarmInfo alarmInfo[] = {
     {20, Info, "Irrigation Cycles Excessive", CONDITION_GREATER_THAN, 20, 0, 0, "Water Well Cycles Exceeds 15 per Day"},
 };
 
+typedef struct {
+    int alarmState;      // Alarm state
+    int alarmStatePrior; // Last Alarm State
+    int internalState;   // field for internal state
+    int timer;           // field for timer
+    int timeOut;         // field for timeOut
+    int triggerDelay ;   // field for triggerDelay
+    int eventSend;       // send event to Blynk Flag
+    int eventSent;       // event has been sent to Blynk
+    int occurences;      // Occurences since last reset normally at midnight
+    const int TIMEOUT_RESET_VALUE ;
+    const int TIMER_INCREMENT ;
+    const int TRIGGER_VALUE ;
+    const int TRIGGER_DELAY ;
+} AlarmStructure;

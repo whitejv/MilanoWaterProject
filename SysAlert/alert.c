@@ -11,23 +11,9 @@
 #include "../include/alert.h"
 #include <stdbool.h> // Required for using 'bool' type
 
-
 int verbose = FALSE;
 
-typedef struct {
-    int alarmState;      // Alarm state
-    int alarmStatePrior; // Last Alarm State
-    int internalState;   // field for internal state
-    int timer;           // field for timer
-    int timeOut;         // field for timeOut
-    int triggerDelay ;   // field for triggerDelay
-    int eventSend;       // Event Sent Flag for Blynk
-    int occurences;      // Occurences since last reset normally at midnight
-    const int TIMEOUT_RESET_VALUE ;
-    const int TIMER_INCREMENT ;
-    const int TRIGGER_VALUE ;
-    const int TRIGGER_DELAY ;
-} AlarmStructure;
+
 
 
 AlarmStructure alarms[ALARM_COUNT+1] = {0};
@@ -183,20 +169,20 @@ int main(int argc, char *argv[])
       alert_.alert.alert3 = alarms[3].internalState << 24 | alarms[3].occurences << 16 | alarms[3].eventSend << 8 | alarms[3].alarmState;
       alert_.alert.alert4 = alarms[4].internalState << 24 | alarms[4].occurences << 16 | alarms[4].eventSend << 8 | alarms[4].alarmState;
       alert_.alert.alert5 = alarms[5].internalState << 24 | alarms[5].occurences << 16 | alarms[5].eventSend << 8 | alarms[5].alarmState;
-      alert_.alert.alert6 = 0;
-      alert_.alert.alert7 = 0;
-      alert_.alert.alert8 = 0;
-      alert_.alert.alert9 = 0;
-      alert_.alert.alert10 = 0;
-      alert_.alert.alert11 = 0;
-      alert_.alert.alert12 = 0;
-      alert_.alert.alert13 = 0;
-      alert_.alert.alert14 = 0;
-      alert_.alert.alert15 = 0;
-      alert_.alert.alert16 = 0;
-      alert_.alert.alert17 = 0;
-      alert_.alert.alert18 = 0;
-      alert_.alert.alert19= 0;
+      alert_.alert.alert6 = alarms[6].internalState << 24 | alarms[6].occurences << 16 | alarms[6].eventSend << 8 | alarms[6].alarmState;
+      alert_.alert.alert7 = alarms[7].internalState << 24 | alarms[7].occurences << 16 | alarms[7].eventSend << 8 | alarms[7].alarmState;
+      alert_.alert.alert8 = alarms[8].internalState << 24 | alarms[8].occurences << 16 | alarms[8].eventSend << 8 | alarms[8].alarmState;
+      alert_.alert.alert9 = alarms[9].internalState << 24 | alarms[9].occurences << 16 | alarms[9].eventSend << 8 | alarms[9].alarmState;
+      alert_.alert.alert10 = alarms[10].internalState << 24 | alarms[10].occurences << 16 | alarms[10].eventSend << 8 | alarms[10].alarmState;
+      alert_.alert.alert11 = alarms[11].internalState << 24 | alarms[11].occurences << 16 | alarms[11].eventSend << 8 | alarms[11].alarmState;
+      alert_.alert.alert12 = alarms[12].internalState << 24 | alarms[12].occurences << 16 | alarms[12].eventSend << 8 | alarms[12].alarmState;
+      alert_.alert.alert13 = alarms[13].internalState << 24 | alarms[13].occurences << 16 | alarms[13].eventSend << 8 | alarms[13].alarmState;
+      alert_.alert.alert14 = alarms[14].internalState << 24 | alarms[14].occurences << 16 | alarms[14].eventSend << 8 | alarms[14].alarmState;
+      alert_.alert.alert15 = alarms[15].internalState << 24 | alarms[15].occurences << 16 | alarms[15].eventSend << 8 | alarms[15].alarmState;
+      alert_.alert.alert16 = alarms[16].internalState << 24 | alarms[16].occurences << 16 | alarms[16].eventSend << 8 | alarms[16].alarmState;
+      alert_.alert.alert17 = alarms[17].internalState << 24 | alarms[17].occurences << 16 | alarms[17].eventSend << 8 | alarms[17].alarmState;
+      alert_.alert.alert18 = alarms[18].internalState << 24 | alarms[18].occurences << 16 | alarms[18].eventSend << 8 | alarms[18].alarmState;
+      alert_.alert.alert19 = alarms[19].internalState << 24 | alarms[19].occurences << 16 | alarms[19].eventSend << 8 | alarms[19].alarmState;
       if (verbose) {
         for (i = 0; i <= ALERT_LEN; i++) {
             printf("%x ", alert_.data_payload[i]);
@@ -330,7 +316,13 @@ void processAlarmGeneric(AlarmStructure* alarm, TriggerCondition condition, int 
             if (triggerConditionMet) {
                 alarm->alarmState = active; // Alarm triggered
                 // Log message or perform additional actions
-                alarm->eventSend = TRUE;
+                if (alarm->eventSend == FALSE && alarm->eventSent == FALSE) {
+                   alarm->eventSend = TRUE;
+                   alarm->eventSent = TRUE;
+                }
+                else if (alarm->eventSend == TRUE && alarm->eventSent == TRUE) {
+                   alarm->eventSend = FALSE;
+                }
             } else {
                 alarm->internalState = reset;
             }

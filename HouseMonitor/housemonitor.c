@@ -15,10 +15,10 @@ float TotalDailyGallons = 0;
 float TotalGPM = 0;
 float avgflowRateGPM = 0;
 
-#define SAMPLES_COUNT 60
+#define SAMPLES_COUNT 10
 float samples[SAMPLES_COUNT] = {0};
 uint8_t sample_index = 0;
-uint8_t window_size = 60; // Change this value to the desired window size (60-100)
+uint8_t window_size = 10; // Change this value to the desired window size (60-100)
 float PresSensorValue = 0;
 
 /* Function Declarations */
@@ -160,7 +160,7 @@ int main(int argc, char* argv[])
       //houseMon_.house.housePressure = houseSens_.house.adc_sensor * 0.0048828125 * 20;
       //using moving average for now
 
-      PresSensorValue = houseSens_.house.adc_sensor * 0.0048828125 * 20;
+      PresSensorValue = ((houseSens_.house.adc_sensor * 0.1329)-4.7351);
             
       houseMon_.house.housePressure = moving_average(PresSensorValue, samples, &sample_index, window_size);
       
