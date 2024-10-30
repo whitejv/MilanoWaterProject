@@ -211,10 +211,10 @@ int main(int argc, char *argv[])
          pump = 3;
         param1 = 1;
         param2 = 2;
-        intervalFlow = houseMon_.house.house_gallons_per_minute;
-        pressure = houseMon_.house.housePressure;
+        intervalFlow = houseMon_.house.intervalFlow  ;
+        pressure = houseMon_.house.pressurePSI;
         amperage = wellMon_.well.amp_pump_1;
-        temperature = houseMon_.house.houseSupplyTemp;
+        temperature = houseMon_.house.temperatureF;
         // Write data to InfluxDB
         write_to_influxdb(pump, param1, param2, intervalFlow, pressure, amperage, temperature);
       }
@@ -222,10 +222,10 @@ int main(int argc, char *argv[])
         pump = 3;
         param1 = 1;
         param2 = 2;
-        intervalFlow = tankMon_.tank.tank_gallons_per_minute;
-        pressure = irrigationMon_.irrigation.Pressure;
+        intervalFlow = tankMon_.tank.intervalFlow;
+        pressure = tankMon_.tank.pressurePSI;
         amperage = wellMon_.well.amp_pump_3;
-        temperature = tankMon_.tank.air_temp;
+        temperature = tankMon_.tank.temperatureF;
          //if (verbose) {
          printf("pump: %d, param1: %d, param2: %d, intervalFlow: %f, pressure: %f, amperage: %f, temperature: %f ", pump, param1, param2, intervalFlow, pressure, amperage, temperature);
          printf("%s", ctime(&t));
@@ -235,22 +235,22 @@ int main(int argc, char *argv[])
       }
       if (wellMon_.well.irrigation_pump_on == 1 ) {
         pump = 4;
-        if ( irrigationMon_.irrigation.FrontControllerActive == 1 ) {
+        if ( irrigationMon_.irrigation.controller == 1 ) {
            param1 = 1;
-           param2 = irrigationMon_.irrigation.FrontActiveZone;
+           param2 = irrigationMon_.irrigation.zone;
         }
-        else if ( irrigationMon_.irrigation.BackControllerActive == 1 ) {
+        else if ( irrigationMon_.irrigation.controller == 2 ) {
            param1 = 2;
-           param2 = irrigationMon_.irrigation.BackActiveZone;
+           param2 = irrigationMon_.irrigation.zone;
         }
         else {
            param1 = 0;
            param2 = 0;
         }
-        intervalFlow = irrigationMon_.irrigation.FlowPerMin;
-        pressure = irrigationMon_.irrigation.Pressure;
+        intervalFlow = irrigationMon_.irrigation.intervalFlow;
+        pressure = irrigationMon_.irrigation.pressurePSI;
         amperage = wellMon_.well.amp_pump_4;
-        temperature = irrigationMon_.irrigation.PumpTemp;
+        temperature = irrigationMon_.irrigation.temperatureF;
          //if (verbose) {
          printf("pump: %d, param1: %d, param2: %d intervalFlow: %f, pressure: %f, amperage: %f, temperature: %f ", pump, param1, param2, intervalFlow, pressure, amperage, temperature);
          printf("%s", ctime(&t));

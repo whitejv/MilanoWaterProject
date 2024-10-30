@@ -223,35 +223,22 @@ int main(int argc, char *argv[])
       monitor_.monitor.Tank_Water_Height = tankMon_.tank.water_height;
       monitor_.monitor.Tank_Gallons = tankMon_.tank.tank_gallons;
       monitor_.monitor.Tank_Percent_Full = tankMon_.tank.tank_per_full;   
-      monitor_.monitor.House_Pressure = houseMon_.house.housePressure;
+      monitor_.monitor.House_Pressure = houseMon_.house.pressurePSI;
       //monitor_.monitor.Well3_Pressure = tankMon_.tank.xyz;
-      monitor_.monitor.Irrigation_Pressure = irrigationMon_.irrigation.Pressure;
-      monitor_.monitor.House_Gallons_Minute = houseMon_.house.house_gallons_per_minute;
-      monitor_.monitor.Well3_Gallons_Minute = tankMon_.tank.tank_gallons_per_minute;
-      monitor_.monitor.Irrigation_Gallons_Minute = irrigationMon_.irrigation.FlowPerMin;
-      monitor_.monitor.House_Gallons_Day = houseMon_.house.houseTotalFlow;
-      monitor_.monitor.Well3_Gallons_Day = tankMon_.tank.tank_total_gallons_24;
-      monitor_.monitor.Irrigation_Gallons_Day = irrigationMon_.irrigation.TotalFlow;
+      monitor_.monitor.Irrigation_Pressure = irrigationMon_.irrigation.pressurePSI;
+      monitor_.monitor.House_Gallons_Minute = houseMon_.house.gallonsMinute;
+      monitor_.monitor.Well3_Gallons_Minute = tankMon_.tank.gallonsMinute;
+      monitor_.monitor.Irrigation_Gallons_Minute = irrigationMon_.irrigation.gallonsMinute;
+      monitor_.monitor.House_Gallons_Day = houseMon_.house.gallonsDay;
+      monitor_.monitor.Well3_Gallons_Day = tankMon_.tank.gallonsDay;
+      monitor_.monitor.Irrigation_Gallons_Day = irrigationMon_.irrigation.gallonsDay;
       monitor_.monitor.System_Temp = wellMon_.well.system_temp;
-      monitor_.monitor.House_Water_Temp = houseMon_.house.houseSupplyTemp;
-      monitor_.monitor.Irrigation_Pump_Temp = irrigationMon_.irrigation.PumpTemp;
-      monitor_.monitor.Air_Temp = tankMon_.tank.air_temp;
+      monitor_.monitor.House_Water_Temp = houseMon_.house.temperatureF;
+      monitor_.monitor.Irrigation_Pump_Temp = irrigationMon_.irrigation.temperatureF;
+      monitor_.monitor.Air_Temp = tankMon_.tank.temperatureF;
+      monitor_.monitor.Controller = irrigationMon_.irrigation.controller;
+      monitor_.monitor.Zone = irrigationMon_.irrigation.zone;
       
-      // Get Irrigation Controller and Zone
-      if (irrigationMon_.irrigation.FrontControllerActive == 1)
-      {
-         monitor_.monitor.Controller = 1;
-         monitor_.monitor.Zone = irrigationMon_.irrigation.FrontActiveZone;
-      }
-      else if (irrigationMon_.irrigation.BackControllerActive == 1)
-      {
-         monitor_.monitor.Controller = 2;
-         monitor_.monitor.Zone = irrigationMon_.irrigation.BackActiveZone;
-      }
-      else {
-         monitor_.monitor.Controller = 0;
-         monitor_.monitor.Zone = 0;
-      }
       // Channel 2 Voltage Sensor 16 bit data
       //raw_voltage1_adc = well_sensor_payload[0];
       if (wellMon_.well.well_pump_1_on == 1)
@@ -317,9 +304,9 @@ int main(int argc, char *argv[])
 
 //Check to see if any sensors are offline
       monitor_sensor(&sensors[0], wellMon_.well.cycle_count); 
-      monitor_sensor(&sensors[1], houseMon_.house.cycle_count);
-      monitor_sensor(&sensors[2], tankMon_.tank.cycle_count);
-      monitor_sensor(&sensors[3], irrigationMon_.irrigation.cycle_count);
+      monitor_sensor(&sensors[1], houseMon_.house.cycleCount);
+      monitor_sensor(&sensors[2], tankMon_.tank.cycleCount);
+      monitor_sensor(&sensors[3], irrigationMon_.irrigation.cycleCount);
       
 
       monitor_.monitor.Well_1_LED_Bright = PumpCurrentSense[1] + sensors[0].is_offline;
