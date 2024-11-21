@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include  <stdio.h>
 #include <string.h>
 #include <Wire.h>
 #include <IPAddress.h>
@@ -16,14 +16,14 @@
 #include <DallasTemperature.h>
 #endif
 
-#define fwVersion 1112
+#define fwVersion 1113
 /*
  * Revision Log
  *
  * 1111 - Original GenericSensor Code
  * 1112 - Fixed bug that resulted in bad flow meter pulse counts
  *        & changed Interrupt type to RISING
- *
+ * 1113 - Slowing Transmission to approx 1x sec instead of 2x sec
  *
  */
 
@@ -61,7 +61,7 @@ int ioInput = 0;
 long currentMillis = 0;
 long previousMillis = 0;
 long millisecond = 0;
-int loopInterval = 500;
+int loopInterval = 1050; //changed from 500 to 1050 to slow loop
 int flowInterval = 1000;
 volatile byte pulseCount;
 byte pulse1Sec = 0;
