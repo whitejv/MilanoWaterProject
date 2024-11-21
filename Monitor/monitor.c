@@ -224,13 +224,13 @@ int main(int argc, char *argv[])
       monitor_.monitor.Tank_Gallons = tankMon_.tank.tank_gallons;
       monitor_.monitor.Tank_Percent_Full = tankMon_.tank.tank_per_full;   
       monitor_.monitor.House_Pressure = houseMon_.house.pressurePSI;
-      //monitor_.monitor.Well3_Pressure = tankMon_.tank.xyz;
+      monitor_.monitor.Well3_Pressure = well3Mon_.well3.pressurePSI  ;
       monitor_.monitor.Irrigation_Pressure = irrigationMon_.irrigation.pressurePSI;
       monitor_.monitor.House_Gallons_Minute = houseMon_.house.gallonsMinute;
-      monitor_.monitor.Well3_Gallons_Minute = tankMon_.tank.gallonsMinute;
+      monitor_.monitor.Well3_Gallons_Minute = well3Mon_.well3.gallonsMinute ;
       monitor_.monitor.Irrigation_Gallons_Minute = irrigationMon_.irrigation.gallonsMinute;
       monitor_.monitor.House_Gallons_Day = houseMon_.house.gallonsDay;
-      monitor_.monitor.Well3_Gallons_Day = tankMon_.tank.gallonsDay;
+      monitor_.monitor.Well3_Gallons_Day = well3Mon_.well3.gallonsDay ;
       monitor_.monitor.Irrigation_Gallons_Day = irrigationMon_.irrigation.gallonsDay;
       monitor_.monitor.System_Temp = wellMon_.well.system_temp;
       monitor_.monitor.House_Water_Temp = houseMon_.house.temperatureF;

@@ -253,6 +253,19 @@ housemonitor/fast:
 .PHONY : housemonitor/fast
 
 #=============================================================================
+# Target rules for targets named well3monitor
+
+# Build rule for target.
+well3monitor: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 well3monitor
+.PHONY : well3monitor
+
+# fast build rule for target.
+well3monitor/fast:
+	$(MAKE) $(MAKESILENT) -f Well3Monitor/CMakeFiles/well3monitor.dir/build.make Well3Monitor/CMakeFiles/well3monitor.dir/build
+.PHONY : well3monitor/fast
+
+#=============================================================================
 # Target rules for targets named alert
 
 # Build rule for target.
@@ -354,6 +367,7 @@ help:
 	@echo "... mylib"
 	@echo "... tankmonitor"
 	@echo "... test"
+	@echo "... well3monitor"
 	@echo "... wellmonitor"
 .PHONY : help
 

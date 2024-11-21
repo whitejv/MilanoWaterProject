@@ -1439,12 +1439,12 @@ char* alertcommand_ClientData_var_name [] = {
 
 /*
 * Block ID: L001D
-* Block Name: log
-* Description: Log Data
-* From: log
-* Category: log
+* Block Name: logger
+* Description: logger Data
+* From: logger
+* Category: logger
 * Type: data
-* MQTT Client ID: Log Client
+* MQTT Client ID: Logger Client
 * MQTT Topic ID: 
 * MSG Length: 10
 *  word #        data type            variable                description        min        max        nominal
@@ -1470,13 +1470,13 @@ char* alertcommand_ClientData_var_name [] = {
 *  19        int            unused12                                        
 */
 
-const char LOG_CLIENTID[] =    "Log Client" ;
-const char LOG_TOPICID[] =  "mwp/data/log/log/L001D";
-const char LOG_JSONID[] =  "mwp/json/data/log/log/L001D";
-#define LOG_LEN 10
+const char LOGGER_CLIENTID[] =    "Logger Client" ;
+const char LOGGER_TOPICID[] =  "mwp/data/logger/logger/L001D";
+const char LOGGER_JSONID[] =  "mwp/json/data/logger/logger/L001D";
+#define LOGGER_LEN 10
 
-union   LOG_  {
-   int     data_payload[LOG_LEN] ;
+union   LOGGER_  {
+   int     data_payload[LOGGER_LEN] ;
 
    struct  {
       int   pump    ;
@@ -1499,11 +1499,11 @@ union   LOG_  {
       int   unused10    ;
       int   unused11    ;
       int   unused12    ;
-   }  log  ;
+   }  logger  ;
 }  ;
-union  LOG_  log_  ;
+union  LOGGER_  logger_  ;
 
-char* log_ClientData_var_name [] = { 
+char* logger_ClientData_var_name [] = { 
     "L001D:pump",
     "L001D:param1",
     "L001D:param2",
@@ -1525,6 +1525,55 @@ char* log_ClientData_var_name [] = {
     "L001D:unused11",
     "L001D:unused12",
 }  ;
+
+/*
+* Block ID: 
+* Block Name: log
+* Description: Log Data
+* From: log
+* Category: log
+* Type: data
+* MQTT Client ID: Log Client
+* MQTT Topic ID: 
+* MSG Length: 6
+*  word #        data type            variable                description        min        max        nominal
+*  0        int            Controller                Controller        1        5        1
+*  1        int            Zone                Zone        1        32        1
+*  2        float            pressurePSI                Pressure in PSI - Well3        0        100        65
+*  3        float            temperatureF                Temperature - Well3 Supply Line        0        125        80
+*  4        float            intervalFlow                Gallons in interval        0        5        0.5
+*  5        float            amperage                Amperage        0        2024        1000
+*/
+
+const char LOG_CLIENTID[] =    "Log Client" ;
+const char LOG_TOPICID[] =  "mwp/data/log/log/";
+const char LOG_JSONID[] =  "mwp/json/data/log/log/";
+#define LOG_LEN 6
+
+union   LOG_  {
+   int     data_payload[LOG_LEN] ;
+
+   struct  {
+      int   Controller    ;
+      int   Zone    ;
+      float   pressurePSI    ;
+      float   temperatureF    ;
+      float   intervalFlow    ;
+      float   amperage    ;
+   }  log  ;
+}  ;
+union  LOG_  log_  ;
+
+char* log_ClientData_var_name [] = { 
+    "Controller",
+    "Zone",
+    "pressurePSI",
+    "temperatureF",
+    "intervalFlow",
+    "amperage",
+}  ;
+
+
 
 //#define MilanoWaterProject\IrrigationHeader.h  (created and maintained in Excel)
 /*********************************************************************************
