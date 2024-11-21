@@ -61,6 +61,11 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
       if (verbose) {for(i=0; i < WELLMON_LEN; i++) {printf("%0f ", wellMon_.data_payload[i]);}}
       printf(">\n");
    }
+   else if ( strcmp(topicName, WELL3MON_TOPICID) == 0) {
+      memcpy(well3Mon_.data_payload, message->payload, message->payloadlen);
+      if (verbose) {for(i=0; i < WELL3MON_LEN; i++) {printf("%0f ", well3Mon_.data_payload[i]);}}
+      printf(">\n");
+   }
    else if ( strcmp(topicName, HOUSEMON_TOPICID) == 0) {
       memcpy(houseMon_.data_payload, message->payload, message->payloadlen);
       if (verbose) {for(i=0; i < HOUSEMON_LEN; i++) {printf("%0f ", houseMon_.data_payload[i]);}}
