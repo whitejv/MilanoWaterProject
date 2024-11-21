@@ -478,12 +478,12 @@ char* housesens_ClientData_var_name [] = {
 
 /*
 * Block ID: S004D
-* Block Name: spareSens
-* Description: spare Flow Data
-* From: spare
+* Block Name: well3Sens
+* Description: well3 Flow Data
+* From: well3
 * Category: sensor
 * Type: data
-* MQTT Client ID: Spare Flow Client
+* MQTT Client ID: Well3 Flow Client
 * MQTT Topic ID: 
 * MSG Length: 10
 *  word #        data type            variable                description        min        max        nominal
@@ -499,13 +499,13 @@ char* housesens_ClientData_var_name [] = {
 *  9        int            fw_version                 FW Version 4 Hex                         
 */
 
-const char SPARESENS_CLIENTID[] =    "Spare Flow Client" ;
-const char SPARESENS_TOPICID[] =  "mwp/data/sensor/spare/S004D";
-const char SPARESENS_JSONID[] =  "mwp/json/data/sensor/spare/S004D";
-#define SPARESENS_LEN 10
+const char WELL3SENS_CLIENTID[] =    "Well3 Flow Client" ;
+const char WELL3SENS_TOPICID[] =  "mwp/data/sensor/well3/S004D";
+const char WELL3SENS_JSONID[] =  "mwp/json/data/sensor/well3/S004D";
+#define WELL3SENS_LEN 10
 
-union   SPARESENS_  {
-   int     data_payload[SPARESENS_LEN] ;
+union   WELL3SENS_  {
+   int     data_payload[WELL3SENS_LEN] ;
 
    struct  {
       int   pulse_count    ;
@@ -518,11 +518,11 @@ union   SPARESENS_  {
       int   temp_w2    ;
       int   cycle_count    ;
       int   fw_version    ;
-   }  spare  ;
+   }  well3  ;
 }  ;
-union  SPARESENS_  spareSens_  ;
+union  WELL3SENS_  well3Sens_  ;
 
-char* sparesens_ClientData_var_name [] = { 
+char* well3sens_ClientData_var_name [] = { 
     "S004D:pulse_count",
     "S004D:milliseconds",
     "S004D:new_data_flag",
@@ -703,54 +703,69 @@ char* irrigationresponse_ClientData_var_name [] = {
 * Type: data
 * MQTT Client ID: Irrigation Monitor Client
 * MQTT Topic ID: 
-* MSG Length: 10
+* MSG Length: 15
 *  word #        data type            variable                description        min        max        nominal
-*  0        float            FlowPerMin                Gallons Per Minute        0        50        10
-*  1        float            TotalFlow                Total Gallons (24 Hrs)        0        5000        2000
-*  2        float            Pressure                Irrigation Pressure        0        100        50
-*  3        float            PumpTemp                Pump Temperature        -5        125        80
-*  4        float            FrontControllerActive                Front Controller Active        0        1        1
-*  5        float            FrontActiveZone                Front Active Zone        1        22        1
-*  6        float            BackControllerActive                Back Controller Active        0        1        1
-*  7        float            BackActiveZone                Back Active Zone        1        22        1
-*  8        float            cycle_count                 Cycle Counter        0        28800        
-*  9        float            fw_version                 FW Version 4 Hex                         
+*  0        float            pressurePSI                Pressure in PSI - Irrigation        0        50        10
+*  1        float            temperatureF                Temperature - Irrigation Pump        0        5000        2000
+*  2        float            intervalFlow                Gallons in interval        0        100        50
+*  3        float            amperage                Amperage        -5        125        80
+*  4        float            gallonsMinute                Gallons per Minute        0        1        1
+*  5        float            gallonsDay                Irrigation Total Gallons (24hrs)        1        22        1
+*  6        float            controller                Controller        0        1        1
+*  7        float            zone                Zone        1        22        1
+*  8        float            spare1                Spare        0        28800        
+*  9        float            spare2                Spare                        
+*  10        float            spare3                Spare                        
+*  11        float            spare4                Spare                        
+*  12        float            spare5                Spare                        
+*  13        float            cycleCount                Cycle Count                        
+*  14        float            fwVersion                 FW Version 4 Hex                         
 */
 
 const char IRRIGATIONMON_CLIENTID[] =    "Irrigation Monitor Client" ;
 const char IRRIGATIONMON_TOPICID[] =  "mwp/data/monitor/Irrigation/I001D";
 const char IRRIGATIONMON_JSONID[] =  "mwp/json/data/monitor/Irrigation/I001D";
-#define IRRIGATIONMON_LEN 10
+#define IRRIGATIONMON_LEN 15
 
 union   IRRIGATIONMON_  {
    float     data_payload[IRRIGATIONMON_LEN] ;
 
    struct  {
-      float   FlowPerMin    ;
-      float   TotalFlow    ;
-      float   Pressure    ;
-      float   PumpTemp    ;
-      float   FrontControllerActive    ;
-      float   FrontActiveZone    ;
-      float   BackControllerActive    ;
-      float   BackActiveZone    ;
-      float   cycle_count    ;
-      float   fw_version    ;
+      float   pressurePSI    ;
+      float   temperatureF    ;
+      float   intervalFlow    ;
+      float   amperage    ;
+      float   gallonsMinute    ;
+      float   gallonsDay    ;
+      float   controller    ;
+      float   zone    ;
+      float   spare1    ;
+      float   spare2    ;
+      float   spare3    ;
+      float   spare4    ;
+      float   spare5    ;
+      float   cycleCount    ;
+      float   fwVersion    ;
    }  irrigation  ;
 }  ;
 union  IRRIGATIONMON_  irrigationMon_  ;
 
 char* irrigationmon_ClientData_var_name [] = { 
-    "I001D:FlowPerMin",
-    "I001D:TotalFlow",
-    "I001D:Pressure",
-    "I001D:PumpTemp",
-    "I001D:FrontControllerActive",
-    "I001D:FrontActiveZone",
-    "I001D:BackControllerActive",
-    "I001D:BackActiveZone",
-    "I001D:cycle_count",
-    "I001D:fw_version",
+    "I001D:pressurePSI",
+    "I001D:temperatureF",
+    "I001D:intervalFlow",
+    "I001D:amperage",
+    "I001D:gallonsMinute",
+    "I001D:gallonsDay",
+    "I001D:controller",
+    "I001D:zone",
+    "I001D:spare1",
+    "I001D:spare2",
+    "I001D:spare3",
+    "I001D:spare4",
+    "I001D:spare5",
+    "I001D:cycleCount",
+    "I001D:fwVersion",
 }  ;
 
 /*
@@ -826,54 +841,69 @@ char* rainbirdresponse_ClientData_var_name [] = {
 * Type: data
 * MQTT Client ID: Tank Monitor Client
 * MQTT Topic ID: 
-* MSG Length: 10
+* MSG Length: 15
 *  word #        data type            variable                description        min        max        nominal
-*  0        float            tank_gallons_per_minute                Tank Gallons Per Minute                        
-*  1        float            water_height                Water Height                        
-*  2        float            tank_gallons                Tank Gallons                        
-*  3        float            tank_per_full                Tank Percent Full                        
-*  4        float            tank_total_gallons_24                Tank Total Gallons (24hrs)                        
-*  5        float            air_temp                Air Temperature                        
-*  6        float            float1                Overfill Float                        
-*  7        float            float2                Tank Low Float                        
-*  8        float            cycle_count                Cycle Count        0        28800        
-*  9        float            fw_version                 FW Version 4 Hex                         
+*  0        float            pressurePSI                Pressure in PSI - Atmospheric                        
+*  1        float            temperatureF                Temperature - Tank Valve                        
+*  2        float            intervalFlow                Gallons in interval -N/A                        
+*  3        float            amperage                Amperage -N/A                        
+*  4        float            gallonsMinute                Gallons per Minute                        
+*  5        float            gallonsDay                Tank Total Gallons (24hrs)                        
+*  6        float            controller                Controller                        
+*  7        float            zone                Zone                        
+*  8        float            water_height                Water Height                        
+*  9        float            tank_gallons                 FW Version 4 Hex                         
+*  10        float            tank_per_full                Tank Percent Full                        
+*  11        float            float1                Overfill Float                        
+*  12        float            float2                Tank Low Float                        
+*  13        float            cycleCount                Cycle Count                        
+*  14        float            fwVersion                 FW Version 4 Hex                         
 */
 
 const char TANKMON_CLIENTID[] =    "Tank Monitor Client" ;
 const char TANKMON_TOPICID[] =  "mwp/data/monitor/tank/T001D";
 const char TANKMON_JSONID[] =  "mwp/json/data/monitor/tank/T001D";
-#define TANKMON_LEN 10
+#define TANKMON_LEN 15
 
 union   TANKMON_  {
    float     data_payload[TANKMON_LEN] ;
 
    struct  {
-      float   tank_gallons_per_minute    ;
+      float   pressurePSI    ;
+      float   temperatureF    ;
+      float   intervalFlow    ;
+      float   amperage    ;
+      float   gallonsMinute    ;
+      float   gallonsDay    ;
+      float   controller    ;
+      float   zone    ;
       float   water_height    ;
       float   tank_gallons    ;
       float   tank_per_full    ;
-      float   tank_total_gallons_24    ;
-      float   air_temp    ;
       float   float1    ;
       float   float2    ;
-      float   cycle_count    ;
-      float   fw_version    ;
+      float   cycleCount    ;
+      float   fwVersion    ;
    }  tank  ;
 }  ;
 union  TANKMON_  tankMon_  ;
 
 char* tankmon_ClientData_var_name [] = { 
-    "T001D:tank_gallons_per_minute",
+    "T001D:pressurePSI",
+    "T001D:temperatureF",
+    "T001D:intervalFlow",
+    "T001D:amperage",
+    "T001D:gallonsMinute",
+    "T001D:gallonsDay",
+    "T001D:controller",
+    "T001D:zone",
     "T001D:water_height",
     "T001D:tank_gallons",
     "T001D:tank_per_full",
-    "T001D:tank_total_gallons_24",
-    "T001D:air_temp",
     "T001D:float1",
     "T001D:float2",
-    "T001D:cycle_count",
-    "T001D:fw_version",
+    "T001D:cycleCount",
+    "T001D:fwVersion",
 }  ;
 
 /*
@@ -885,54 +915,69 @@ char* tankmon_ClientData_var_name [] = {
 * Type: data
 * MQTT Client ID: House Monitor Client
 * MQTT Topic ID: 
-* MSG Length: 10
+* MSG Length: 15
 *  word #        data type            variable                description        min        max        nominal
-*  0        float            house_gallons_per_minute                Gallons Per Minute        0        25        15
-*  1        float            houseTotalFlow                Total Gallons (24 Hrs)        0        5000        100
-*  2        float            housePressure                House Pressure        0        100        65
-*  3        float            houseSupplyTemp                Supply Line Temperature        0        125        80
-*  4        float            spare1                Spare 1                        
-*  5        float            spare2                Spare 2                        
-*  6        float            spare3                Spare 3                        
-*  7        float            spare4                Spare 4                        
-*  8        float            cycle_count                Cycle Count        0        28800        
-*  9        float            fw_version                 FW Version 4 Hex                         
+*  0        float            pressurePSI                Pressure in PSI - House        0        25        15
+*  1        float            temperatureF                Temperature - House Supply        0        5000        100
+*  2        float            intervalFlow                Gallons in interval        0        100        65
+*  3        float            amperage                Amperage        0        125        80
+*  4        float            gallonsMinute                Gallons per Minute                        
+*  5        float            gallonsDay                House Total Gallons (24hrs)                        
+*  6        float            controller                Controller                        
+*  7        float            zone                Zone                        
+*  8        float            spare1                Spare 1        0        28800        
+*  9        float            spare2                Spare 2                        
+*  10        float            spare3                Spare 3                        
+*  11        float            spare4                Spare 4                        
+*  12        float            spare5                Spare 5                        
+*  13        float            cycleCount                Cycle Count                        
+*  14        float            fwVersion                 FW Version 4 Hex                         
 */
 
 const char HOUSEMON_CLIENTID[] =    "House Monitor Client" ;
 const char HOUSEMON_TOPICID[] =  "mwp/data/monitor/house/H001D";
 const char HOUSEMON_JSONID[] =  "mwp/json/data/monitor/house/H001D";
-#define HOUSEMON_LEN 10
+#define HOUSEMON_LEN 15
 
 union   HOUSEMON_  {
    float     data_payload[HOUSEMON_LEN] ;
 
    struct  {
-      float   house_gallons_per_minute    ;
-      float   houseTotalFlow    ;
-      float   housePressure    ;
-      float   houseSupplyTemp    ;
+      float   pressurePSI    ;
+      float   temperatureF    ;
+      float   intervalFlow    ;
+      float   amperage    ;
+      float   gallonsMinute    ;
+      float   gallonsDay    ;
+      float   controller    ;
+      float   zone    ;
       float   spare1    ;
       float   spare2    ;
       float   spare3    ;
       float   spare4    ;
-      float   cycle_count    ;
-      float   fw_version    ;
+      float   spare5    ;
+      float   cycleCount    ;
+      float   fwVersion    ;
    }  house  ;
 }  ;
 union  HOUSEMON_  houseMon_  ;
 
 char* housemon_ClientData_var_name [] = { 
-    "H001D:house_gallons_per_minute",
-    "H001D:houseTotalFlow",
-    "H001D:housePressure",
-    "H001D:houseSupplyTemp",
+    "H001D:pressurePSI",
+    "H001D:temperatureF",
+    "H001D:intervalFlow",
+    "H001D:amperage",
+    "H001D:gallonsMinute",
+    "H001D:gallonsDay",
+    "H001D:controller",
+    "H001D:zone",
     "H001D:spare1",
     "H001D:spare2",
     "H001D:spare3",
     "H001D:spare4",
-    "H001D:cycle_count",
-    "H001D:fw_version",
+    "H001D:spare5",
+    "H001D:cycleCount",
+    "H001D:fwVersion",
 }  ;
 
 /*
@@ -1019,6 +1064,80 @@ char* wellmon_ClientData_var_name [] = {
 }  ;
 
 /*
+* Block ID: W003D
+* Block Name: well3Mon
+* Description: Well3 Monitor
+* From: well3
+* Category: monitor
+* Type: data
+* MQTT Client ID: Well3 Monitor Client
+* MQTT Topic ID: 
+* MSG Length: 15
+*  word #        data type            variable                description        min        max        nominal
+*  0        float            pressurePSI                Pressure in PSI - Well3        0        25        15
+*  1        float            temperatureF                Temperature - Well3 Supply Line        0        5000        100
+*  2        float            intervalFlow                Gallons in interval        0        100        65
+*  3        float            amperage                Amperage        0        125        80
+*  4        float            gallonsMinute                Gallons per Minute                        
+*  5        float            gallonsDay                Well3 Total Gallons (24hrs)                        
+*  6        float            controller                Controller                        
+*  7        float            zone                Zone                        
+*  8        float            spare1                Spare 1        0        28800        
+*  9        float            spare2                Spare 2                        
+*  10        float            spare3                Spare 3                        
+*  11        float            spare4                Spare 4                        
+*  12        float            spare5                Spare 5                        
+*  13        float            cycleCount                Cycle Count                        
+*  14        float            fwVersion                 FW Version 4 Hex                         
+*/
+
+const char WELL3MON_CLIENTID[] =    "Well3 Monitor Client" ;
+const char WELL3MON_TOPICID[] =  "mwp/data/monitor/well3/W003D";
+const char WELL3MON_JSONID[] =  "mwp/json/data/monitor/well3/W003D";
+#define WELL3MON_LEN 15
+
+union   WELL3MON_  {
+   float     data_payload[WELL3MON_LEN] ;
+
+   struct  {
+      float   pressurePSI    ;
+      float   temperatureF    ;
+      float   intervalFlow    ;
+      float   amperage    ;
+      float   gallonsMinute    ;
+      float   gallonsDay    ;
+      float   controller    ;
+      float   zone    ;
+      float   spare1    ;
+      float   spare2    ;
+      float   spare3    ;
+      float   spare4    ;
+      float   spare5    ;
+      float   cycleCount    ;
+      float   fwVersion    ;
+   }  well3  ;
+}  ;
+union  WELL3MON_  well3Mon_  ;
+
+char* well3mon_ClientData_var_name [] = { 
+    "W003D:pressurePSI",
+    "W003D:temperatureF",
+    "W003D:intervalFlow",
+    "W003D:amperage",
+    "W003D:gallonsMinute",
+    "W003D:gallonsDay",
+    "W003D:controller",
+    "W003D:zone",
+    "W003D:spare1",
+    "W003D:spare2",
+    "W003D:spare3",
+    "W003D:spare4",
+    "W003D:spare5",
+    "W003D:cycleCount",
+    "W003D:fwVersion",
+}  ;
+
+/*
 * Block ID: 
 * Block Name: monitor
 * Description: Monitor Data for Blynk
@@ -1047,18 +1166,18 @@ char* wellmon_ClientData_var_name [] = {
 *  15        float            Air_Temp                        -32        120        
 *  16        float            Spare1                        0        0        
 *  17        float            Spare2                        0        0        
-*  18        int            Well_1_LED_Bright                        0        255        
-*  19        int            Well_2_LED_Bright                        0        255        
-*  20        int            Well_3_LED_Bright                        0        255        
-*  21        int            Irrig_4_LED_Bright                        0        255        
-*  22        int            Spare1_LED_Bright                        0        255        
-*  23        int            Spare2_LED_Bright                        0        255        
-*  24        int            Well_1_LED_Color                        0        6        
-*  25        int            Well_2_LED_Color                        0        6        
-*  26        int            Well_3_LED_Color                        0        6        
-*  27        int            Irrig_4_LED_Color                        0        6        
-*  28        int            Controller                               0        6        
-*  29        int            Zone                                     0        32        
+*  18        float            Well_1_LED_Bright                        0        255        
+*  19        float            Well_2_LED_Bright                        0        255        
+*  20        float            Well_3_LED_Bright                        0        255        
+*  21        float            Irrig_4_LED_Bright                        0        255        
+*  22        float            Spare1_LED_Bright                        0        255        
+*  23        float            Spare2_LED_Bright                        0        255        
+*  24        float            Well_1_LED_Color                        0        6        
+*  25        float            Well_2_LED_Color                        0        6        
+*  26        float            Well_3_LED_Color                        0        6        
+*  27        float            Irrig_4_LED_Color                        0        6        
+*  28        float            Controller                        0        6        
+*  29        float            Zone                        0        32        
 */
 
 const char MONITOR_CLIENTID[] =    "Monitor Client" ;
@@ -1088,17 +1207,17 @@ union   MONITOR_  {
       float   Air_Temp    ;
       float   Spare1    ;
       float   Spare2    ;
-      float  Well_1_LED_Bright    ;
-      float    Well_2_LED_Bright    ;
-      float    Well_3_LED_Bright    ;
+      float   Well_1_LED_Bright    ;
+      float   Well_2_LED_Bright    ;
+      float   Well_3_LED_Bright    ;
       float   Irrig_4_LED_Bright    ;
-      float    Spare1_LED_Bright    ;
-      float    Spare2_LED_Bright    ;
-      float    Well_1_LED_Color    ;
+      float   Spare1_LED_Bright    ;
+      float   Spare2_LED_Bright    ;
+      float   Well_1_LED_Color    ;
       float   Well_2_LED_Color    ;
-      float    Well_3_LED_Color    ;
+      float   Well_3_LED_Color    ;
       float   Irrig_4_LED_Color    ;
-      float   Controller   ;
+      float   Controller    ;
       float   Zone    ;
    }  monitor  ;
 }  ;
@@ -1134,11 +1253,11 @@ char* monitor_ClientData_var_name [] = {
     "Well_3_LED_Color",
     "Irrig_4_LED_Color",
     "Controller",
-    "Zone"
+    "Zone",
 }  ;
 
 /*
-* Block ID: A001D
+* Block ID: 
 * Block Name: alert
 * Description: Alert Data for Blynk
 * From: alert
@@ -1146,84 +1265,176 @@ char* monitor_ClientData_var_name [] = {
 * Type: data
 * MQTT Client ID: Alert Client
 * MQTT Topic ID: 
-* MSG Length: 20
+* MSG Length: 40
 *  word #        data type            variable                description        min        max        nominal
-*  0        int            alert1                Alert 1                        
-*  1        int            alert2                Alert 2                        
-*  2        int            alert3                Alert 3                        
-*  3        int            alert4                Alert 4                        
-*  4        int            alert5                Alert 5                        
-*  5        int            alert6                Alert 6                        
-*  6        int            alert7                Alert 7                        
-*  7        int            alert8                Alert 8                        
-*  8        int            alert9                Alert 9        0        28800        
-*  9        int            alert10                Alert 10                        
-*  10        int            alert11                Alert 11                        
-*  11        int            alert12                Alert 12                        
-*  12        int            alert13                Alert 13                        
-*  13        int            alert14                Alert 14                        
-*  14        int            alert15                Alert 15                        
-*  15        int            alert16                Alert 16                        
-*  16        int            alert17                Alert 17                        
-*  17        int            alert18                Alert 18                        
-*  18        int            alert19                Alert 19                        
-*  19        int            alert20                Alert 20                        
+*  0        int            Alert1                Alert 1        0        100        
+*  1        int            Alert2                 Alert 2        0        100        
+*  2        int            Alert3                Alert 3        0        100        
+*  3        int            Alert4                Alert 4        0        100        
+*  4        int            Alert5                Alert 5        0        100        
+*  5        int            Alert6                Alert 6        0        100        
+*  6        int            Alert7                Alert 7        0        100        
+*  7        int            Alert8                Alert 8        0        100        
+*  8        int            Alert9                Alert 9        0        100        
+*  9        int            Alert10                Alert 10        0        100        
+*  10        int            Alert11                Alert 11        0        100        
+*  11        int            Alert12                Alert 12        0        100        
+*  12        int            Alert13                Alert 13        0        100        
+*  13        int            Alert14                Alert 14        0        100        
+*  14        int            Alert15                Alert 15        0        100        
+*  15        int            Alert16                Alert 16        0        100        
+*  16        int            Alert17                Alert 17        0        100        
+*  17        int            Alert18                Alert 18        0        100        
+*  18        int            Alert19                Alert 19        0        100        
+*  19        int            Alert20                Alert 20        0        100        
+*  20        int            Alert21                Alert 21        0        100        
+*  21        int            Alert22                Alert 22        0        100        
+*  22        int            Alert23                Alert 23        0        100        
+*  23        int            Alert24                Alert 24        0        100        
+*  24        int            Alert25                Alert 25        0        100        
+*  25        int            Alert26                Alert 26        0        100        
+*  26        int            Alert27                Alert 27        0        100        
+*  27        int            Alert28                Alert 28        0        100        
+*  28        int            Alert29                Alert 29        0        100        
+*  29        int            Alert30                Alert 30        0        100        
+*  30        int            Alert31                Alert 31        0        100        
+*  31        int            Alert32                Alert 32        0        100        
+*  32        int            Alert33                Alert 33        0        100        
+*  33        int            Alert34                Alert 34        0        100        
+*  34        int            Alert35                Alert 35        0        100        
+*  35        int            Alert36                Alert 36        0        100        
+*  36        int            Alert37                Alert 37        0        100        
+*  37        int            Alert38                Alert 38        0        100        
+*  38        int            Alert39                Alert 39        0        100        
+*  39        int            Alert40                Alert 40        0        100        
 */
 
 const char ALERT_CLIENTID[] =    "Alert Client" ;
-const char ALERT_TOPICID[] =  "mwp/data/alert/alert/A001D";
-const char ALERT_JSONID[] =  "mwp/json/data/alert/alert/A001D";
-#define ALERT_LEN 20
+const char ALERT_TOPICID[] =  "mwp/data/alert/alert/";
+const char ALERT_JSONID[] =  "mwp/json/data/alert/alert/";
+#define ALERT_LEN 40
 
 union   ALERT_  {
    int     data_payload[ALERT_LEN] ;
 
    struct  {
-      int   alert0    ;
-      int   alert1    ;
-      int   alert2    ;
-      int   alert3    ;
-      int   alert4    ;
-      int   alert5    ;
-      int   alert6    ;
-      int   alert7    ;
-      int   alert8    ;
-      int   alert9    ;
-      int   alert10    ;
-      int   alert11    ;
-      int   alert12    ;
-      int   alert13    ;
-      int   alert14    ;
-      int   alert15    ;
-      int   alert16    ;
-      int   alert17    ;
-      int   alert18    ;
-      int   alert19    ;
+      int   Alert1    ;
+      int   Alert2     ;
+      int   Alert3    ;
+      int   Alert4    ;
+      int   Alert5    ;
+      int   Alert6    ;
+      int   Alert7    ;
+      int   Alert8    ;
+      int   Alert9    ;
+      int   Alert10    ;
+      int   Alert11    ;
+      int   Alert12    ;
+      int   Alert13    ;
+      int   Alert14    ;
+      int   Alert15    ;
+      int   Alert16    ;
+      int   Alert17    ;
+      int   Alert18    ;
+      int   Alert19    ;
+      int   Alert20    ;
+      int   Alert21    ;
+      int   Alert22    ;
+      int   Alert23    ;
+      int   Alert24    ;
+      int   Alert25    ;
+      int   Alert26    ;
+      int   Alert27    ;
+      int   Alert28    ;
+      int   Alert29    ;
+      int   Alert30    ;
+      int   Alert31    ;
+      int   Alert32    ;
+      int   Alert33    ;
+      int   Alert34    ;
+      int   Alert35    ;
+      int   Alert36    ;
+      int   Alert37    ;
+      int   Alert38    ;
+      int   Alert39    ;
+      int   Alert40    ;
    }  alert  ;
 }  ;
 union  ALERT_  alert_  ;
 
 char* alert_ClientData_var_name [] = { 
-    "ALERT0",
-    "ALERT1",
-    "ALERT2",
-    "ALERT3",
-    "ALERT4",
-    "ALERT5",
-    "A001D:alert7",
-    "A001D:alert8",
-    "A001D:alert9",
-    "A001D:alert10",
-    "A001D:alert11",
-    "A001D:alert12",
-    "A001D:alert13",
-    "A001D:alert14",
-    "A001D:alert15",
-    "A001D:alert16",
-    "A001D:alert17",
-    "A001D:alert18",
-    "A001D:alert19",
-    "A001D:alert20",
+    "Alert1",
+    "Alert2 ",
+    "Alert3",
+    "Alert4",
+    "Alert5",
+    "Alert6",
+    "Alert7",
+    "Alert8",
+    "Alert9",
+    "Alert10",
+    "Alert11",
+    "Alert12",
+    "Alert13",
+    "Alert14",
+    "Alert15",
+    "Alert16",
+    "Alert17",
+    "Alert18",
+    "Alert19",
+    "Alert20",
+    "Alert21",
+    "Alert22",
+    "Alert23",
+    "Alert24",
+    "Alert25",
+    "Alert26",
+    "Alert27",
+    "Alert28",
+    "Alert29",
+    "Alert30",
+    "Alert31",
+    "Alert32",
+    "Alert33",
+    "Alert34",
+    "Alert35",
+    "Alert36",
+    "Alert37",
+    "Alert38",
+    "Alert39",
+    "Alert40",
+}  ;
+
+/*
+* Block ID: A001C
+* Block Name: alertCommand
+* Description: Alert Command Block
+* From: blynkAlert
+* To: xxx
+* Category: alert
+* MQTT Client ID: 
+* MQTT Topic ID: command/rainbird/command
+* MSG Length: 7
+*  word #        data type            variable                description        min        max        nominal
+*  0        int            clearCommand                Command Word - Clear        0        1        0
+*/
+
+const char ALERTCOMMAND_CLIENTID[] =    "" ;
+const char ALERTCOMMAND_TOPICID[] =  "mwp/command/rainbird/command";
+const char ALERTCOMMAND_JSONID[] =  "mwp/json/command/rainbird/command";
+#define ALERTCOMMAND_LEN 7
+
+union   ALERTCOMMAND_  {
+   int     data_payload[ALERTCOMMAND_LEN] ;
+
+   struct  {
+      int   clearCommand    ;
+   }  blynkalert  ;
+}  ;
+union  ALERTCOMMAND_  alertCommand_  ;
+
+char* alertcommand_ClientData_var_name [] = { 
+    "A001C:clearCommand",
 }  ;
 
 /*
@@ -1245,18 +1456,18 @@ char* alert_ClientData_var_name [] = {
 *  5        int            amperage                Integer Represents Amps                        
 *  6        int            temperature                Temperature                        
 *  7        int            timestamp                unix timestamp                        
-*  8        int            unused                                        
-*  9        int            unused                                        
-*  10        int            unused                                        
-*  11        int            unused                                        
-*  12        int            unused                                        
-*  13        int            unused                                        
-*  14        int            unused                                        
-*  15        int            unused                                        
-*  16        int            unused                                        
-*  17        int            unused                                        
-*  18        int            unused                                        
-*  19        int            unused                                        
+*  8        int            unused1                                        
+*  9        int            unused2                                        
+*  10        int            unused3                                        
+*  11        int            unused4                                        
+*  12        int            unused5                                        
+*  13        int            unused6                                        
+*  14        int            unused7                                        
+*  15        int            unused8                                        
+*  16        int            unused9                                        
+*  17        int            unused10                                        
+*  18        int            unused11                                        
+*  19        int            unused12                                        
 */
 
 const char LOG_CLIENTID[] =    "Log Client" ;
@@ -1301,18 +1512,18 @@ char* log_ClientData_var_name [] = {
     "L001D:amperage",
     "L001D:temperature",
     "L001D:timestamp",
-    "L001D:unused",
-    "L001D:unused",
-    "L001D:unused",
-    "L001D:unused",
-    "L001D:unused",
-    "L001D:unused",
-    "L001D:unused",
-    "L001D:unused",
-    "L001D:unused",
-    "L001D:unused",
-    "L001D:unused",
-    "L001D:unused",
+    "L001D:unused1",
+    "L001D:unused2",
+    "L001D:unused3",
+    "L001D:unused4",
+    "L001D:unused5",
+    "L001D:unused6",
+    "L001D:unused7",
+    "L001D:unused8",
+    "L001D:unused9",
+    "L001D:unused10",
+    "L001D:unused11",
+    "L001D:unused12",
 }  ;
 
 //#define MilanoWaterProject\IrrigationHeader.h  (created and maintained in Excel)
@@ -1332,12 +1543,12 @@ char* log_ClientData_var_name [] = {
 **********************************************************************************/
 
 struct flowSensorConfigTable flowSensorConfig[8] = {
-    {0, "SPARE",         SPARESENS_CLIENTID, SPARESENS_TOPICID, SPARESENS_JSONID, SPARESENS_LEN},
+    {0, "Well3",         WELL3SENS_CLIENTID, WELL3SENS_TOPICID, WELL3SENS_JSONID, WELL3SENS_LEN},
     {1, "TANK",          TANKSENS_CLIENTID,     TANKSENS_TOPICID,TANKSENS_JSONID, TANKSENS_LEN},
     {2, "IRRIGATION",    IRRIGATIONSENS_CLIENTID, IRRIGATIONSENS_TOPICID, IRRIGATIONSENS_JSONID,IRRIGATIONSENS_LEN},
     {3, "HOUSE",         HOUSESENS_CLIENTID, HOUSESENS_TOPICID, HOUSESENS_JSONID, HOUSESENS_LEN},
     {4, "WELL",          WELLSENS_CLIENTID, WELLSENS_TOPICID, WELLSENS_JSONID, WELLSENS_LEN},
-    {5, "SPARE",         SPARESENS_CLIENTID, SPARESENS_TOPICID, SPARESENS_JSONID, SPARESENS_LEN},
-    {6, "SPARE",         SPARESENS_CLIENTID, SPARESENS_TOPICID, SPARESENS_JSONID, SPARESENS_LEN},
-    {7, "SPARE",         SPARESENS_CLIENTID, SPARESENS_TOPICID, SPARESENS_JSONID, SPARESENS_LEN},
+    {5, "SPARE",         GENERICSENS_CLIENTID, GENERICSENS_TOPICID , GENERICSENS_JSONID, GENERICSENS_LEN},
+    {6, "SPARE",         GENERICSENS_CLIENTID, GENERICSENS_TOPICID, GENERICSENS_JSONID, GENERICSENS_LEN},
+    {7, "SPARE",         GENERICSENS_CLIENTID, GENERICSENS_TOPICID, GENERICSENS_JSONID, GENERICSENS_LEN},
 };

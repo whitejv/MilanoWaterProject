@@ -229,19 +229,22 @@ int main(int argc, char* argv[])
 
       flowmon(tankSens_.tank.new_data_flag, tankSens_.tank.milliseconds, tankSens_.tank.pulse_count, &avgflowRateGPM, &intervalFlow, .98) ;
       dailyGallons = dailyGallons + intervalFlow;
-      tankMon_.tank.tank_gallons_per_minute =  avgflowRateGPM;
-      tankMon_.tank.tank_total_gallons_24 =    dailyGallons;
+      tankMon_.tank.intervalFlow = intervalFlow;
+      tankMon_.tank.gallonsMinute =  avgflowRateGPM;
+      tankMon_.tank.gallonsDay =    dailyGallons;
+      tankMon_.tank.controller = 3;
+      tankMon_.tank.zone = 1;
       
       memcpy(&temperatureF, &tankSens_.data_payload[6], sizeof(float));
-      tankMon_.tank.air_temp =    temperatureF;
+      tankMon_.tank.temperatureF =    temperatureF;
 
       Float100State = tankSens_.tank.gpio_sensor & 0x01;
       Float25State = (tankSens_.tank.gpio_sensor & 0x02) >> 1;
       
       tankMon_.tank.float1 =    Float100State;
       tankMon_.tank.float2 =    Float25State;
-      tankMon_.data_payload[8] =    tankSens_.data_payload[8]  ;
-      tankMon_.data_payload[9] =    0;
+      tankMon_.tank.cycleCount =  tankSens_.tank.cycle_count ;
+      tankMon_.tank.fwVersion = 0;
       
       MyMQTTPublish() ;
 

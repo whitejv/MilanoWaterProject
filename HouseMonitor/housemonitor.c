@@ -15,10 +15,10 @@ float TotalDailyGallons = 0;
 float TotalGPM = 0;
 float avgflowRateGPM = 0;
 
-#define SAMPLES_COUNT 60
+#define SAMPLES_COUNT 10
 float samples[SAMPLES_COUNT] = {0};
 uint8_t sample_index = 0;
-uint8_t window_size = 60; // Change this value to the desired window size (60-100)
+uint8_t window_size = 10; // Change this value to the desired window size (60-100)
 float PresSensorValue = 0;
 
 /* Function Declarations */
@@ -150,19 +150,23 @@ int main(int argc, char* argv[])
 
       flowmon(houseSens_.house.new_data_flag, houseSens_.house.milliseconds, houseSens_.house.pulse_count, &avgflowRateGPM, &intervalFlow, 1.955) ;
       dailyGallons = dailyGallons + intervalFlow;
-      houseMon_.house.house_gallons_per_minute =  avgflowRateGPM;
-      houseMon_.house.houseTotalFlow = dailyGallons;
+      houseMon_.house.intervalFlow = intervalFlow;
+      houseMon_.house.amperage = wellMon_.well.amp_pump_2;
+      houseMon_.house.gallonsMinute =  avgflowRateGPM;
+      houseMon_.house.gallonsDay = dailyGallons;
+      houseMon_.house.controller = 3;
+      houseMon_.house.zone = 2;
       
       memcpy(&temperatureF, &houseSens_.house.temp_w1 , sizeof(float));
 
-      houseMon_.house.houseSupplyTemp =  temperatureF;
-      houseMon_.house.cycle_count =    houseSens_.house.cycle_count;
+      houseMon_.house.temperatureF =  temperatureF;
+      houseMon_.house.cycleCount =    houseSens_.house.cycle_count;
       //houseMon_.house.housePressure = houseSens_.house.adc_sensor * 0.0048828125 * 20;
       //using moving average for now
 
-      PresSensorValue = houseSens_.house.adc_sensor * 0.0048828125 * 20;
+      PresSensorValue = ((houseSens_.house.adc_sensor * 0.1329)-4.7351);
             
-      houseMon_.house.housePressure = moving_average(PresSensorValue, samples, &sample_index, window_size);
+      houseMon_.house.pressurePSI = moving_average(PresSensorValue, samples, &sample_index, window_size);
       
       MyMQTTPublish() ;
 

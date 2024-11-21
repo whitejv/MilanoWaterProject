@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
       */
       flowmon(irrigationSens_.irrigation.new_data_flag, irrigationSens_.irrigation.milliseconds, irrigationSens_.irrigation.pulse_count, &avgflowRateGPM, &intervalFlow, .935) ;
       dailyGallons += intervalFlow ;
-      irrigationPressure = irrigationSens_.irrigation.adc_sensor * 0.0048828125 * 20; 
+      irrigationPressure = ((irrigationSens_.irrigation.adc_sensor * 0.1329)-4.7351);
       
       memcpy(&temperatureF, &irrigationSens_.irrigation.temp_w1, sizeof(float));
         
@@ -235,26 +235,25 @@ int main(int argc, char* argv[])
        */
       if (rainbirdRecvRequest == TRUE) {
          if (rainbirdDelay == 0) {
+            // Check Front Controller first
             int active_station = find_active_station(&Front_Controller);
             if (active_station != -1) {
                printf("Active station for Front_Controller is: %d\n", active_station);
-               irrigationMon_.irrigation.FrontControllerActive = 1;
-               irrigationMon_.irrigation.FrontActiveZone       = active_station;
+               irrigationMon_.irrigation.controller = 1;
+               irrigationMon_.irrigation.zone = active_station;
             } else {
-               printf("No active station for Front_Controller\n");
-               irrigationMon_.irrigation.FrontControllerActive = 0;
-               irrigationMon_.irrigation.FrontActiveZone       = 0;
-            }
-
-            active_station = find_active_station(&Back_Controller);
-            if (active_station != -1) {
-               printf("Active station for Back_Controller is: %d\n", active_station);
-               irrigationMon_.irrigation.BackControllerActive = 1;
-               irrigationMon_.irrigation.BackActiveZone       = active_station;
-            } else {
-               printf("No active station for Back_Controller\n");
-               irrigationMon_.irrigation.BackControllerActive = 0; 
-               irrigationMon_.irrigation.BackActiveZone       = 0;
+               // Only check Back Controller if Front had no active stations
+               active_station = find_active_station(&Back_Controller);
+               if (active_station != -1) {
+                  printf("Active station for Back_Controller is: %d\n", active_station);
+                  irrigationMon_.irrigation.controller = 2;
+                  irrigationMon_.irrigation.zone = active_station;
+               } else {
+                  // No active stations found in either controller
+                  printf("No active stations found in any controller\n");
+                  irrigationMon_.irrigation.controller = 0;
+                  irrigationMon_.irrigation.zone = 0;
+               }
             }
 
             rainbirdRecvRequest = FALSE;
@@ -266,13 +265,14 @@ int main(int argc, char* argv[])
       /*
        * Load Up the Data
        */
-      
-      irrigationMon_.irrigation.FlowPerMin = avgflowRateGPM;
-      irrigationMon_.irrigation.TotalFlow =   dailyGallons;
-      irrigationMon_.irrigation.Pressure  =  irrigationPressure;
-      irrigationMon_.irrigation.PumpTemp  =  temperatureF;
-      irrigationMon_.irrigation.cycle_count =  irrigationSens_.irrigation.cycle_count ;
-      irrigationMon_.irrigation.fw_version = 0;
+      irrigationMon_.irrigation.intervalFlow = intervalFlow;
+      irrigationMon_.irrigation.amperage = wellMon_.well.amp_pump_4;
+      irrigationMon_.irrigation.gallonsMinute = avgflowRateGPM;
+      irrigationMon_.irrigation.gallonsDay =   dailyGallons;
+      irrigationMon_.irrigation.pressurePSI  =  irrigationPressure;
+      irrigationMon_.irrigation.temperatureF  =  temperatureF;
+      irrigationMon_.irrigation.cycleCount =  irrigationSens_.irrigation.cycle_count ;
+      irrigationMon_.irrigation.fwVersion = 0;
 
       
       if (verbose) {
@@ -338,13 +338,13 @@ int main(int argc, char* argv[])
          stopGallons = dailyGallons - startGallons ;
          time(&end_t);
          diff_t = difftime(end_t, start_t);
-         if (irrigationMon_.irrigation.FrontControllerActive == 1) {
+         if (irrigationMon_.irrigation.controller == 1) {
             fprintf(fptr, "Controller: Front ");
-            fprintf(fptr, "Zone: %d   ", (int)irrigationMon_.irrigation.FrontActiveZone);
+            fprintf(fptr, "Zone: %d   ", (int)irrigationMon_.irrigation.zone);
          }
-         else if (irrigationMon_.irrigation.BackControllerActive == 1) {
+         else if (irrigationMon_.irrigation.controller == 2) {
             fprintf(fptr, "Controller: Back  ");
-            fprintf(fptr, "Zone: %d   ", (int)irrigationMon_.irrigation.BackActiveZone);
+            fprintf(fptr, "Zone: %d   ", (int)irrigationMon_.irrigation.zone);
          }
          else {
             fprintf(fptr, "Controller: ??  ");
@@ -356,10 +356,8 @@ int main(int argc, char* argv[])
          fclose(fptr);
          lastpumpState = OFF ;
          sleep(1);
-         irrigationMon_.irrigation.FrontControllerActive  =    0;  
-         irrigationMon_.irrigation.FrontActiveZone        =    0;  
-         irrigationMon_.irrigation.BackControllerActive   =    0;  
-         irrigationMon_.irrigation.BackActiveZone         =    0;  
+         irrigationMon_.irrigation.controller  =    0;  
+         irrigationMon_.irrigation.zone        =    0;  
       }
       else if (( pumpState == ON) && (limit_mode == TRUE)) {
          if ((dailyGallons - start_limit_gallons) > limit_gallons) {
