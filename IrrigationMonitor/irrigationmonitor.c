@@ -61,6 +61,10 @@ int main(int argc, char* argv[])
    time(&t);
    int SecondsFromMidnight = 0 ;
    int PriorSecondsFromMidnight =0;
+// Add a static variable to track the previous timestamp
+   static struct timespec previous_time = {0, 0}; // Initialized to 0 at the start
+   struct timespec current_time;
+
    float irrigationPressure = 0;
    float temperatureF;
 
@@ -376,6 +380,19 @@ int main(int argc, char* argv[])
          }
       }
       if (pumpState == ON) {
+             clock_gettime(CLOCK_MONOTONIC, &current_time);
+
+         if (previous_time.tv_sec != 0 || previous_time.tv_nsec != 0) {
+            // Calculate the time slice in seconds since the last execution
+            irrigationMon_.irrigation.secondsOn = (float)(current_time.tv_sec - previous_time.tv_sec) +
+                                          (float)(current_time.tv_nsec - previous_time.tv_nsec) / 1.0e9f;
+         } else {
+            // This is the first execution; initialize secondsOn to 0
+            irrigationMon_.irrigation.secondsOn = 0.0f;
+         }
+
+         // Update the previous timestamp to the current time
+         previous_time = current_time;
          // Populate the log structure
          log_.log.Controller = (int)irrigationMon_.irrigation.controller;
          log_.log.Zone = (int)irrigationMon_.irrigation.zone;
@@ -383,8 +400,15 @@ int main(int argc, char* argv[])
          log_.log.temperatureF = irrigationMon_.irrigation.temperatureF;
          log_.log.intervalFlow = irrigationMon_.irrigation.intervalFlow;
          log_.log.amperage = irrigationMon_.irrigation.amperage;
+         log_.log.secondsOn = irrigationMon_.irrigation.secondsOn ;
          
          publishLogMessage(&log_, "irrigation");
+      } else {
+      // If the pump is not running, set secondsOn to 0
+         irrigationMon_.irrigation.secondsOn = 0.0f;
+
+      // Optionally update previous_time to avoid long intervals when the pump starts again
+         clock_gettime(CLOCK_MONOTONIC, &previous_time);
       }
       if ((rainbirdRequest == TRUE) && (rainbirdReqDelay == 0)){
          pubmsg.payload = rainbird_command1;
@@ -452,6 +476,8 @@ void publishLogMessage(union LOG_ *log_data, const char *message_id) {
       json_object_new_double(log_data->log.intervalFlow));
    json_object_object_add(root, log_ClientData_var_name[5], 
       json_object_new_double(log_data->log.amperage));
+   json_object_object_add(root, log_ClientData_var_name[6], 
+      json_object_new_double(log_data->log.secondsOn));
 
 
    const char *json_string = json_object_to_json_string(root);

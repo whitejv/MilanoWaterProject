@@ -703,29 +703,30 @@ char* irrigationresponse_ClientData_var_name [] = {
 * Type: data
 * MQTT Client ID: Irrigation Monitor Client
 * MQTT Topic ID: 
-* MSG Length: 15
+* MSG Length: 16
 *  word #        data type            variable                description        min        max        nominal
 *  0        float            pressurePSI                Pressure in PSI - Irrigation        0        50        10
 *  1        float            temperatureF                Temperature - Irrigation Pump        0        5000        2000
 *  2        float            intervalFlow                Gallons in interval        0        100        50
 *  3        float            amperage                Amperage        -5        125        80
-*  4        float            gallonsMinute                Gallons per Minute        0        1        1
-*  5        float            gallonsDay                Irrigation Total Gallons (24hrs)        1        22        1
-*  6        float            controller                Controller        0        1        1
-*  7        float            zone                Zone        1        22        1
-*  8        float            spare1                Spare        0        28800        
-*  9        float            spare2                Spare                        
-*  10        float            spare3                Spare                        
-*  11        float            spare4                Spare                        
-*  12        float            spare5                Spare                        
-*  13        float            cycleCount                Cycle Count                        
-*  14        float            fwVersion                 FW Version 4 Hex                         
+*  4        float            secondsOn                Second on for Pump        0        14400        60
+*  5        float            gallonsMinute                Gallons per Minute        0        1        1
+*  6        float            gallonsDay                Irrigation Total Gallons (24hrs)        1        22        1
+*  7        float            controller                Controller        0        1        1
+*  8        float            zone                Zone        1        22        1
+*  9        float            spare1                Spare        0        28800        
+*  10        float            spare2                Spare                        
+*  11        float            spare3                Spare                        
+*  12        float            spare4                Spare                        
+*  13        float            spare5                Spare                        
+*  14        float            cycleCount                Cycle Count                        
+*  15        float            fwVersion                 FW Version 4 Hex                         
 */
 
 const char IRRIGATIONMON_CLIENTID[] =    "Irrigation Monitor Client" ;
 const char IRRIGATIONMON_TOPICID[] =  "mwp/data/monitor/Irrigation/I001D";
 const char IRRIGATIONMON_JSONID[] =  "mwp/json/data/monitor/Irrigation/I001D";
-#define IRRIGATIONMON_LEN 15
+#define IRRIGATIONMON_LEN 16
 
 union   IRRIGATIONMON_  {
    float     data_payload[IRRIGATIONMON_LEN] ;
@@ -735,6 +736,7 @@ union   IRRIGATIONMON_  {
       float   temperatureF    ;
       float   intervalFlow    ;
       float   amperage    ;
+      float   secondsOn    ;
       float   gallonsMinute    ;
       float   gallonsDay    ;
       float   controller    ;
@@ -755,6 +757,7 @@ char* irrigationmon_ClientData_var_name [] = {
     "I001D:temperatureF",
     "I001D:intervalFlow",
     "I001D:amperage",
+    "I001D:secondsOn",
     "I001D:gallonsMinute",
     "I001D:gallonsDay",
     "I001D:controller",
@@ -841,29 +844,30 @@ char* rainbirdresponse_ClientData_var_name [] = {
 * Type: data
 * MQTT Client ID: Tank Monitor Client
 * MQTT Topic ID: 
-* MSG Length: 15
+* MSG Length: 16
 *  word #        data type            variable                description        min        max        nominal
 *  0        float            pressurePSI                Pressure in PSI - Atmospheric                        
 *  1        float            temperatureF                Temperature - Tank Valve                        
 *  2        float            intervalFlow                Gallons in interval -N/A                        
 *  3        float            amperage                Amperage -N/A                        
-*  4        float            gallonsMinute                Gallons per Minute                        
-*  5        float            gallonsDay                Tank Total Gallons (24hrs)                        
-*  6        float            controller                Controller                        
-*  7        float            zone                Zone                        
-*  8        float            water_height                Water Height                        
-*  9        float            tank_gallons                 FW Version 4 Hex                         
-*  10        float            tank_per_full                Tank Percent Full                        
-*  11        float            float1                Overfill Float                        
-*  12        float            float2                Tank Low Float                        
-*  13        float            cycleCount                Cycle Count                        
-*  14        float            fwVersion                 FW Version 4 Hex                         
+*  4        float            secondsOn                Second on for Pump        0        14400        60
+*  5        float            gallonsMinute                Gallons per Minute                        
+*  6        float            gallonsDay                Tank Total Gallons (24hrs)                        
+*  7        float            controller                Controller                        
+*  8        float            zone                Zone                        
+*  9        float            water_height                Water Height                        
+*  10        float            tank_gallons                 FW Version 4 Hex                         
+*  11        float            tank_per_full                Tank Percent Full                        
+*  12        float            float1                Overfill Float                        
+*  13        float            float2                Tank Low Float                        
+*  14        float            cycleCount                Cycle Count                        
+*  15        float            fwVersion                 FW Version 4 Hex                         
 */
 
 const char TANKMON_CLIENTID[] =    "Tank Monitor Client" ;
 const char TANKMON_TOPICID[] =  "mwp/data/monitor/tank/T001D";
 const char TANKMON_JSONID[] =  "mwp/json/data/monitor/tank/T001D";
-#define TANKMON_LEN 15
+#define TANKMON_LEN 16
 
 union   TANKMON_  {
    float     data_payload[TANKMON_LEN] ;
@@ -873,6 +877,7 @@ union   TANKMON_  {
       float   temperatureF    ;
       float   intervalFlow    ;
       float   amperage    ;
+      float   secondsOn    ;
       float   gallonsMinute    ;
       float   gallonsDay    ;
       float   controller    ;
@@ -893,6 +898,7 @@ char* tankmon_ClientData_var_name [] = {
     "T001D:temperatureF",
     "T001D:intervalFlow",
     "T001D:amperage",
+    "T001D:secondsOn",
     "T001D:gallonsMinute",
     "T001D:gallonsDay",
     "T001D:controller",
@@ -915,29 +921,30 @@ char* tankmon_ClientData_var_name [] = {
 * Type: data
 * MQTT Client ID: House Monitor Client
 * MQTT Topic ID: 
-* MSG Length: 15
+* MSG Length: 16
 *  word #        data type            variable                description        min        max        nominal
 *  0        float            pressurePSI                Pressure in PSI - House        0        25        15
 *  1        float            temperatureF                Temperature - House Supply        0        5000        100
 *  2        float            intervalFlow                Gallons in interval        0        100        65
 *  3        float            amperage                Amperage        0        125        80
-*  4        float            gallonsMinute                Gallons per Minute                        
-*  5        float            gallonsDay                House Total Gallons (24hrs)                        
-*  6        float            controller                Controller                        
-*  7        float            zone                Zone                        
-*  8        float            spare1                Spare 1        0        28800        
-*  9        float            spare2                Spare 2                        
-*  10        float            spare3                Spare 3                        
-*  11        float            spare4                Spare 4                        
-*  12        float            spare5                Spare 5                        
-*  13        float            cycleCount                Cycle Count                        
-*  14        float            fwVersion                 FW Version 4 Hex                         
+*  4        float            secondsOn                Second on for Pump        0        14400        60
+*  5        float            gallonsMinute                Gallons per Minute                        
+*  6        float            gallonsDay                House Total Gallons (24hrs)                        
+*  7        float            controller                Controller                        
+*  8        float            zone                Zone                        
+*  9        float            spare1                Spare 1        0        28800        
+*  10        float            spare2                Spare 2                        
+*  11        float            spare3                Spare 3                        
+*  12        float            spare4                Spare 4                        
+*  13        float            spare5                Spare 5                        
+*  14        float            cycleCount                Cycle Count                        
+*  15        float            fwVersion                 FW Version 4 Hex                         
 */
 
 const char HOUSEMON_CLIENTID[] =    "House Monitor Client" ;
 const char HOUSEMON_TOPICID[] =  "mwp/data/monitor/house/H001D";
 const char HOUSEMON_JSONID[] =  "mwp/json/data/monitor/house/H001D";
-#define HOUSEMON_LEN 15
+#define HOUSEMON_LEN 16
 
 union   HOUSEMON_  {
    float     data_payload[HOUSEMON_LEN] ;
@@ -947,6 +954,7 @@ union   HOUSEMON_  {
       float   temperatureF    ;
       float   intervalFlow    ;
       float   amperage    ;
+      float   secondsOn    ;
       float   gallonsMinute    ;
       float   gallonsDay    ;
       float   controller    ;
@@ -967,6 +975,7 @@ char* housemon_ClientData_var_name [] = {
     "H001D:temperatureF",
     "H001D:intervalFlow",
     "H001D:amperage",
+    "H001D:secondsOn",
     "H001D:gallonsMinute",
     "H001D:gallonsDay",
     "H001D:controller",
@@ -1072,29 +1081,30 @@ char* wellmon_ClientData_var_name [] = {
 * Type: data
 * MQTT Client ID: Well3 Monitor Client
 * MQTT Topic ID: 
-* MSG Length: 15
+* MSG Length: 16
 *  word #        data type            variable                description        min        max        nominal
 *  0        float            pressurePSI                Pressure in PSI - Well3        0        25        15
 *  1        float            temperatureF                Temperature - Well3 Supply Line        0        5000        100
 *  2        float            intervalFlow                Gallons in interval        0        100        65
 *  3        float            amperage                Amperage        0        125        80
-*  4        float            gallonsMinute                Gallons per Minute                        
-*  5        float            gallonsDay                Well3 Total Gallons (24hrs)                        
-*  6        float            controller                Controller                        
-*  7        float            zone                Zone                        
-*  8        float            spare1                Spare 1        0        28800        
-*  9        float            spare2                Spare 2                        
-*  10        float            spare3                Spare 3                        
-*  11        float            spare4                Spare 4                        
-*  12        float            spare5                Spare 5                        
-*  13        float            cycleCount                Cycle Count                        
-*  14        float            fwVersion                 FW Version 4 Hex                         
+*  4        float            secondsOn                Second on for Pump        0        14400        60
+*  5        float            gallonsMinute                Gallons per Minute                        
+*  6        float            gallonsDay                Well3 Total Gallons (24hrs)                        
+*  7        float            controller                Controller                        
+*  8        float            zone                Zone                        
+*  9        float            spare1                Spare 1        0        28800        
+*  10        float            spare2                Spare 2                        
+*  11        float            spare3                Spare 3                        
+*  12        float            spare4                Spare 4                        
+*  13        float            spare5                Spare 5                        
+*  14        float            cycleCount                Cycle Count                        
+*  15        float            fwVersion                 FW Version 4 Hex                         
 */
 
 const char WELL3MON_CLIENTID[] =    "Well3 Monitor Client" ;
 const char WELL3MON_TOPICID[] =  "mwp/data/monitor/well3/W003D";
 const char WELL3MON_JSONID[] =  "mwp/json/data/monitor/well3/W003D";
-#define WELL3MON_LEN 15
+#define WELL3MON_LEN 16
 
 union   WELL3MON_  {
    float     data_payload[WELL3MON_LEN] ;
@@ -1104,6 +1114,7 @@ union   WELL3MON_  {
       float   temperatureF    ;
       float   intervalFlow    ;
       float   amperage    ;
+      float   secondsOn    ;
       float   gallonsMinute    ;
       float   gallonsDay    ;
       float   controller    ;
@@ -1124,6 +1135,7 @@ char* well3mon_ClientData_var_name [] = {
     "W003D:temperatureF",
     "W003D:intervalFlow",
     "W003D:amperage",
+    "W003D:secondsOn",
     "W003D:gallonsMinute",
     "W003D:gallonsDay",
     "W003D:controller",
@@ -1535,7 +1547,7 @@ char* logger_ClientData_var_name [] = {
 * Type: data
 * MQTT Client ID: Log Client
 * MQTT Topic ID: 
-* MSG Length: 6
+* MSG Length: 7
 *  word #        data type            variable                description        min        max        nominal
 *  0        int            Controller                Controller        1        5        1
 *  1        int            Zone                Zone        1        32        1
@@ -1543,12 +1555,13 @@ char* logger_ClientData_var_name [] = {
 *  3        float            temperatureF                Temperature - Well3 Supply Line        0        125        80
 *  4        float            intervalFlow                Gallons in interval        0        5        0.5
 *  5        float            amperage                Amperage        0        2024        1000
+*  5        float            secondsOn                Seconds On Time for Pump        0        2024        14400
 */
 
 const char LOG_CLIENTID[] =    "Log Client" ;
 const char LOG_TOPICID[] =  "mwp/data/log/log/";
 const char LOG_JSONID[] =  "mwp/json/data/log/log/";
-#define LOG_LEN 6
+#define LOG_LEN 7
 
 union   LOG_  {
    int     data_payload[LOG_LEN] ;
@@ -1560,6 +1573,7 @@ union   LOG_  {
       float   temperatureF    ;
       float   intervalFlow    ;
       float   amperage    ;
+      float   secondsOn    ;
    }  log  ;
 }  ;
 union  LOG_  log_  ;
@@ -1571,9 +1585,8 @@ char* log_ClientData_var_name [] = {
     "temperatureF",
     "intervalFlow",
     "amperage",
+    "secondsOn",
 }  ;
-
-
 
 //#define MilanoWaterProject\IrrigationHeader.h  (created and maintained in Excel)
 /*********************************************************************************

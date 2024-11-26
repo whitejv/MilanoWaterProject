@@ -66,7 +66,10 @@ int main(int argc, char* argv[])
 
    int SecondsFromMidnight = 0 ;
    int PriorSecondsFromMidnight =0;
-
+// Add a static variable to track the previous timestamp
+   static struct timespec previous_time = {0, 0}; // Initialized to 0 at the start
+   struct timespec current_time;
+   
    float temperatureF;
    float intervalFlow = 0; 
    float TankGallons = 0;
@@ -167,17 +170,42 @@ int main(int argc, char* argv[])
 
       PumpStats() ;
 
-      if (wellMon_.well.well_pump_3_on == 1) {
-         // Populate the log structure
-         log_.log.Controller = well3Mon_.well3.controller;
-         log_.log.Zone = well3Mon_.well3.zone;
-         log_.log.pressurePSI = well3Mon_.well3.pressurePSI;
-         log_.log.temperatureF = well3Mon_.well3.temperatureF;
-         log_.log.intervalFlow = well3Mon_.well3.intervalFlow;
-         log_.log.amperage = well3Mon_.well3.amperage;
-         
-         publishLogMessage(&log_, "well3");
-      }
+#include <time.h>
+
+// Inside your loop or main function
+if (wellMon_.well.well_pump_3_on == 1) {
+    
+    clock_gettime(CLOCK_MONOTONIC, &current_time);
+
+    if (previous_time.tv_sec != 0 || previous_time.tv_nsec != 0) {
+        // Calculate the time slice in seconds since the last execution
+        well3Mon_.well3.secondsOn = (float)(current_time.tv_sec - previous_time.tv_sec) +
+                                    (float)(current_time.tv_nsec - previous_time.tv_nsec) / 1.0e9f;
+    } else {
+        // This is the first execution; initialize secondsOn to 0
+        well3Mon_.well3.secondsOn = 0.0f;
+    }
+
+    // Update the previous timestamp to the current time
+    previous_time = current_time;
+
+    // Populate the log structure
+    log_.log.Controller = well3Mon_.well3.controller;
+    log_.log.Zone = well3Mon_.well3.zone;
+    log_.log.pressurePSI = well3Mon_.well3.pressurePSI;
+    log_.log.temperatureF = well3Mon_.well3.temperatureF;
+    log_.log.intervalFlow = well3Mon_.well3.intervalFlow;
+    log_.log.amperage = well3Mon_.well3.amperage;
+    log_.log.secondsOn = well3Mon_.well3.secondsOn;
+
+    publishLogMessage(&log_, "well3");
+} else {
+    // If the pump is not running, set secondsOn to 0
+    well3Mon_.well3.secondsOn = 0.0f;
+
+    // Optionally update previous_time to avoid long intervals when the pump starts again
+    clock_gettime(CLOCK_MONOTONIC, &previous_time);
+}
 
    /*
     * Run at this interval
@@ -295,6 +323,8 @@ void publishLogMessage(union LOG_ *log_data, const char *message_id) {
       json_object_new_double(log_data->log.intervalFlow));
    json_object_object_add(root, log_ClientData_var_name[5], 
       json_object_new_double(log_data->log.amperage));
+   json_object_object_add(root, log_ClientData_var_name[6], 
+      json_object_new_double(log_data->log.secondsOn));
 
    const char *json_string = json_object_to_json_string(root);
    
