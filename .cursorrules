@@ -1,0 +1,96 @@
+# .cursorrules file for Mixed C and Go Development
+
+# Language-specific rules
+c_rules:
+    struct_rules:
+        - enforce: function_name_style
+          style: camelCase
+        - enforce: variable_name_style
+          style: underscore
+        - enforce: max_line_length
+          length: 80
+    style_rules:
+        - enforce: indentation
+          style: spaces
+          spaces: 3
+        - enforce: comment_style
+          type: block
+
+go_rules:
+    struct_rules:
+        - enforce: function_name_style
+          style: mixed  # camelCase for internal, PascalCase for exported
+        - enforce: variable_name_style
+          style: camelCase
+        - enforce: max_line_length
+          length: 120
+    style_rules:
+        - enforce: indentation
+          style: tabs
+          width: 1
+        - enforce: comment_style
+          type: godoc
+
+# Common rules for both languages
+integration_rules:
+    - enforce: mqtt_client_configuration
+      mode: priority-based
+    - enforce: influxdb_integration
+      default_resolution: 1s
+
+version_control_rules:
+    - enforce: commit_message_format
+      format: "JIRA-123: Description of changes"
+    - enforce: branch_naming_convention
+      convention: feature/issue-description
+
+# File-based rules
+file_rules:
+    - pattern: "*.c"
+      use_rules: c_rules
+    - pattern: "*.h"
+      use_rules: c_rules
+    - pattern: "*.go"
+      use_rules: go_rules
+
+# Testing practices
+testing_rules:
+    c_tests:
+        - enforce: unit_testing
+          framework: unity
+        - enforce: test_naming
+          convention: test_function_name
+    go_tests:
+        - enforce: test_naming
+          convention: TestFunctionName
+        - enforce: test_coverage
+          minimum: 80
+
+# Common best practices
+best_practices:
+    - encourage: code_reviews
+    - encourage: documentation
+    - enforce: error_handling
+      c_style: return_codes
+      go_style: explicit_errors
+
+# Project structure
+project_structure:
+    c_source:
+        - path: "/src/c"
+          rules: c_rules
+    go_source:
+        - path: "/src/go"
+          rules: go_rules
+    shared:
+        - path: "/src/common"
+          rules: common_rules
+
+# IDE settings
+editor_config:
+    c_files:
+        - tab_size: 3
+        - insert_spaces: true
+    go_files:
+        - tab_size: 8
+        - insert_spaces: false

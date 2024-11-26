@@ -1,0 +1,118 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+)
+
+const (
+	influxDBHost   = "http://192.168.1.88:8086"
+	influxDBToken  = "RHl3fYEp8eMLtIUraVPzY4zp_hnnu2kYlR9hYrUaJLcq5mB2PvDsOi9SR0Tu_i-t_183fHb1a95BTJug-vAPVQ=="
+	influxDBOrg    = "Milano"
+	influxDBBucket = "MWPWater"
+)
+
+func main() {
+	// Configure client
+	client := influxdb2.NewClient(influxDBHost, influxDBToken)
+	defer client.Close()
+
+	// Get query client
+	queryAPI := client.QueryAPI(influxDBOrg)
+
+	query := fmt.Sprintf(`
+		// First query: Get summed intervalFlow
+		intervalFlow = from(bucket: "%s")
+			|> range(start: -4h)
+			|> filter(fn: (r) => r["_measurement"] == "mwp_sensors")
+			|> filter(fn: (r) => r["_field"] == "intervalFlow")
+			|> filter(fn: (r) => r["Controller"] == "3" and r["Zone"] == "1")
+			|> aggregateWindow(every: 5m, fn: sum)
+			|> keep(columns: ["_time", "_value"])
+			|> rename(columns: {_value: "intervalFlow"})
+
+		// Second query: Get averaged pressurePSI
+		pressure = from(bucket: "%s")
+			|> range(start: -4h)
+			|> filter(fn: (r) => r["_measurement"] == "mwp_sensors")
+			|> filter(fn: (r) => r["_field"] == "pressurePSI")
+			|> filter(fn: (r) => r["Controller"] == "3" and r["Zone"] == "1")
+			|> aggregateWindow(every: 5m, fn: mean)
+			|> keep(columns: ["_time", "_value"])
+			|> rename(columns: {_value: "pressurePSI"})
+
+		// Third query: Get averaged temperatureF
+		temperature = from(bucket: "%s")
+			|> range(start: -4h)
+			|> filter(fn: (r) => r["_measurement"] == "mwp_sensors")
+			|> filter(fn: (r) => r["_field"] == "temperatureF")
+			|> filter(fn: (r) => r["Controller"] == "3" and r["Zone"] == "1")
+			|> aggregateWindow(every: 5m, fn: mean)
+			|> keep(columns: ["_time", "_value"])
+			|> rename(columns: {_value: "temperatureF"})
+
+		// Fourth query: Get averaged amperage
+		amperage = from(bucket: "%s")
+			|> range(start: -4h)
+			|> filter(fn: (r) => r["_measurement"] == "mwp_sensors")
+			|> filter(fn: (r) => r["_field"] == "amperage")
+			|> filter(fn: (r) => r["Controller"] == "3" and r["Zone"] == "1")
+			|> aggregateWindow(every: 5m, fn: mean)
+			|> keep(columns: ["_time", "_value"])
+			|> rename(columns: {_value: "amperage"})
+
+		// Join streams in sequence
+		join1 = join(
+			tables: {intervalFlow: intervalFlow, pressure: pressure},
+			on: ["_time"]
+		)
+		join2 = join(
+			tables: {data: join1, temperature: temperature},
+			on: ["_time"]
+		)
+		join(
+			tables: {data: join2, amperage: amperage},
+			on: ["_time"]
+		)
+		|> map(fn: (r) => ({
+			_time: r._time,
+			intervalFlow: r.intervalFlow,
+			pressurePSI: r.pressurePSI,
+			temperatureF: r.temperatureF,
+			amperage: r.amperage
+		}))
+		|> filter(fn: (r) => r.intervalFlow > 0.0)  // Only show minutes with flow
+	`, influxDBBucket, influxDBBucket, influxDBBucket, influxDBBucket)
+
+	fmt.Println("Executing query:", query)
+
+	// Execute query
+	result, err := queryAPI.Query(context.Background(), query)
+	if err != nil {
+		fmt.Printf("Query error: %s\n", err)
+		os.Exit(1)
+	}
+
+	// Print results
+	fmt.Println("\nMinute-by-minute readings:")
+	fmt.Println("Timestamp              Gallons  PSI    Temp°F    Amps")
+	fmt.Println("----------------------------------------------------------")
+
+	for result.Next() {
+		record := result.Record()
+		fmt.Printf("%s  %6.2f  %6.1f  %7.1f    %6.2f\n",
+			record.Time().Format("2006-01-02 15:04:05"),
+			record.ValueByKey("intervalFlow"),
+			record.ValueByKey("pressurePSI"),
+			record.ValueByKey("temperatureF"),
+			record.ValueByKey("amperage"))
+	}
+
+	if result.Err() != nil {
+		fmt.Printf("Query result error: %s\n", result.Err())
+		os.Exit(1)
+	}
+}

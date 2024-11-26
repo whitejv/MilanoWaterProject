@@ -28,6 +28,7 @@ void PumpStats(void) ;
 void MyMQTTSetup(char *mqtt_address) ;
 void MyMQTTPublish(void) ;
 float moving_average(float new_sample, float samples[], uint8_t *sample_index, uint8_t window_size) ;
+void publishLogMessage(union LOG_ *log_data, const char *message_id);
 
 MQTTClient client;
 MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -171,6 +172,18 @@ int main(int argc, char* argv[])
       MyMQTTPublish() ;
 
       PumpStats() ;
+
+      if (wellMon_.well.well_pump_1_on == 1 || wellMon_.well.well_pump_2_on == 1) {
+         // Populate the log structure
+         log_.log.Controller = houseMon_.house.controller;
+         log_.log.Zone = houseMon_.house.zone;
+         log_.log.pressurePSI = houseMon_.house.pressurePSI;
+         log_.log.temperatureF = houseMon_.house.temperatureF;
+         log_.log.intervalFlow = houseMon_.house.intervalFlow;
+         log_.log.amperage = houseMon_.house.amperage;
+         
+         publishLogMessage(&log_, "house");
+      }
    /*
     * Run at this interval
     */
@@ -270,6 +283,40 @@ MQTTClient_waitForCompletion(client, token, TIMEOUT);
 json_object_put(root); // Free the memory allocated to the JSON object
 
 }
+void publishLogMessage(union LOG_ *log_data, const char *message_id) {
+   json_object *root = json_object_new_object();
+   char topic[100];
+   // Create JSON object with proper types
+   // First two fields are integers
+   json_object_object_add(root, log_ClientData_var_name[0], 
+      json_object_new_int(log_data->log.Controller));
+   json_object_object_add(root, log_ClientData_var_name[1], 
+      json_object_new_int(log_data->log.Zone));  
+   json_object_object_add(root, log_ClientData_var_name[2], 
+      json_object_new_double(log_data->log.pressurePSI));
+   json_object_object_add(root, log_ClientData_var_name[3], 
+      json_object_new_double(log_data->log.temperatureF));
+   json_object_object_add(root, log_ClientData_var_name[4], 
+      json_object_new_double(log_data->log.intervalFlow));
+   json_object_object_add(root, log_ClientData_var_name[5], 
+      json_object_new_double(log_data->log.amperage));
+
+   const char *json_string = json_object_to_json_string(root);
+   
+   // Create topic string with message_id
+   snprintf(topic, sizeof(topic), "%s%s/", LOG_JSONID, message_id);
+   
+   // Prepare and publish MQTT message
+   pubmsg.payload = (void *)json_string;
+   pubmsg.payloadlen = strlen(json_string);
+   pubmsg.qos = QOS;
+   pubmsg.retained = 0;
+   
+   MQTTClient_publishMessage(client, topic, &pubmsg, &token);
+   MQTTClient_waitForCompletion(client, token, TIMEOUT);
+   
+   json_object_put(root);
+} 
 void PumpStats() {
 
 FILE *fptr;

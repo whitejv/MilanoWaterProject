@@ -14,11 +14,12 @@
 
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message)
 {
-   
+   time_t t;
+   time(&t);
    int i;
    
    if (verbose) {
-      printf("Message arrived:\n");
+      printf("Message arrived: %s", ctime(&t));
       printf("          topic: %s  ", topicName);
       printf("         length: %d  ", topicLen);
       printf("     PayloadLen: %d\n", message->payloadlen);
@@ -34,6 +35,11 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
       memcpy(wellSens_.data_payload, message->payload, message->payloadlen);
       if (verbose) {for(i=0; i < WELLSENS_LEN; i++) {printf("%0x ", wellSens_.data_payload[i]);}}
       printf("w\n");
+   }
+   else if ( strcmp(topicName, WELL3SENS_TOPICID) == 0) {
+       memcpy(well3Sens_.data_payload, message->payload, message->payloadlen);
+      if (verbose) {for(i=0; i < WELL3SENS_LEN; i++) {printf("%0x ", well3Sens_.data_payload[i]);}}
+      printf("w3\n");
    }
    else if ( strcmp(topicName, HOUSESENS_TOPICID) == 0) {
       memcpy(houseSens_.data_payload, message->payload, message->payloadlen);
@@ -53,6 +59,11 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
    else if ( strcmp(topicName, WELLMON_TOPICID) == 0) {
       memcpy(wellMon_.data_payload, message->payload, message->payloadlen);
       if (verbose) {for(i=0; i < WELLMON_LEN; i++) {printf("%0f ", wellMon_.data_payload[i]);}}
+      printf(">\n");
+   }
+   else if ( strcmp(topicName, WELL3MON_TOPICID) == 0) {
+      memcpy(well3Mon_.data_payload, message->payload, message->payloadlen);
+      if (verbose) {for(i=0; i < WELL3MON_LEN; i++) {printf("%0f ", well3Mon_.data_payload[i]);}}
       printf(">\n");
    }
    else if ( strcmp(topicName, HOUSEMON_TOPICID) == 0) {

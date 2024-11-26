@@ -16,3 +16,20 @@ Installing Influxdb C client
     ./configure
     make
     sudo make install
+
+Installing GO Language
+    Go to Website: https://go.dev/dl/
+    sudo mv go_version.tar.gz /usr/local
+    Download tar file into /usr/local
+    tar -C /usr/local -xzf go_version.tar.gz
+    export PATH=$PATH:/usr/local/go/bin
+    source ~/.bashrc
+    go version
+
+Installing telegraf
+    Install Go
+    Clone the Telegraf repository:
+    git clone https://github.com/influxdata/telegraf.git
+Run make build from the source directory
+cd telegraf
+make build
