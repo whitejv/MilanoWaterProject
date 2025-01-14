@@ -1,4 +1,61 @@
+# Add version and description at the top
+version: "1.0"
+description: "Configuration for mixed C/Go development with emphasis on type safety and code quality"
+
 # .cursorrules file for Mixed C and Go Development
+ rules: {
+        "context_initialization": {
+            "description": "Starting point for each interaction",
+            "steps": [
+                "ALWAYS read `.notes/project_overview.md` and `.notes/task_list.md`"
+            ]
+        },
+        "operational_protocol": {
+            "description": "How to approach tasks",
+            "before_action": [
+                "Create a MECE task breakdown"
+            ],
+            "code_changes": [
+                "Read relevant code sections before editing",
+                "Preserve existing functionality",
+                "Maintain type safety"
+            ]
+        },
+        "safety_requirements": [
+            "NEVER break type safety",
+            "ALWAYS maintain proper error handling",
+            "ALWAYS document new code"
+        ],
+        "priorities": [
+            {
+                "source": ".notes/",
+                "weight": 1.0
+            }
+        ],
+        "modes": {
+            "base": {
+                "description": "For routine tasks",
+                "triggers": [
+                    "simple bug fixes",
+                    "documentation updates",
+                    "minor feature additions"
+                ]
+            },
+            "enhanced": {
+                "description": "For complex problems",
+                "triggers": [
+                    "architectural changes",
+                    "performance optimization",
+                    "security-related changes",
+                    "cross-language integration"
+                ]
+            }
+        },
+        "project_directives": {
+            "name": "mwp_project",
+            "ai_first": true
+        }
+    }
 
 # Language-specific rules
 c_rules:
@@ -35,8 +92,17 @@ go_rules:
 integration_rules:
     - enforce: mqtt_client_configuration
       mode: priority-based
+      requirements:
+          - use_tls: true
+          - unique_client_id: true
+          - reconnect_strategy: exponential_backoff
+          - qos_level: 1
     - enforce: influxdb_integration
       default_resolution: 1s
+      requirements:
+          - batch_size: 1000
+          - timeout: 5s
+          - retry_interval: 1s
 
 version_control_rules:
     - enforce: commit_message_format
@@ -87,10 +153,33 @@ project_structure:
           rules: common_rules
 
 # IDE settings
-editor_config:
-    c_files:
-        - tab_size: 3
-        - insert_spaces: true
-    go_files:
-        - tab_size: 8
-        - insert_spaces: false
+ide_settings:
+    description: "Editor settings are maintained in .editorconfig file"
+    reference: ".editorconfig"
+
+# Add error handling specifics
+error_handling:
+    c_code:
+        - enforce: return_codes
+          rules:
+              - negative_for_errors
+              - zero_for_success
+              - error_constants_defined
+    go_code:
+        - enforce: explicit_errors
+          rules:
+              - wrap_errors
+              - custom_error_types
+              - error_documentation
+
+# Add missing common_rules section
+common_rules:
+    naming_conventions:
+        - enforce: file_naming
+          style: lowercase_with_underscores
+        - enforce: constant_naming
+          style: UPPERCASE_WITH_UNDERSCORES
+    documentation:
+        - enforce: changelog_updates
+        - enforce: readme_maintenance
+      

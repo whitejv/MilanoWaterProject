@@ -36,4 +36,8 @@ echo "Starting RainbirdSync for Controller 2"
 sleep 10
 nohup python3 /home/pi/MilanoWaterProject/pyrainbird/RainbirdSync.py -P -C 2 > /dev/null 2>&1 &
 echo "Done"
+sleep 10
+echo "Starting influxdb telegraf App"
+nohup /home/pi/telegraf/telegraf > /dev/null 2>&1 &
+echo "Done"
 sleep 30m
