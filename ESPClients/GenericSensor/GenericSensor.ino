@@ -106,8 +106,8 @@ void setup() {
   #if defined(ARDUINO_ESP8266_GENERIC) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_ESP8266_THING_DEV)
     pinMode(LED_BUILTIN, OUTPUT);
     const int configPin1 = CONFIGPIN1;
-    const int configPin2 = CONFIGPIN2;
-    const int configPin3 = CONFIGPIN3;
+    const int configPin3 = CONFIGPIN2;
+    const int configPin2 = 14 ; //CONFIGPIN3;
     pinMode(configPin1, INPUT_PULLUP);
     pinMode(configPin2, INPUT_PULLUP);
     pinMode(configPin3, INPUT_PULLUP);
