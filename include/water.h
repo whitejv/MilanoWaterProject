@@ -152,8 +152,8 @@ int SubFirmware = 0x80FF;
  *** GPIO01 - stops operation of board
  *** GPIO02 - //Good also lights LED - Temp Sensor
  *** GPIO03 - //Good - Config 2 (Also TX Pin If grounded board won’t load)
- *** GPIO04 - //Good - Config 3
- *** GPIO05 - //Good - Disc Input 2
+ *** GPIO04 - //Good - Config 3 //also works as SDA
+ *** GPIO05 - //Good - Disc Input 2 //also works as SCL
  *** GPIO06 - doesn’t exist
  *** GPIO12 - //Good - Config 1
  *** GPIO13 - //Good - Flow Sensor
@@ -161,7 +161,22 @@ int SubFirmware = 0x80FF;
  *** GPIO15 - //reserved SCL - Works as Input w/o pull-up
  *** GPIO16 - //Good - Disc 3 (no pull-up)
 ******************************************************/
-
+/*************************************************
+ *** Generic Sensor to Support 8 Flow Sensors  ***
+ ***            Rev. 2 12/20/24                ***    
+ *** GPIO00 - stops operation of board             
+ *** GPIO01 - stops operation of board
+ *** GPIO02 - //Good - Temp Sensor also lights LED
+ *** GPIO03 - //Good - Config 2 - Input w/ pull-up(Also TX Pin If grounded board won’t load)
+ *** GPIO04 - //Good - SDA {Disc Input x non-extended boards}
+ *** GPIO05 - //Good - SCL {Disc Input 2 non-extended boards}
+ *** GPIO06 - doesn’t exist
+ *** GPIO12 - //Good - Config 1 - Input w/ pull-up
+ *** GPIO13 - //Good - Flow Sensor
+ *** GPIO14 - //Good - Config 3 - Input w/ pull-up
+ *** GPIO15 - //Good - Disc 1 (no pull-up)
+ *** GPIO16 - //Good - Disc 2 (no pull-up)
+******************************************************/
 /******************************************************
  ******************************************************
  ******           Config Settings                 *****
@@ -1547,7 +1562,7 @@ char* logger_ClientData_var_name [] = {
 * Type: data
 * MQTT Client ID: Log Client
 * MQTT Topic ID: 
-* MSG Length: 7
+* MSG Length: 8
 *  word #        data type            variable                description        min        max        nominal
 *  0        int            Controller                Controller        1        5        1
 *  1        int            Zone                Zone        1        32        1
@@ -1555,13 +1570,14 @@ char* logger_ClientData_var_name [] = {
 *  3        float            temperatureF                Temperature - Well3 Supply Line        0        125        80
 *  4        float            intervalFlow                Gallons in interval        0        5        0.5
 *  5        float            amperage                Amperage        0        2024        1000
-*  5        float            secondsOn                Seconds On Time for Pump        0        2024        14400
+*  6        float            secondsOn                Seconds On Time for Pump        0        2024        14400
+*  7        float            gallonsTank                Gallons in Tank (pressure sensor)        0        2024        2000
 */
 
 const char LOG_CLIENTID[] =    "Log Client" ;
 const char LOG_TOPICID[] =  "mwp/data/log/log/";
 const char LOG_JSONID[] =  "mwp/json/data/log/log/";
-#define LOG_LEN 7
+#define LOG_LEN 8
 
 union   LOG_  {
    int     data_payload[LOG_LEN] ;
@@ -1574,6 +1590,7 @@ union   LOG_  {
       float   intervalFlow    ;
       float   amperage    ;
       float   secondsOn    ;
+      float   gallonsTank    ;
    }  log  ;
 }  ;
 union  LOG_  log_  ;
@@ -1586,7 +1603,9 @@ char* log_ClientData_var_name [] = {
     "intervalFlow",
     "amperage",
     "secondsOn",
+    "gallonsTank",
 }  ;
+
 
 //#define MilanoWaterProject\IrrigationHeader.h  (created and maintained in Excel)
 /*********************************************************************************
